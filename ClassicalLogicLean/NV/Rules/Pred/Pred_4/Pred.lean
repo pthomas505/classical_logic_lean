@@ -1,11 +1,11 @@
-import MathlibExtra.Fin
---import FOL.NV.Deduct
-import FOL.NV.Rules.Prop.Prop_1.Prop
-import FOL.NV.Rules.Pred.Pred_3.Pred
---import FOL.NV.Pred
-import FOL.NV.Sub.Var.One.Rec.Admits
-import FOL.NV.Sub.Var.All.Rec.Sub
-import FOL.NV.Sub.Pred.All.Rec.Option.Sub
+import MathlibExtraLean.Fin
+--import ClassicalLogicLean.NV.Deduct
+import ClassicalLogicLean.NV.Rules.Prop.Prop_1.Prop
+import ClassicalLogicLean.NV.Rules.Pred.Pred_3.Pred
+--import ClassicalLogicLean.NV.Pred
+import ClassicalLogicLean.NV.Sub.Var.One.Rec.Admits
+import ClassicalLogicLean.NV.Sub.Var.All.Rec.Sub
+import ClassicalLogicLean.NV.Sub.Pred.All.Rec.Option.Sub
 
 
 set_option autoImplicit false

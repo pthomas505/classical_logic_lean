@@ -1,4 +1,4 @@
-import FOL.NV.Sub.Var.All.Rec.ReplaceFree
+import ClassicalLogicLean.NV.Sub.Var.All.Rec.ReplaceFree
 
 
 set_option autoImplicit false

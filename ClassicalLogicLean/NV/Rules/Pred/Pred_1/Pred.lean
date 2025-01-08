@@ -1,7 +1,7 @@
-import FOL.NV.Rules.Prop.Prop_1.Prop
-import FOL.NV.Rules.Pred.Pred_2.Pred
-import FOL.NV.Sub.Var.One.Rec.Admits
-import FOL.NV.ReplaceSubFormula
+import ClassicalLogicLean.NV.Rules.Prop.Prop_1.Prop
+import ClassicalLogicLean.NV.Rules.Pred.Pred_2.Pred
+import ClassicalLogicLean.NV.Sub.Var.One.Rec.Admits
+import ClassicalLogicLean.NV.ReplaceSubFormula
 
 
 set_option autoImplicit false

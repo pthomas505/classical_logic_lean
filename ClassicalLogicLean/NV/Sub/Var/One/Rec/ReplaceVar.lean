@@ -1,5 +1,5 @@
-import MathlibExtra.List
-import FOL.NV.Binders
+import MathlibExtraLean.List
+import ClassicalLogicLean.NV.Binders
 
 
 set_option autoImplicit false

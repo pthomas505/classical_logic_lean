@@ -1,4 +1,4 @@
-import FOL.LN.Formula
+import ClassicalLogicLean.LN.Formula
 
 set_option autoImplicit false
 

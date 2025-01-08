@@ -1,5 +1,5 @@
-import FOL.NV.Sub.Pred.All.Rec.Option.Replace
-import FOL.NV.Sub.Var.All.Rec.Sub
+import ClassicalLogicLean.NV.Sub.Pred.All.Rec.Option.Replace
+import ClassicalLogicLean.NV.Sub.Var.All.Rec.Sub
 
 
 set_option autoImplicit false

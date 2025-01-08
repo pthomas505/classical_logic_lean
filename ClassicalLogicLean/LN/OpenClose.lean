@@ -1,7 +1,7 @@
-import FOL.LN.Binders
-import FOL.LN.Semantics
-import MathlibExtra.List
-import MathlibExtra.FunctionUpdateITE
+import ClassicalLogicLean.LN.Binders
+import ClassicalLogicLean.LN.Semantics
+import MathlibExtraLean.List
+import MathlibExtraLean.FunctionUpdateITE
 
 set_option autoImplicit false
 

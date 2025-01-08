@@ -1,7 +1,7 @@
-import MathlibExtra.Fin
-import FOL.NV.Sub.Var.One.Rec.Admits
-import FOL.NV.Sub.Var.All.Rec.Sub
-import FOL.NV.Sub.Pred.All.Rec.Option.Sub
+import MathlibExtraLean.Fin
+import ClassicalLogicLean.NV.Sub.Var.One.Rec.Admits
+import ClassicalLogicLean.NV.Sub.Var.All.Rec.Sub
+import ClassicalLogicLean.NV.Sub.Pred.All.Rec.Option.Sub
 
 
 set_option autoImplicit false

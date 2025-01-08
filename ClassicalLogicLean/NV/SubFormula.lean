@@ -1,4 +1,4 @@
-import FOL.NV.Formula
+import ClassicalLogicLean.NV.Formula
 
 import Mathlib.Tactic
 

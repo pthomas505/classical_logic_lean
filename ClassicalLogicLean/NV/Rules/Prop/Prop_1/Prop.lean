@@ -1,5 +1,5 @@
-import MathlibExtra.FunctionUpdateITE
-import FOL.NV.Formula
+import MathlibExtraLean.FunctionUpdateITE
+import ClassicalLogicLean.NV.Formula
 
 import Mathlib.Tactic
 

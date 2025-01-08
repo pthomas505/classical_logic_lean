@@ -1,6 +1,6 @@
-import MathlibExtra.FunctionUpdateITE
+import MathlibExtraLean.FunctionUpdateITE
 
-import FOL.NV.Definition
+import ClassicalLogicLean.NV.Definition
 
 
 set_option autoImplicit false

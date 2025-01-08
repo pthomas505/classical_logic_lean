@@ -1,5 +1,5 @@
-import MathlibExtra.FunctionUpdateITE
-import FOL.NV.Sub.Var.One.Rec.ReplaceFree
+import MathlibExtraLean.FunctionUpdateITE
+import ClassicalLogicLean.NV.Sub.Var.One.Rec.ReplaceFree
 
 
 set_option autoImplicit false

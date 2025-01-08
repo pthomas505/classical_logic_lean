@@ -1,6 +1,6 @@
-import FOL.LN.Formula
-import FOL.LN.OpenClose
-import FOL.LN.Semantics
+import ClassicalLogicLean.LN.Formula
+import ClassicalLogicLean.LN.OpenClose
+import ClassicalLogicLean.LN.Semantics
 
 set_option autoImplicit false
 

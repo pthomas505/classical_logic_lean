@@ -1,6 +1,6 @@
 import Lean
 
-import FOL.NV.Formula
+import ClassicalLogicLean.NV.Formula
 
 
 set_option autoImplicit false

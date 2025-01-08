@@ -1,4 +1,4 @@
-import FOL.NV.Binders
+import ClassicalLogicLean.NV.Binders
 
 
 set_option autoImplicit false

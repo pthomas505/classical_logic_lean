@@ -1,4 +1,4 @@
-import FOL.NV.Semantics
+import ClassicalLogicLean.NV.Semantics
 
 
 set_option autoImplicit false

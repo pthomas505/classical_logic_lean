@@ -1,6 +1,6 @@
-import MathlibExtra.Finset
-import FOL.NV.Semantics
-import FOL.NV.Sub.Var.One.Rec.ReplaceFree
+import MathlibExtraLean.Finset
+import ClassicalLogicLean.NV.Semantics
+import ClassicalLogicLean.NV.Sub.Var.One.Rec.ReplaceFree
 
 
 set_option autoImplicit false

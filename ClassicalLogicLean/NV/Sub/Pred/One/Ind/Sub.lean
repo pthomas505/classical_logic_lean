@@ -1,4 +1,4 @@
-import FOL.NV.Sub.Var.All.Rec.Admits
+import ClassicalLogicLean.NV.Sub.Var.All.Rec.Admits
 
 
 set_option autoImplicit false

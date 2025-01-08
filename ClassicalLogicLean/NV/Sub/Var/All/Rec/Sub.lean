@@ -1,9 +1,9 @@
-import MathlibExtra.Finset
-import MathlibExtra.FunctionUpdateITE
-import FOL.NV.Formula
-import FOL.NV.Fresh
-import FOL.NV.Semantics
-import FOL.NV.Sub.Var.All.Rec.Admits
+import MathlibExtraLean.Finset
+import MathlibExtraLean.FunctionUpdateITE
+import ClassicalLogicLean.NV.Formula
+import ClassicalLogicLean.NV.Fresh
+import ClassicalLogicLean.NV.Semantics
+import ClassicalLogicLean.NV.Sub.Var.All.Rec.Admits
 
 
 set_option autoImplicit false

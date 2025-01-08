@@ -1,5 +1,5 @@
-import FOL.NV.Sub.Var.One.Rec.ReplaceFree
-import FOL.NV.Semantics
+import ClassicalLogicLean.NV.Sub.Var.One.Rec.ReplaceFree
+import ClassicalLogicLean.NV.Semantics
 
 import Mathlib.Data.List.Defs
 
