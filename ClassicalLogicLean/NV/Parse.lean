@@ -21,8 +21,8 @@ syntax ident : pred_name
 
 syntax pred_name "(" var_name,* ")" : formula
 syntax "(" var_name "=" var_name ")" : formula
-syntax "T" : formula
-syntax "F" : formula
+syntax "T." : formula
+syntax "F." : formula
 syntax "~" formula : formula
 syntax "(" formula "->" formula ")" : formula
 syntax "(" formula "/\\" formula ")" : formula
@@ -62,9 +62,9 @@ partial def elabFormula : Syntax → MetaM Expr
     let y' : Expr ← elabVarName y
     mkAppM ``Formula_.eq_ #[x', y']
 
-  | `(formula| T) => mkAppM ``Formula_.true_ #[]
+  | `(formula| T.) => mkAppM ``Formula_.true_ #[]
 
-  | `(formula| F) => mkAppM ``Formula_.false_ #[]
+  | `(formula| F.) => mkAppM ``Formula_.false_ #[]
 
   | `(formula| ~ $phi) => do
     let phi' : Expr ← elabFormula phi
@@ -105,6 +105,8 @@ partial def elabFormula : Syntax → MetaM Expr
 
 elab "(Formula_|" p:formula ")" : term => elabFormula p
 
+#check (Formula_| T. )
+#check (Formula_| F. )
 #check (Formula_| P () )
 #check (Formula_| P (x) )
 #check (Formula_| P (x, y) )
