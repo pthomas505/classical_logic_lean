@@ -172,7 +172,7 @@ theorem substitution_theorem_sub_prop_all_rec
     simp only [holds]
     split_ifs
     case _ c1 =>
-      specialize ih (Function.updateListITE V hd.args (List.map V xs)) hd.q
+      specialize ih (Function.updateFromPairOfListsITE V hd.args (List.map V xs)) hd.q
       simp only [sub_prop_all_rec_pred_var_set_is_empty hd.q τ hd.h2] at ih
       apply ih
     case _ c1 =>

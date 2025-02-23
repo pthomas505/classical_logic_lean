@@ -1,4 +1,4 @@
-import MathlibExtraLean.FunctionUpdateITE
+import MathlibExtraLean.FunctionUpdateFromPairOfListsITE
 
 import ClassicalLogicLean.NV.Definition
 
@@ -83,7 +83,7 @@ def holds
   | ([] : Env_), def_ _ _ => False
   | d :: E, def_ name args =>
     if name = d.name ∧ args.length = d.args.length
-    then holds D I (Function.updateListITE V d.args (List.map V args)) E d.q
+    then holds D I (Function.updateFromPairOfListsITE V d.args (List.map V args)) E d.q
     else holds D I V E (def_ name args)
   termination_by E phi => (E.length, phi)
 
@@ -161,7 +161,7 @@ theorem holds_coincide_var
       intro v a1
       simp only [var_is_free_in_iff_mem_free_var_set v hd.q] at a1
 
-      apply Function.updateListITE_fun_coincide_mem_eq_len
+      apply Function.updateFromPairOfListsITE_fun_coincide_mem_eq_len
       · exact h1
       · simp only [← List.mem_toFinset]
         exact Finset.mem_of_subset hd.h1 a1

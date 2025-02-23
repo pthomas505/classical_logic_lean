@@ -36,7 +36,7 @@ def sub_pred_all_rec_opt_aux
         let zs := val.fst
         let H := val.snd
         if xs.length = zs.length
-        then Sub.Var.All.Rec.Fresh.sub_var_all_rec (Function.updateListITE id zs (xs.map σ)) c H
+        then Sub.Var.All.Rec.Fresh.sub_var_all_rec (Function.updateFromPairOfListsITE id zs (xs.map σ)) c H
         else pred_var_ X (xs.map σ)
       else pred_var_ X (xs.map σ)
   | eq_ x y => eq_ (σ x) (σ y)
@@ -115,7 +115,7 @@ def I'
     let zs := val.fst
     let H := val.snd
     if ds.length = zs.length
-    then holds D I (Function.updateListITE V zs ds) E H
+    then holds D I (Function.updateFromPairOfListsITE V zs ds) E H
     else I.pred_var_ X ds
   else I.pred_var_ X ds) )
 
@@ -168,8 +168,8 @@ lemma substitution_theorem_sub_pred_all_rec_opt_aux
 
       set H := (Option.get (τ X (List.length xs)) (_ : Option.isSome (τ X (List.length xs)) = true)).2
 
-      obtain s1 := Sub.Var.All.Rec.Fresh.substitution_theorem_sub_var_all_rec D I V E (Function.updateListITE id zs (xs.map σ)) c H
-      simp only [Function.updateListITE_comp] at s1
+      obtain s1 := Sub.Var.All.Rec.Fresh.substitution_theorem_sub_var_all_rec D I V E (Function.updateFromPairOfListsITE id zs (xs.map σ)) c H
+      simp only [Function.updateFromPairOfListsITE_comp] at s1
 
       simp at s1
       simp only [s1]
@@ -178,13 +178,13 @@ lemma substitution_theorem_sub_pred_all_rec_opt_aux
       apply holds_coincide_var
       intro x a1
       by_cases c3 : x ∈ zs
-      · apply Function.updateListITE_map_mem_ext
+      · apply Function.updateFromPairOfListsITE_map_mem_ext
         · simp
           exact h1
         · simp only [← c2]
         · exact c3
-      · simp only [Function.updateListITE_not_mem V'' x zs (List.map V' xs) c3]
-        simp only [Function.updateListITE_not_mem V x zs (List.map (V ∘ σ ) xs) c3]
+      · simp only [Function.updateFromPairOfListsITE_not_mem V'' x zs (List.map V' xs) c3]
+        simp only [Function.updateFromPairOfListsITE_not_mem V x zs (List.map (V ∘ σ ) xs) c3]
         apply h2
         · simp only [var_is_free_in_iff_mem_free_var_set] at a1
           exact a1
@@ -394,11 +394,11 @@ lemma substitution_theorem_sub_pred_all_rec_opt_aux
 
       split_ifs
       case _ c1 c2 =>
-        have s2 : holds D I (Function.updateListITE V' E_hd.args (List.map (V ∘ σ) xs)) E_tl E_hd.q ↔ holds D I (Function.updateListITE V E_hd.args (List.map (V ∘ σ) xs)) E_tl E_hd.q :=
+        have s2 : holds D I (Function.updateFromPairOfListsITE V' E_hd.args (List.map (V ∘ σ) xs)) E_tl E_hd.q ↔ holds D I (Function.updateFromPairOfListsITE V E_hd.args (List.map (V ∘ σ) xs)) E_tl E_hd.q :=
         by
           apply holds_coincide_var
           intro x a1
-          apply Function.updateListITE_map_mem_ext
+          apply Function.updateFromPairOfListsITE_map_mem_ext
           · simp
           · simp at c1
             tauto

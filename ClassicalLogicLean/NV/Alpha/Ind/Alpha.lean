@@ -563,7 +563,7 @@ theorem replace_empty_holds
         intro y a1
 
         simp
-        apply Function.updateListITE_map_mem_ext
+        apply Function.updateFromPairOfListsITE_map_mem_ext
         · intro z a2
 
           have s1 : ¬ z = v :=

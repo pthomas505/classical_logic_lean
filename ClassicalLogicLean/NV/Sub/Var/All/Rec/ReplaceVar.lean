@@ -85,7 +85,7 @@ theorem substitution_theorem_replace_var_all_rec_inj
         apply holds_coincide_var
         intro v a1
         simp only [var_is_free_in_iff_mem_free_var_set v E_hd.q] at a1
-        apply Function.updateListITE_mem_eq_len
+        apply Function.updateFromPairOfListsITE_mem_eq_len
         · simp only [<- List.mem_toFinset]
           exact Finset.mem_of_subset E_hd.h1 a1
         · simp

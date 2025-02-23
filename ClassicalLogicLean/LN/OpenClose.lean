@@ -403,7 +403,7 @@ lemma CloseFormulaOpenFormulaComp
     simp only [openFormulaAux]
     simp only [closeFormulaAux]
     simp
-    simp only [List.map_eq_self_iff]
+    simp only [List.map_eq_self_iff_fun_is_id_on_mem]
     intro v a1
     apply CloseVarOpenVarComp
     intro contra
@@ -459,7 +459,7 @@ lemma OpenFormulaCloseFormulaComp
     simp only [closeFormulaAux]
     simp only [openFormulaAux]
     simp
-    simp only [List.map_eq_self_iff]
+    simp only [List.map_eq_self_iff_fun_is_id_on_mem]
     intro v a1
     apply OpenVarCloseVarComp
     exact h1 v a1
@@ -948,7 +948,7 @@ lemma Formula.lc_at_instantiate_id
 
     simp only [Formula.instantiate]
     simp
-    apply List.map_mem_id
+    apply List.fun_is_id_on_mem_imp_map_eq_self
     intro v a1
     specialize h1 v a1
     cases v

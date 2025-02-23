@@ -23,7 +23,7 @@ def admits_pred_all_rec_aux
   | pred_var_ X xs =>
     let zs := (τ X xs.length).fst
     let H := (τ X xs.length).snd
-    Sub.Var.All.Rec.admits_var_all_rec (Function.updateListITE id zs xs) H ∧ (∀ x : VarName_, x ∈ binders → ¬ (var_is_free_in x H ∧ x ∉ zs)) ∧ xs.length = zs.length
+    Sub.Var.All.Rec.admits_var_all_rec (Function.updateFromPairOfListsITE id zs xs) H ∧ (∀ x : VarName_, x ∈ binders → ¬ (var_is_free_in x H ∧ x ∉ zs)) ∧ xs.length = zs.length
   | true_ => True
   | false_ => True
   | eq_ _ _ => True
@@ -87,7 +87,7 @@ theorem substitution_theorem_admits_pred_all_rec_aux
       I.pred_const_,
       fun (X : PredName_) (ds : List D) =>
         if ds.length = (τ X ds.length).fst.length
-        then holds D I (Function.updateListITE V' (τ X ds.length).fst ds) E (τ X ds.length).snd
+        then holds D I (Function.updateFromPairOfListsITE V' (τ X ds.length).fst ds) E (τ X ds.length).snd
         else I.pred_var_ X ds
       ⟩
       V E F ↔ holds D I V E (replace_pred_all_rec τ F) :=
@@ -102,26 +102,26 @@ theorem substitution_theorem_admits_pred_all_rec_aux
     obtain ⟨h1_left, ⟨h1_right_left, h1_right_right⟩⟩ := h1
 
     obtain s1 :=
-    Sub.Var.All.Rec.substitution_theorem_admits_var_all_rec D I V E (Function.updateListITE id (τ X xs.length).fst xs)
+    Sub.Var.All.Rec.substitution_theorem_admits_var_all_rec D I V E (Function.updateFromPairOfListsITE id (τ X xs.length).fst xs)
       (τ X xs.length).snd h1_left
-    simp only [Function.updateListITE_comp] at s1
+    simp only [Function.updateFromPairOfListsITE_comp] at s1
     simp at s1
 
     have s2 :
-      holds D I (Function.updateListITE V (τ X xs.length).fst (List.map V xs)) E (τ X xs.length).snd ↔
-      holds D I (Function.updateListITE V' (τ X xs.length).fst (List.map V xs)) E (τ X xs.length).snd :=
+      holds D I (Function.updateFromPairOfListsITE V (τ X xs.length).fst (List.map V xs)) E (τ X xs.length).snd ↔
+      holds D I (Function.updateFromPairOfListsITE V' (τ X xs.length).fst (List.map V xs)) E (τ X xs.length).snd :=
     by
       apply holds_coincide_var
       intro v a1
       by_cases c1 : v ∈ (τ X xs.length).fst
-      · apply Function.updateListITE_mem_eq_len V V' v (τ X xs.length).fst (List.map V xs) c1
+      · apply Function.updateFromPairOfListsITE_mem_eq_len V V' v (τ X xs.length).fst (List.map V xs) c1
         simp
         symm
         exact h1_right_right
       · by_cases c2 : v ∈ binders
         · specialize h1_right_left v c2 a1
           contradiction
-        · apply Function.updateListITE_mem'
+        · apply Function.updateFromPairOfListsITE_mem'
           exact h2 v c2
 
     simp only [s2] at s1
@@ -212,7 +212,7 @@ theorem substitution_theorem_admits_pred_all_rec
         let zs := (τ X ds.length).fst
         let H := (τ X ds.length).snd
         if ds.length = zs.length
-        then holds D I (Function.updateListITE V zs ds) E H
+        then holds D I (Function.updateFromPairOfListsITE V zs ds) E H
         else I.pred_var_ X ds
       ⟩
       V E F ↔ holds D I V E (replace_pred_all_rec τ F) :=

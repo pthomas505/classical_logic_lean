@@ -1,3 +1,5 @@
+import MathlibExtraLean.FunctionUpdateFromPairOfListsITE
+
 import ClassicalLogicLean.NV.Sub.Var.All.Rec.ReplaceFree
 
 
@@ -23,7 +25,7 @@ def replace_pred_one_rec
   | pred_const_ X xs => pred_const_ X xs
   | pred_var_ X xs =>
       if X = P ∧ xs.length = zs.length
-      then Sub.Var.All.Rec.fast_replace_free_var_all_rec (Function.updateListITE id zs xs) H
+      then Sub.Var.All.Rec.fast_replace_free_var_all_rec (Function.updateFromPairOfListsITE id zs xs) H
       else pred_var_ X xs
   | eq_ x y => eq_ x y
   | true_ => true_

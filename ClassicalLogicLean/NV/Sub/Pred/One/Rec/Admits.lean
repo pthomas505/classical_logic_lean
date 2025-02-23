@@ -22,7 +22,7 @@ def admits_pred_one_rec_aux
   | pred_var_ X ts =>
       if X = P ∧ ts.length = zs.length
       then
-        Sub.Var.All.Rec.admits_var_all_rec (Function.updateListITE id zs ts) H ∧
+        Sub.Var.All.Rec.admits_var_all_rec (Function.updateFromPairOfListsITE id zs ts) H ∧
             /-
               Suppose `F` is the formula that the predicate `X ts` occurs in.
               Ensures that the free variables in `H` that are not being replaced by a variable in `ts` do not become bound variables in `F`. The bound variables in `F` are in the `binders` set.
@@ -139,7 +139,7 @@ def I'
   (Interpretation_.using_pred D I (
     fun (Q : PredName_) (ds : List D) =>
       if Q = P ∧ ds.length = zs.length
-      then holds D I (Function.updateListITE V zs ds) E H
+      then holds D I (Function.updateFromPairOfListsITE V zs ds) E H
       else I.pred_var_ Q ds
   ))
 
@@ -183,19 +183,19 @@ theorem substitution_theorem_admits_pred_one_rec_aux
         obtain ⟨h1_left, h1_right⟩ := h1
 
         have s1 :
-          holds D I (V ∘ Function.updateListITE id zs xs) E_ref H ↔
-            holds D I V E_ref (Sub.Var.All.Rec.fast_replace_free_var_all_rec (Function.updateListITE id zs xs) H) := Sub.Var.All.Rec.substitution_theorem_admits_var_all_rec D I V E_ref (Function.updateListITE id zs xs) H h1_left
+          holds D I (V ∘ Function.updateFromPairOfListsITE id zs xs) E_ref H ↔
+            holds D I V E_ref (Sub.Var.All.Rec.fast_replace_free_var_all_rec (Function.updateFromPairOfListsITE id zs xs) H) := Sub.Var.All.Rec.substitution_theorem_admits_var_all_rec D I V E_ref (Function.updateFromPairOfListsITE id zs xs) H h1_left
 
-        simp only [Function.updateListITE_comp] at s1
+        simp only [Function.updateFromPairOfListsITE_comp] at s1
         simp at s1
 
         have s2 :
-          holds D I (Function.updateListITE V zs (List.map V xs)) E_ref H ↔ holds D I (Function.updateListITE V' zs (List.map V xs)) E_ref H :=
+          holds D I (Function.updateFromPairOfListsITE V zs (List.map V xs)) E_ref H ↔ holds D I (Function.updateFromPairOfListsITE V' zs (List.map V xs)) E_ref H :=
         by
           apply holds_coincide_var
           intro v a1
           by_cases c2 : v ∈ zs
-          · apply Function.updateListITE_mem_eq_len V V' v zs (List.map V xs) c2
+          · apply Function.updateFromPairOfListsITE_mem_eq_len V V' v zs (List.map V xs) c2
             cases c1
             case pos.intro c1_left c1_right =>
               simp
@@ -204,7 +204,7 @@ theorem substitution_theorem_admits_pred_one_rec_aux
           · by_cases c3 : v ∈ binders
             · specialize h1_right v c3 a1
               contradiction
-            · apply Function.updateListITE_mem'
+            · apply Function.updateFromPairOfListsITE_mem'
               exact h2 v c3
 
         simp only [s2] at s1
@@ -265,7 +265,7 @@ theorem substitution_theorem_admits_pred_one_rec_aux
     simp only [holds]
     split_ifs
     case _ c1 =>
-      specialize ih (Function.updateListITE V hd.args (List.map V xs)) hd.q
+      specialize ih (Function.updateFromPairOfListsITE V hd.args (List.map V xs)) hd.q
       simp only [replace_pred_one_rec_pred_var_set_is_empty P zs H hd.q hd.h2] at ih
       apply holds_coincide_pred_var
       · simp only [I']

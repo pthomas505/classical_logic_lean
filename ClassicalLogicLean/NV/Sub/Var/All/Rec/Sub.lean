@@ -234,7 +234,7 @@ theorem substitution_theorem_sub_var_all_rec
       case pos c1 =>
         apply holds_coincide_var
         intro v a1
-        apply Function.updateListITE_map_mem_ext
+        apply Function.updateFromPairOfListsITE_map_mem_ext
         · simp
         · obtain ⟨c1_left, c1_right⟩ := c1
           symm

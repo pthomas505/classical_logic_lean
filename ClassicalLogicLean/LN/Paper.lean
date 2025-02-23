@@ -1216,7 +1216,7 @@ lemma Formula.OpenListLC
 
     simp only [Formula.openList]
     simp
-    apply List.map_mem_id
+    apply List.fun_is_id_on_mem_imp_map_eq_self
     intro v a1
     specialize h1 v a1
     cases v

@@ -59,7 +59,7 @@ theorem replace_var_one_rec_self
     simp only [replace_var_one_rec]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
     simp
-    simp only [List.map_eq_self_iff]
+    simp only [List.map_eq_self_iff_fun_is_id_on_mem]
     simp
   case eq_ x y =>
     simp
@@ -93,7 +93,7 @@ theorem not_var_occurs_in_replace_var_one_rec_self
     simp only [replace_var_one_rec]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
     simp
-    simp only [List.map_eq_self_iff]
+    simp only [List.map_eq_self_iff_fun_is_id_on_mem]
     simp
     intro x a1 a2
     subst a2
@@ -132,7 +132,7 @@ theorem replace_var_one_rec_inverse
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
     congr!
     simp
-    simp only [List.map_eq_self_iff]
+    simp only [List.map_eq_self_iff_fun_is_id_on_mem]
     simp
     intro x a1
     by_cases c1 : v = x

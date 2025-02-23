@@ -274,16 +274,16 @@ instance
 
 /--
   Function.updateIte at multiple points.
-  Function.updateListIte f xs ys := Replaces the value of f at each point in xs by the value in ys at the same index.
+  Function.updateFromPairOfListsITE f xs ys := Replaces the value of f at each point in xs by the value in ys at the same index.
   If there are duplicate values in xs then the value at the smallest index is used.
   If the lengths of xs and ys do not match then the longer is effectively truncated to the length of the smaller.
 -/
-def Function.updateListIte
+def Function.updateFromPairOfListsITE
   {α β : Type}
   [DecidableEq α]
   (f : α → β) :
   List α → List β → α → β
-  | x::xs, y::ys => Function.updateIte (Function.updateListIte f xs ys) x y
+  | x::xs, y::ys => Function.updateIte (Function.updateFromPairOfListsITE f xs ys) x y
   | _, _ => f
 
 
@@ -294,7 +294,7 @@ def replacePredFun (τ : PredName_ → ℕ → (List VarName_ × Formula_)) : Fo
   | pred_const_ X xs => pred_const_ X xs
   | pred_var_ X xs =>
       if xs.length = (τ X xs.length).fst.length
-      then fastReplaceFreeFun (Function.updateListIte id (τ X xs.length).fst xs) (τ X xs.length).snd
+      then fastReplaceFreeFun (Function.updateFromPairOfListsITE id (τ X xs.length).fst xs) (τ X xs.length).snd
       else pred_var_ X xs
   | eq_ x y => eq_ x y
   | true_ => true_
@@ -326,7 +326,7 @@ def admitsPredFunAux
   Finset VarName_ → Formula_ → Prop
   | _, pred_const_ _ _ => True
   | binders, pred_var_ X xs =>
-    admitsFun (Function.updateListIte id (τ X xs.length).fst xs) (τ X xs.length).snd ∧
+    admitsFun (Function.updateFromPairOfListsITE id (τ X xs.length).fst xs) (τ X xs.length).snd ∧
       (∀ x : VarName_, x ∈ binders → ¬ (var_is_free_in x (τ X xs.length).snd ∧ x ∉ (τ X xs.length).fst)) ∧
         xs.length = (τ X xs.length).fst.length
   | _, true_ => True
@@ -430,7 +430,7 @@ def admitsUnfoldDef
 | exists_ _ phi => admitsUnfoldDef d phi
 | def_ X xs =>
     if X = d.name ∧ xs.length = d.args.length
-    then admitsFun (Function.updateListIte id d.args xs) d.F
+    then admitsFun (Function.updateFromPairOfListsITE id d.args xs) d.F
     else True
 
 instance
@@ -461,7 +461,7 @@ def unfoldDef
 | exists_ x phi => exists_ x (unfoldDef d phi)
 | def_ X xs =>
     if X = d.name ∧ xs.length = d.args.length
-    then fastReplaceFreeFun (Function.updateListIte id d.args xs) d.F
+    then fastReplaceFreeFun (Function.updateFromPairOfListsITE id d.args xs) d.F
     else def_ X xs
 
 

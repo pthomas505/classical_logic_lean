@@ -347,7 +347,7 @@ lemma holds_iff_are_alpha_equiv_rec_holds_aux
         apply holds_coincide_var
         intro v a1
         rw [aux_2 D binders xs ys V V' h1 h2_right]
-        apply Function.updateListITE_mem_eq_len
+        apply Function.updateFromPairOfListsITE_mem_eq_len
         · simp only [var_is_free_in_iff_mem_free_var_set] at a1
           simp only [← List.mem_toFinset]
           exact Finset.mem_of_subset hd.h1 a1

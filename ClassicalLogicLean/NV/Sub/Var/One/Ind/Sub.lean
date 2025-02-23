@@ -425,7 +425,7 @@ theorem substitution_theorem_is_sub_var_one_ind
             simp only [if_neg c3]
 
         simp only [s1]
-        apply Function.updateListITE_mem_eq_len
+        apply Function.updateFromPairOfListsITE_mem_eq_len
         · simp only [var_is_free_in_iff_mem_free_var_set] at a1
           simp only [← List.mem_toFinset]
           apply Finset.mem_of_subset hd.h1 a1

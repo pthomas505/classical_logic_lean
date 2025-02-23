@@ -70,7 +70,7 @@ theorem substitution_theorem_admits_pred_all_rec_opt_aux
         let zs := val.fst
         let H := val.snd
         if ds.length = zs.length
-        then holds D I (Function.updateListITE V' zs ds) E H
+        then holds D I (Function.updateFromPairOfListsITE V' zs ds) E H
         else I.pred_var_ X ds
       else I.pred_var_ X ds
     ⟩
@@ -93,19 +93,19 @@ theorem substitution_theorem_admits_pred_all_rec_opt_aux
       let val := Option.get opt c1
       let zs := val.fst
       let H := val.snd
-      obtain s1 := Sub.Var.All.Rec.Fresh.substitution_theorem_sub_var_all_rec D I V E (Function.updateListITE id zs xs) c H
-      simp only [Function.updateListITE_comp] at s1
+      obtain s1 := Sub.Var.All.Rec.Fresh.substitution_theorem_sub_var_all_rec D I V E (Function.updateFromPairOfListsITE id zs xs) c H
+      simp only [Function.updateFromPairOfListsITE_comp] at s1
       simp at s1
       simp only [s1]
 
       apply holds_coincide_var
       intro v a1
       by_cases c3 : v ∈ zs
-      · apply Function.updateListITE_mem_eq_len V' V v zs (List.map V xs) c3
+      · apply Function.updateFromPairOfListsITE_mem_eq_len V' V v zs (List.map V xs) c3
         simp
         simp only [← c2]
-      · simp only [Function.updateListITE_not_mem V v zs (List.map V xs) c3]
-        simp only [Function.updateListITE_not_mem V' v zs (List.map V xs) c3]
+      · simp only [Function.updateFromPairOfListsITE_not_mem V v zs (List.map V xs) c3]
+        simp only [Function.updateFromPairOfListsITE_not_mem V' v zs (List.map V xs) c3]
         apply h2
         intro contra
         simp only [var_is_free_in_iff_mem_free_var_set] at a1

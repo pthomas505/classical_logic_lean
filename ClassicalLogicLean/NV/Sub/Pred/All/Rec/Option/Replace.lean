@@ -22,7 +22,7 @@ def replace_pred_all_rec_opt
         let zs := val.fst
         let H := val.snd
         if xs.length = zs.length
-        then Sub.Var.All.Rec.Fresh.sub_var_all_rec (Function.updateListITE id zs xs) c H
+        then Sub.Var.All.Rec.Fresh.sub_var_all_rec (Function.updateFromPairOfListsITE id zs xs) c H
         else pred_var_ X xs
       else pred_var_ X xs
   | eq_ x y => eq_ x y

@@ -46,9 +46,9 @@ inductive is_sub_pred_one_ind
     (X : PredName_)
     (ts : List VarName_) :
     X = P ∧ ts.length = zs.length →
-    Sub.Var.All.Rec.admits_var_all_rec (Function.updateListITE id zs ts) H →
+    Sub.Var.All.Rec.admits_var_all_rec (Function.updateFromPairOfListsITE id zs ts) H →
     is_sub_pred_one_ind P zs H (pred_var_ P ts)
-    (Sub.Var.All.Rec.fast_replace_free_var_all_rec (Function.updateListITE id zs ts) H)
+    (Sub.Var.All.Rec.fast_replace_free_var_all_rec (Function.updateFromPairOfListsITE id zs ts) H)
 
   | eq_
     (x y : VarName_) :
@@ -141,7 +141,7 @@ theorem substitution_theorem_is_sub_pred_one_ind
   (h1 : is_sub_pred_one_ind P zs H A B)
   (h2 : ∀ (Q : PredName_) (ds : List D),
     Q = P ∧ ds.length = zs.length →
-      (holds D I (Function.updateListITE V zs ds) E H ↔ J.pred_var_ P ds))
+      (holds D I (Function.updateFromPairOfListsITE V zs ds) E H ↔ J.pred_var_ P ds))
   (h3_const : I.pred_const_ = J.pred_const_)
   (h3_var : ∀ (Q : PredName_) (ds : List D),
     ¬ (Q = P ∧ ds.length = zs.length) →
@@ -172,9 +172,9 @@ theorem substitution_theorem_is_sub_pred_one_ind
         exact a1_right
       · exact contra
   case pred_occurs_in h1_X h1_ts h1_1 h1_2 =>
-    obtain s1 := Sub.Var.All.Rec.substitution_theorem_admits_var_all_rec D I V E (Function.updateListITE id zs h1_ts) H h1_2
+    obtain s1 := Sub.Var.All.Rec.substitution_theorem_admits_var_all_rec D I V E (Function.updateFromPairOfListsITE id zs h1_ts) H h1_2
 
-    obtain s2 := Function.updateListITE_comp id V zs h1_ts
+    obtain s2 := Function.updateFromPairOfListsITE_comp id V zs h1_ts
 
     simp only [s2] at s1
     simp at s1
@@ -213,12 +213,12 @@ theorem substitution_theorem_is_sub_pred_one_ind
     intro Q ds a1
 
     have s1 :
-      holds D I (Function.updateListITE (Function.updateITE V h1_x d) zs ds) E H ↔
-        holds D I (Function.updateListITE V zs ds) E H :=
+      holds D I (Function.updateFromPairOfListsITE (Function.updateITE V h1_x d) zs ds) E H ↔
+        holds D I (Function.updateFromPairOfListsITE V zs ds) E H :=
     by
       apply holds_coincide_var
       intro v a2
-      apply Function.updateListITE_updateIte
+      apply Function.updateFromPairOfListsITE_updateIte
       intro contra
       rw [contra] at a2
       contradiction
@@ -263,7 +263,7 @@ theorem substitution_is_valid_is_sub_pred_one_ind
       pred_const_ := I.pred_const_
       pred_var_ := fun (Q : PredName_) (ds : List D) =>
         if (Q = P ∧ ds.length = zs.length)
-        then holds D I (Function.updateListITE V zs ds) E H
+        then holds D I (Function.updateFromPairOfListsITE V zs ds) E H
         else I.pred_var_ Q ds }
   obtain s1 := substitution_theorem_is_sub_pred_one_ind D I J V E F P zs H F' h1
   simp only [Interpretation_.pred_var_] at s1
