@@ -811,15 +811,17 @@ lemma CloseFormulaFreeVarSet
   case pred_ X vs =>
     simp only [closeFormulaAux]
     simp only [Formula.freeVarSet]
-    simp
+    simp only [Finset.biUnion_subset_iff_forall_subset, List.mem_toFinset, List.mem_map]
     intro v a1
-    trans (v.freeVarSet \ {free_ y})
-    · exact CloseVarFreeVarSet v y k
+    obtain ⟨u, ⟨a1_left, a1_right⟩⟩ := a1
+    rewrite [← a1_right]
+    trans (u.freeVarSet \ {free_ y})
+    · apply CloseVarFreeVarSet
     · apply Finset.sdiff_subset_sdiff
       · apply Finset.subset_biUnion_of_mem
-        simp
-        exact a1
-      · simp
+        simp only [List.mem_toFinset]
+        exact a1_left
+      · apply Set.Subset.refl
   case not_ phi phi_ih =>
     simp only [closeFormulaAux]
     simp only [Formula.freeVarSet]
@@ -829,13 +831,26 @@ lemma CloseFormulaFreeVarSet
     specialize psi_ih k
     simp only [closeFormulaAux]
     simp only [Formula.freeVarSet]
-    sorry
+    simp only [Finset.union_subset_iff]
+    constructor
+    · trans (phi.freeVarSet \ {free_ y})
+      · exact phi_ih
+      · apply Finset.sdiff_subset_sdiff
+        · exact Finset.subset_union_left
+        · apply Set.Subset.refl
+    · trans (psi.freeVarSet \ {free_ y})
+      · exact psi_ih
+      · apply Finset.sdiff_subset_sdiff
+        · exact Finset.subset_union_right
+        · apply Set.Subset.refl
   case forall_ phi phi_ih =>
     simp only [closeFormulaAux]
     simp only [Formula.freeVarSet]
     apply phi_ih
 
+
 --------------------------------------------------
+
 
 lemma shift_openVar
   (D : Type)
@@ -847,34 +862,49 @@ lemma shift_openVar
     shift D V d ∘ openVar (k + 1) (free_ y) :=
   by
   funext v
-  simp
+  simp only [Function.comp_apply]
   cases v
-  case _ x =>
+  case free_ x =>
     simp only [openVar]
     simp only [shift]
-    simp
-    rfl
-  case _ i =>
+    simp only [Function.comp_apply]
+    simp only [openVar]
+  case bound_ i =>
     cases i
     case zero =>
       simp only [openVar]
-      simp only [shift]
-      simp
+      split
+      case isTrue c1 =>
+        simp only [Nat.right_eq_add, Nat.add_eq_zero_iff] at c1
+        obtain ⟨c1_left, c1_right⟩ := c1
+        simp only [one_ne_zero] at c1_right
+      case isFalse c1 =>
+        simp only [shift]
     case succ i =>
       simp only [openVar]
-      simp only [shift]
-      simp
-      split_ifs
-      case _ c1 =>
-        rw [c1]
-        simp
+      split
+      case isTrue c1 =>
+        simp only [Nat.add_right_cancel_iff] at c1
+
+        simp only [shift]
+        simp only [Function.comp_apply]
         simp only [openVar]
-        simp
-      case _ c1 =>
-        simp
+        split
+        case isTrue c2 =>
+          apply Eq.refl
+        case isFalse c2 =>
+          contradiction
+      case isFalse c1 =>
+        simp only [Nat.add_right_cancel_iff] at c1
+
+        simp only [shift]
+        simp only [Function.comp_apply]
         simp only [openVar]
-        simp only [c1]
-        simp
+        split
+        case isTrue c2 =>
+          contradiction
+        case isFalse c2 =>
+          apply Eq.refl
 
 
 lemma Holds_openFormulaAux
