@@ -1,6 +1,9 @@
 import ClassicalLogicLean.LN.Formula
 
-set_option autoImplicit false
+
+set_option linter.style.docString false
+set_option linter.style.emptyLine false
+set_option linter.style.longLine false
 
 
 namespace LN
@@ -56,3 +59,6 @@ def Holds
 
 def Formula.isValid (F : Formula) : Prop :=
   ∀ (D : Type) (I : Interpretation D) (V : VarAssignment D), Holds D I V F
+
+
+end LN
