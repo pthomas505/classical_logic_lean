@@ -3,7 +3,9 @@ import ClassicalLogicLean.NV.Formula
 import Mathlib.Tactic
 
 
-set_option autoImplicit false
+set_option linter.style.docString false
+set_option linter.style.emptyLine false
+set_option linter.style.longLine false
 
 
 open Formula_
@@ -36,7 +38,12 @@ example
   cases F
   all_goals
     simp only [subformula_set]
-    simp only [Multiset.mem_union, Multiset.mem_singleton, or_true]
+  case pred_const_ X xs | pred_var_ X xs | eq_ x y | true_ | false_ | def_ X xs =>
+    simp only [Multiset.mem_singleton]
+  all_goals
+    simp only [Multiset.mem_union, Multiset.mem_singleton]
+    right
+    exact True.intro
 
 
 example
@@ -48,20 +55,22 @@ example
     induction F''
     case pred_const_ X xs | pred_var_ X xs | eq_ x y | true_ | false_ | def_ X xs =>
       unfold subformula_set at h2
-      simp at h2
-      rw [h2] at h1
+      simp only [Multiset.mem_singleton] at h2
+      rewrite [h2] at h1
       exact h1
     case not_ phi ih =>
       unfold subformula_set at h2
-      simp at h2
+      simp only [Multiset.mem_union, Multiset.mem_singleton] at h2
 
       cases h2
       case inl h2 =>
         unfold subformula_set
-        simp
-        tauto
+        simp only [Multiset.mem_union, Multiset.mem_singleton]
+        left
+        apply ih
+        exact h2
       case inr h2 =>
-        rw [h2] at h1
+        rewrite [h2] at h1
         exact h1
     case
         imp_ phi psi phi_ih psi_ih
@@ -69,33 +78,41 @@ example
       | or_ phi psi phi_ih psi_ih
       | iff_ phi psi phi_ih psi_ih =>
       unfold subformula_set at h2
-      simp at h2
+      simp only [Multiset.mem_union, Multiset.mem_singleton] at h2
 
       cases h2
       case inl h2 =>
         cases h2
         case inl h2 =>
           unfold subformula_set
-          simp
-          tauto
+          simp only [Multiset.mem_union, Multiset.mem_singleton]
+          left
+          left
+          apply phi_ih
+          exact h2
         case inr h2 =>
           unfold subformula_set
-          simp
-          tauto
+          simp only [Multiset.mem_union, Multiset.mem_singleton]
+          left
+          right
+          apply psi_ih
+          exact h2
       case inr h2 =>
-        rw [h2] at h1
+        rewrite [h2] at h1
         exact h1
     case forall_ x phi ih | exists_ x phi ih =>
       unfold subformula_set at h2
-      simp at h2
+      simp only [Multiset.mem_union, Multiset.mem_singleton] at h2
 
       cases h2
       case inl h2 =>
         unfold subformula_set
-        simp
-        tauto
+        simp only [Multiset.mem_union, Multiset.mem_singleton]
+        left
+        apply ih
+        exact h2
       case inr h2 =>
-        rw [h2] at h1
+        rewrite [h2] at h1
         exact h1
 
 
@@ -106,6 +123,3 @@ def is_proper_subformula
   (F F' : Formula_) :
   Prop :=
   F ∈ F'.subformula_set ∧ ¬ F = F'
-
-
-#lint

@@ -1,7 +1,9 @@
 import ClassicalLogicLean.NV.Binders
 
 
-set_option autoImplicit false
+set_option linter.style.docString false
+set_option linter.style.emptyLine false
+set_option linter.style.longLine false
 
 
 open Formula_
@@ -35,14 +37,8 @@ deriving DecidableEq
 /--
   The type of environments.
 -/
+@[reducible]
 def Env_ : Type := List Definition_
-deriving Inhabited
-
-instance : Membership Definition_ Env_ :=
-  inferInstanceAs (Membership Definition_ (List Definition_))
-
-instance : HAppend Env_ Env_ Env_ :=
-  inferInstanceAs (HAppend (List Definition_) (List Definition_) (List Definition_))
 
 
 /--
@@ -71,6 +67,14 @@ def all_def_in_env (E : Env_) : Formula_ → Prop
 | exists_ _ phi => all_def_in_env E phi
 | def_ X xs =>
   ∃ (d : Definition_), d ∈ E ∧ X = d.name ∧ xs.length = d.args.length
+
+instance
+  (E : Env_)
+  (X : DefName_)
+  (xs : List VarName_) :
+  Decidable (∃ (d : Definition_), d ∈ E ∧ X = d.name ∧ xs.length = d.args.length) :=
+  by
+  apply List.decidableBEx
 
 instance (E : Env_) (F : Formula_) : Decidable (all_def_in_env E F) :=
   by
@@ -126,7 +130,6 @@ example
     simp only [List.Pairwise.nil]
   case cons hd tl ih =>
     simp only [Env_.well_formed] at h1
-    simp at h1
     obtain ⟨h1_left, ⟨h1_right_left, h1_right_right⟩⟩ := h1
 
     simp only [Env_.nodup_]
@@ -156,9 +159,13 @@ example
     simp only [Env_.not_circular]
   case cons hd tl ih =>
     simp only [Env_.well_formed] at h1
+    obtain ⟨h1_left, ⟨h1_right_left, h1_right_right⟩⟩ := h1
 
     simp only [Env_.not_circular]
-    tauto
+    constructor
+    · exact h1_right_left
+    · apply ih
+      exact h1_right_right
 
 
 example
@@ -190,4 +197,4 @@ example
         · exact h2_right
 
 
-#lint
+--#lint

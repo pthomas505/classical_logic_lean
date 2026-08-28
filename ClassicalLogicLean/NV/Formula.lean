@@ -3,7 +3,9 @@ import Mathlib.Util.CompileInductive
 import Lean.Data.Json.Basic
 
 
-set_option autoImplicit false
+set_option linter.style.docString false
+set_option linter.style.emptyLine false
+set_option linter.style.longLine false
 
 
 /--
@@ -11,6 +13,8 @@ set_option autoImplicit false
 -/
 structure VarName_ extends String
   deriving Inhabited, DecidableEq, Repr
+
+compile_inductive% VarName_
 
 instance : ToString VarName_ :=
   { toString := VarName_.toString }
@@ -34,6 +38,8 @@ instance : Lean.FromJson VarName_ :=
 structure PredName_ extends String
   deriving Inhabited, DecidableEq, Repr
 
+compile_inductive% PredName_
+
 instance : ToString PredName_ :=
   { toString := PredName_.toString }
 
@@ -55,6 +61,8 @@ instance : Lean.FromJson PredName_ :=
 -/
 structure DefName_ extends String
   deriving Inhabited, DecidableEq, Repr
+
+compile_inductive% DefName_
 
 instance : ToString DefName_ :=
   { toString := DefName_.toString }
@@ -221,6 +229,3 @@ def Formula_.no_abbrev :
   | forall_ _ phi => phi.no_abbrev
   | exists_ _ _ => False
   | def_ _ _ => True
-
-
-#lint

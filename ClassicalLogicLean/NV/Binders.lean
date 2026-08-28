@@ -3,7 +3,9 @@ import ClassicalLogicLean.NV.Formula
 import Mathlib.Tactic
 
 
-set_option autoImplicit false
+set_option linter.style.docString false
+set_option linter.style.emptyLine false
+set_option linter.style.longLine false
 
 
 open Formula_
@@ -195,7 +197,9 @@ instance (P : PredName_) (n : ℕ) (F : Formula_) : Decidable (pred_var_occurs_i
     simp only [pred_var_occurs_in]
     infer_instance
 
+
 -------------------------------------------------------------------------------
+
 
 theorem var_occurs_in_iff_mem_var_set
   (v : VarName_)
@@ -207,23 +211,26 @@ theorem var_occurs_in_iff_mem_var_set
     simp only [var_occurs_in]
     simp only [var_set]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    simp
+    simp only [List.mem_toFinset]
   case eq_ x y =>
-    simp
+    simp only [Finset.mem_insert, Finset.mem_singleton]
   case true_ | false_ =>
-    tauto
+    simp only [Finset.notMem_empty]
   case not_ phi phi_ih =>
-    tauto
+    exact phi_ih
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    simp
-    tauto
+    simp only [Finset.mem_union]
+    rewrite [phi_ih]
+    rewrite [psi_ih]
+    apply Iff.refl
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    simp
-    tauto
+    simp only [Finset.union_singleton, Finset.mem_insert]
+    rewrite [phi_ih]
+    apply Iff.refl
 
 
 theorem var_is_bound_in_iff_mem_bound_var_set
@@ -236,23 +243,26 @@ theorem var_is_bound_in_iff_mem_bound_var_set
     simp only [var_is_bound_in]
     simp only [bound_var_set]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    simp
+    simp only [Finset.notMem_empty]
   case eq_ x y =>
-    simp
+    simp only [Finset.notMem_empty]
   case true_ | false_ =>
-    tauto
+    simp only [Finset.notMem_empty]
   case not_ phi phi_ih =>
-    tauto
+    exact phi_ih
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    simp
-    tauto
+    simp only [Finset.mem_union]
+    rewrite [phi_ih]
+    rewrite [psi_ih]
+    apply Iff.refl
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    simp
-    tauto
+    simp only [Finset.union_singleton, Finset.mem_insert]
+    rewrite [phi_ih]
+    apply Iff.refl
 
 
 theorem var_is_free_in_iff_mem_free_var_set
@@ -265,23 +275,32 @@ theorem var_is_free_in_iff_mem_free_var_set
     simp only [var_is_free_in]
     simp only [free_var_set]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    simp
+    simp only [List.mem_toFinset]
   case eq_ x y =>
-    simp
+    simp only [Finset.mem_insert, Finset.mem_singleton]
   case true_ | false_ =>
-    tauto
+    simp only [Finset.notMem_empty]
   case not_ phi phi_ih =>
-    tauto
+    exact phi_ih
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    simp
-    tauto
+    simp only [Finset.mem_union]
+    rewrite [phi_ih]
+    rewrite [psi_ih]
+    apply Iff.refl
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    simp
-    tauto
+    simp only [Finset.mem_sdiff, Finset.mem_singleton]
+    rewrite [phi_ih]
+    constructor
+    · intro a1
+      obtain ⟨a1_left, a1_right⟩ := a1
+      exact ⟨a1_right, a1_left⟩
+    · intro a1
+      obtain ⟨a1_left, a1_right⟩ := a1
+      exact ⟨a1_right, a1_left⟩
 
 
 theorem pred_var_occurs_in_iff_mem_pred_var_set
@@ -294,25 +313,33 @@ theorem pred_var_occurs_in_iff_mem_pred_var_set
   all_goals
     simp only [pred_var_occurs_in]
     simp only [pred_var_set]
-  case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    simp
+  case pred_const_ X xs =>
+    simp only [Finset.notMem_empty]
+  case pred_var_ X xs =>
+    simp only [Finset.mem_singleton, Prod.mk.injEq]
   case eq_ x y =>
-    simp
+    simp only [Finset.notMem_empty]
   case true_ | false_ =>
-    tauto
+    simp only [Finset.notMem_empty]
   case not_ phi phi_ih =>
-    tauto
+    exact phi_ih
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    simp
-    tauto
+    simp only [Finset.mem_union]
+    rewrite [phi_ih]
+    rewrite [psi_ih]
+    apply Iff.refl
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    tauto
+    exact phi_ih
+  case def_ X xs =>
+    simp only [Finset.notMem_empty]
+
 
 -------------------------------------------------------------------------------
+
 
 theorem var_is_bound_in_imp_var_occurs_in
   (v : VarName_)
@@ -323,9 +350,35 @@ theorem var_is_bound_in_imp_var_occurs_in
   induction F
   all_goals
     simp only [var_is_bound_in] at h1
-  all_goals
-    simp only [var_occurs_in]
-    tauto
+  case not_ phi phi_ih =>
+    unfold var_occurs_in
+    apply phi_ih
+    exact h1
+  case
+      imp_ phi psi phi_ih psi_ih
+    | and_ phi psi phi_ih psi_ih
+    | or_ phi psi phi_ih psi_ih
+    | iff_ phi psi phi_ih psi_ih =>
+    unfold var_occurs_in
+    cases h1
+    case inl h1 =>
+      left
+      apply phi_ih
+      exact h1
+    case inr h1 =>
+      right
+      apply psi_ih
+      exact h1
+  case forall_ x phi phi_ih | exists_ x phi phi_ih =>
+    unfold var_occurs_in
+    cases h1
+    case inl h1 =>
+      left
+      exact h1
+    case inr h1 =>
+      right
+      apply phi_ih
+      exact h1
 
 
 theorem var_is_free_in_imp_var_occurs_in
@@ -337,9 +390,35 @@ theorem var_is_free_in_imp_var_occurs_in
   induction F
   all_goals
     simp only [var_is_free_in] at h1
-  all_goals
-    simp only [var_occurs_in]
-    tauto
+  case pred_const_ X xs | pred_var_ X xs | eq_ x y | def_ X xs =>
+    unfold var_occurs_in
+    exact h1
+  case not_ phi phi_ih =>
+    unfold var_occurs_in
+    apply phi_ih
+    exact h1
+  case
+      imp_ phi psi phi_ih psi_ih
+    | and_ phi psi phi_ih psi_ih
+    | or_ phi psi phi_ih psi_ih
+    | iff_ phi psi phi_ih psi_ih =>
+    unfold var_occurs_in
+    cases h1
+    case inl h1 =>
+      left
+      apply phi_ih
+      exact h1
+    case inr h1 =>
+      right
+      apply psi_ih
+      exact h1
+  case forall_ x phi phi_ih | exists_ x phi phi_ih =>
+    obtain ⟨h1_left, h1_right⟩ := h1
+
+    unfold var_occurs_in
+    right
+    apply phi_ih
+    exact h1_right
 
 
 theorem var_occurs_in_imp_var_is_bound_in_or_var_is_free_in
@@ -362,7 +441,8 @@ theorem var_occurs_in_imp_var_is_bound_in_or_var_is_free_in
   case not_ phi phi_ih =>
     simp only [var_is_bound_in]
     simp only [var_is_free_in]
-    tauto
+    apply phi_ih
+    exact h1
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
@@ -370,11 +450,51 @@ theorem var_occurs_in_imp_var_is_bound_in_or_var_is_free_in
     | iff_ phi psi phi_ih psi_ih =>
     simp only [var_is_bound_in]
     simp only [var_is_free_in]
-    tauto
+    cases h1
+    case inl h1 =>
+      specialize phi_ih h1
+      cases phi_ih
+      case inl phi_ih =>
+        left
+        left
+        exact phi_ih
+      case inr phi_ih =>
+        right
+        left
+        exact phi_ih
+    case inr h1 =>
+      specialize psi_ih h1
+      cases psi_ih
+      case inl psi_ih =>
+        left
+        right
+        exact psi_ih
+      case inr psi_ih =>
+        right
+        right
+        exact psi_ih
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
     simp only [var_is_bound_in]
     simp only [var_is_free_in]
-    tauto
+    cases h1
+    case inl h1 =>
+      left
+      left
+      exact h1
+    case inr h1 =>
+      specialize phi_ih h1
+      cases phi_ih
+      case inl phi_ih =>
+        left
+        right
+        exact phi_ih
+      case inr phi_ih =>
+        by_cases c1 : v = x
+        · left
+          left
+          exact c1
+        · right
+          exact ⟨c1, phi_ih⟩
 
 
 theorem var_occurs_in_iff_var_is_bound_in_or_var_is_free_in
@@ -388,26 +508,30 @@ theorem var_occurs_in_iff_var_is_bound_in_or_var_is_free_in
     exact a1
   · intro a1
     cases a1
-    case _ c1 =>
+    case inl a1 =>
       apply var_is_bound_in_imp_var_occurs_in
-      exact c1
-    case _ c1 =>
+      exact a1
+    case inr a1 =>
       apply var_is_free_in_imp_var_occurs_in
-      exact c1
+      exact a1
+
 
 -------------------------------------------------------------------------------
+
 
 theorem mem_var_set_iff_mem_bound_var_set_or_mem_free_var_set
   (v : VarName_)
   (F : Formula_) :
   v ∈ F.var_set ↔ v ∈ F.bound_var_set ∨ v ∈ F.free_var_set :=
   by
-  rw [← var_occurs_in_iff_mem_var_set]
-  rw [← var_is_bound_in_iff_mem_bound_var_set]
-  rw [← var_is_free_in_iff_mem_free_var_set]
+  rewrite [← var_occurs_in_iff_mem_var_set]
+  rewrite [← var_is_bound_in_iff_mem_bound_var_set]
+  rewrite [← var_is_free_in_iff_mem_free_var_set]
   apply var_occurs_in_iff_var_is_bound_in_or_var_is_free_in
 
+
 -------------------------------------------------------------------------------
+
 
 /--
   `var_is_free_in_ind v F` := True if and only if there is a free occurrence of the variable `v` in the formula `F`.
@@ -524,28 +648,28 @@ theorem var_is_free_in_imp_var_is_free_in_ind
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
     cases h1
-    case inl c1 =>
+    case inl h1 =>
       first
         | apply var_is_free_in_ind.imp_left_
         | apply var_is_free_in_ind.and_left_
         | apply var_is_free_in_ind.or_left_
         | apply var_is_free_in_ind.iff_left_
-      exact phi_ih c1
-    case inr c1 =>
+      exact phi_ih h1
+    case inr h1 =>
       first
         | apply var_is_free_in_ind.imp_right_
         | apply var_is_free_in_ind.and_right_
         | apply var_is_free_in_ind.or_right_
         | apply var_is_free_in_ind.iff_right_
-      exact psi_ih c1
+      exact psi_ih h1
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    cases h1
-    case _ h1_left h1_right =>
-      first
-        | apply var_is_free_in_ind.forall_
-        | apply var_is_free_in_ind.exists_
-      · exact h1_left
-      · exact phi_ih h1_right
+    obtain ⟨h1_left, h1_right⟩ := h1
+
+    first
+      | apply var_is_free_in_ind.forall_
+      | apply var_is_free_in_ind.exists_
+    · exact h1_left
+    · exact phi_ih h1_right
 
 
 theorem var_is_free_in_ind_imp_var_is_free_in
@@ -557,7 +681,28 @@ theorem var_is_free_in_ind_imp_var_is_free_in
   induction h1
   all_goals
     simp only [var_is_free_in]
-    tauto
+  case pred_const_ X xs ih | pred_var_ X xs ih | eq_ x y ih | def_ X xs ih =>
+    exact ih
+  case not_ phi ih_1 ih_2 =>
+    exact ih_2
+  case
+      imp_left_ phi psi ih_1 ih_2
+    | and_left_ phi psi ih_1 ih_2
+    | or_left_ phi psi ih_1 ih_2
+    | iff_left_ phi psi ih_1 ih_2 =>
+    left
+    exact ih_2
+  case
+      imp_right_ phi psi ih_1 ih_2
+    | and_right_ phi psi ih_1 ih_2
+    | or_right_ phi psi ih_1 ih_2
+    | iff_right_ phi psi ih_1 ih_2 =>
+    right
+    exact ih_2
+  case
+      forall_ x phi ih_1 ih_2 ih_3
+    | exists_ x phi ih_1 ih_2 ih_3 =>
+    exact ⟨ih_1, ih_3⟩
 
 
 theorem var_is_free_in_iff_var_is_free_in_ind
@@ -568,6 +713,3 @@ theorem var_is_free_in_iff_var_is_free_in_ind
   constructor
   · apply var_is_free_in_imp_var_is_free_in_ind
   · apply var_is_free_in_ind_imp_var_is_free_in
-
-
-#lint

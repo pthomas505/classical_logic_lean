@@ -3,7 +3,9 @@ import ClassicalLogicLean.NV.Formula
 import Mathlib.Tactic
 
 
-set_option autoImplicit false
+set_option linter.style.docString false
+set_option linter.style.emptyLine false
+set_option linter.style.longLine false
 
 
 open Formula_
@@ -139,19 +141,19 @@ example
     | def_.def_ X xs X' xs' =>
     unfold is_repl_of_formula_in_formula_fun at h1
     cases h1
-    case inl c1 =>
+    case inl h1 =>
       apply is_repl_of_formula_in_formula.same_
-      exact c1
-    case inr c1 =>
-      obtain ⟨c1_left, c1_right⟩ := c1
+      exact h1
+    case inr h1 =>
+      obtain ⟨h1_left, h1_right⟩ := h1
       apply is_repl_of_formula_in_formula.diff_
-      · exact c1_left
-      · exact c1_right
+      · exact h1_left
+      · exact h1_right
   case
       true_.true_
     | false_.false_ =>
     apply is_repl_of_formula_in_formula.same_
-    rfl
+    apply Eq.refl
   case not_.not_ phi ih phi' =>
     unfold is_repl_of_formula_in_formula_fun at h1
     cases h1
@@ -229,8 +231,8 @@ example
     · simp_all only [reduceCtorEq]
     · simp_all only
       apply is_repl_of_formula_in_formula.diff_
-      · rfl
-      · rfl
+      · apply Eq.refl
+      · apply Eq.refl
 
 
 example
@@ -246,7 +248,12 @@ example
       cases P_v
       all_goals
         simp only [is_repl_of_formula_in_formula_fun]
-        tauto
+      any_goals
+        left
+        exact h1_ih
+      all_goals
+        left
+        exact True.intro
   case diff_ P_u P_v h1_ih_1 h1_ih_2 =>
     induction P_u generalizing P_v
     all_goals
@@ -325,12 +332,12 @@ lemma is_repl_of_var_in_list_fun_imp_is_repl_of_var_in_list
       simp only [is_repl_of_var_in_list_fun] at h1
       obtain ⟨h1_left, h1_right⟩ := h1
       cases h1_left
-      case _ h1_left =>
+      case inl h1_left =>
         apply is_repl_of_var_in_list.cons_same_
         · exact h1_left
         · apply ih_u
           exact h1_right
-      case _ h1_left =>
+      case inr h1_left =>
         obtain ⟨h1_left_left, h1_left_right⟩ := h1_left
         apply is_repl_of_var_in_list.cons_diff_
         · exact h1_left_left
@@ -348,8 +355,16 @@ lemma is_repl_of_var_in_list_imp_is_repl_of_var_in_list_fun
   induction h1
   all_goals
     simp only [is_repl_of_var_in_list_fun]
-  all_goals
-    tauto
+  case cons_same_ hd_u hd_v tl_u tl_v ih_1 ih_2 ih_3 =>
+    constructor
+    · left
+      exact ih_1
+    · exact ih_3
+  case cons_diff_ hd_u hd_v tl_u tl_v ih_1 ih_2 ih_3 ih_4 =>
+    constructor
+    · right
+      exact ⟨ih_1, ih_2⟩
+    · exact ih_4
 
 
 -------------------------------------------------------------------------------
@@ -489,13 +504,15 @@ example
   case zero =>
     simp_all only [IsEmpty.forall_iff, List.ofFn_zero]
     unfold is_repl_of_var_in_list_fun
-    trivial
+    exact True.intro
   case succ m ih =>
     simp_all only [List.ofFn_succ]
     unfold is_repl_of_var_in_list_fun
     constructor
     · apply h1
-    · exact ih (fun i => args_u i.succ) (fun i => args_v i.succ) fun i => h1 i.succ
+    · apply ih
+      intro i
+      apply h1
 
 
 example
@@ -516,7 +533,7 @@ example
   case eq_ x_u y_u x_v y_v ih_1 ih_2 =>
     unfold is_repl_of_var_in_formula_fun
     simp only [is_repl_of_var_in_list_fun]
-    tauto
+    exact ⟨ih_1, ⟨ih_2, True.intro⟩⟩
   case true_ =>
     simp only [is_repl_of_var_in_formula_fun]
   case false_ =>
@@ -530,12 +547,12 @@ example
     | or_ P_u Q_u P_v Q_v ih_1 ih_2 ih_3 ih_4
     | iff_ P_u Q_u P_v Q_v ih_1 ih_2 ih_3 ih_4 =>
     unfold is_repl_of_var_in_formula_fun
-    tauto
+    exact ⟨ih_3, ih_4⟩
   case
-      forall_ x P_u P_v ih_1 ih_2
-    | exists_ x P_u P_v ih_1 ih_2 =>
+      forall_ x_u x_v P_u P_v ih_1 ih_2 ih_3
+    | exists_ x_u x_v P_u P_v ih_1 ih_2 ih_3 =>
     unfold is_repl_of_var_in_formula_fun
-    tauto
+    exact ⟨ih_1, ih_3⟩
 
 
 example
@@ -562,10 +579,11 @@ example
   case eq_.eq_ x_u y_u x_v y_v =>
     simp only [is_repl_of_var_in_formula_fun] at h1
     simp only [is_repl_of_var_in_list_fun] at h1
+    obtain ⟨h1_left, ⟨h1_right_left, h1_right_right⟩⟩ := h1
 
     apply is_repl_of_var_in_formula.eq_
-    · tauto
-    · tauto
+    · exact h1_left
+    · exact h1_right_left
   case true_.true_ =>
     apply is_repl_of_var_in_formula.true_
   case false_.false_ =>
@@ -574,7 +592,8 @@ example
     simp only [is_repl_of_var_in_formula_fun] at h1
 
     apply is_repl_of_var_in_formula.not_
-    tauto
+    apply ih
+    exact h1
   case
       imp_.imp_ phi_u psi_u ih_1 ih_2 phi_v psi_v
     | and_.and_ phi_u psi_u ih_1 ih_2 phi_v psi_v
@@ -588,8 +607,10 @@ example
       | apply is_repl_of_var_in_formula.and_
       | apply is_repl_of_var_in_formula.or_
       | apply is_repl_of_var_in_formula.iff_
-    · tauto
-    · tauto
+    · apply ih_1
+      exact h1_left
+    · apply ih_2
+      exact h1_right
   case
       forall_.forall_ x_u phi_u ih x_v phi_v
     | exists_.exists_ x_u phi_u ih x_v phi_v =>

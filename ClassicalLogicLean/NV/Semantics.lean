@@ -3,8 +3,9 @@ import MathlibExtraLean.FunctionUpdateFromPairOfListsITE
 import ClassicalLogicLean.NV.Definition
 
 
-set_option autoImplicit false
-
+set_option linter.style.docString false
+set_option linter.style.emptyLine false
+set_option linter.style.longLine false
 
 open Formula_
 
@@ -41,6 +42,7 @@ instance (D : Type) [Inhabited D] : Inhabited (Interpretation_ D) :=
 /--
   The assignment of an element of the domain of discourse to each variable.
 -/
+@[reducible]
 def Valuation_ (D : Type) : Type := VarName_ → D
 
 instance (D : Type) [Inhabited D] : Inhabited (Valuation_ D) :=
@@ -63,22 +65,46 @@ def holds
   | _, false_ => False
   | E, not_ phi => ¬ holds D I V E phi
   | E, imp_ phi psi =>
-    have : sizeOf psi < sizeOf (imp_ phi psi) := by simp
+    have : sizeOf psi < sizeOf (imp_ phi psi) :=
+    by
+      simp only [imp_.sizeOf_spec]
+      apply Nat.lt_add_of_pos_left
+      apply Nat.pos_of_neZero
     holds D I V E phi → holds D I V E psi
   | E, and_ phi psi =>
-    have : sizeOf psi < sizeOf (and_ phi psi) := by simp
+    have : sizeOf psi < sizeOf (and_ phi psi) :=
+    by
+      simp only [and_.sizeOf_spec]
+      apply Nat.lt_add_of_pos_left
+      apply Nat.pos_of_neZero
     holds D I V E phi ∧ holds D I V E psi
   | E, or_ phi psi =>
-    have : sizeOf psi < sizeOf (or_ phi psi) := by simp
+    have : sizeOf psi < sizeOf (or_ phi psi) :=
+    by
+      simp only [or_.sizeOf_spec]
+      apply Nat.lt_add_of_pos_left
+      apply Nat.pos_of_neZero
     holds D I V E phi ∨ holds D I V E psi
   | E, iff_ phi psi =>
-    have : sizeOf psi < sizeOf (iff_ phi psi) := by simp
+    have : sizeOf psi < sizeOf (iff_ phi psi) :=
+    by
+      simp only [iff_.sizeOf_spec]
+      apply Nat.lt_add_of_pos_left
+      apply Nat.pos_of_neZero
     holds D I V E phi ↔ holds D I V E psi
   | E, forall_ x phi =>
-    have : sizeOf phi < sizeOf (forall_ x phi) := by simp
+    have : sizeOf phi < sizeOf (forall_ x phi) :=
+    by
+      simp only [forall_.sizeOf_spec]
+      apply Nat.lt_add_of_pos_left
+      apply Nat.pos_of_neZero
     ∀ (d : D), holds D I (Function.updateITE V x d) E phi
   | E, exists_ (x : VarName_) (phi : Formula_) =>
-    have : sizeOf phi < sizeOf (exists_ x phi) := by simp
+    have : sizeOf phi < sizeOf (exists_ x phi) :=
+    by
+      simp only [exists_.sizeOf_spec]
+      apply Nat.lt_add_of_pos_left
+      apply Nat.pos_of_neZero
     ∃ (d : D), holds D I (Function.updateITE V x d) E phi
   | ([] : Env_), def_ _ _ => False
   | d :: E, def_ name args =>
@@ -118,10 +144,13 @@ theorem holds_coincide_var
       simp only [List.map_eq_map_iff]
       exact h1
     case eq_ x y =>
-      simp at h1
-
-      obtain ⟨h1_left, h1_right⟩ := h1
       congr! 1
+      · apply h1
+        left
+        apply Eq.refl
+      · apply h1
+        right
+        apply Eq.refl
     case not_ phi phi_ih =>
       congr! 1
       apply phi_ih
@@ -143,8 +172,6 @@ theorem holds_coincide_var
         right
         exact a1
     case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-      simp at h1
-
       first
         | apply forall_congr'
         | apply exists_congr
@@ -152,11 +179,17 @@ theorem holds_coincide_var
       apply phi_ih
       intro v a1
       simp only [Function.updateITE]
-      split_ifs <;> tauto
-
+      split
+      case isTrue c1 =>
+        apply Eq.refl
+      case isFalse c1 =>
+        apply h1
+        exact ⟨c1, a1⟩
   case cons.def_ hd tl ih X xs =>
-    split_ifs
-    case pos c1 =>
+    split
+    case isTrue c1 =>
+      obtain ⟨c1_left, c1_right⟩ := c1
+
       apply ih
       intro v a1
       simp only [var_is_free_in_iff_mem_free_var_set v hd.q] at a1
@@ -165,10 +198,14 @@ theorem holds_coincide_var
       · exact h1
       · simp only [← List.mem_toFinset]
         exact Finset.mem_of_subset hd.h1 a1
-      · tauto
-    case neg c1 =>
+      · rewrite [c1_right]
+        apply Eq.refl
+    case isFalse c1 =>
       apply ih
-      tauto
+      intro v a1
+      unfold var_is_free_in at a1
+      apply h1
+      exact a1
 
 
 theorem holds_coincide_pred_var
@@ -191,12 +228,13 @@ theorem holds_coincide_pred_var
 
       simp only [holds]
     case pred_const_ X xs =>
-      rw [h1]
+      rewrite [h1]
+      apply Iff.refl
     case pred_var_ X xs =>
-      simp at h2
       apply h2
-      · rfl
-      · apply List.length_map
+      · constructor
+        · apply Eq.refl
+        · apply List.length_map
     case not_ phi phi_ih =>
       congr! 1
       apply phi_ih
@@ -230,9 +268,9 @@ theorem holds_coincide_pred_var
     case pos c1 =>
       apply ih
       intro P ds a1
-      simp only [pred_var_occurs_in_iff_mem_pred_var_set] at a1
-      simp only [hd.h2] at a1
-      simp at a1
+      rewrite [pred_var_occurs_in_iff_mem_pred_var_set] at a1
+      rewrite [hd.h2] at a1
+      simp only [Finset.notMem_empty] at a1
     case neg c1 =>
       apply ih
       intro P ds a1
@@ -265,6 +303,7 @@ lemma holds_coincide_env
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
     obtain ⟨h2_left, h2_right⟩ := h2
+
     congr! 1
     · apply phi_ih
       exact h2_left
@@ -278,37 +317,38 @@ lemma holds_coincide_env
     apply phi_ih
     exact h2
   case def_ X xs =>
-    simp only [Env_] at *
-
     obtain ⟨E1, h1⟩ := h1
-    subst h1
+    rewrite [h1] at h3
+    rewrite [h1]
 
     simp only [all_def_in_env] at h2
     obtain ⟨d, h2_left, ⟨h2_right_left, h2_right_right⟩⟩ := h2
 
+    clear h1
     induction E1
     case nil =>
-      simp
+      simp only [List.nil_append]
     case cons E1_hd E1_tl E1_ih =>
       simp only [Env_.nodup_] at h3
       simp only [List.cons_append, List.pairwise_cons, List.mem_append] at h3
       obtain ⟨h3_left, h3_right⟩ := h3
 
-      simp
+      simp only [List.cons_append]
       simp only [holds]
-      split_ifs
-      case _ c1 =>
+      split
+      case isTrue c1 =>
         obtain ⟨c1_left, c1_right⟩ := c1
         exfalso
         apply h3_left d
         · right
           exact h2_left
-        · rw [← c1_left]
+        · rewrite [← c1_left]
           exact h2_right_left
         · trans xs.length
-          · rw [c1_right]
+          · rewrite [c1_right]
+            apply Eq.refl
           · exact h2_right_right
-      case _ c1 =>
+      case isFalse c1 =>
         apply E1_ih
         exact h3_right
 
