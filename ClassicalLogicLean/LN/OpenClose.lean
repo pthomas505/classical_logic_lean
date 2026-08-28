@@ -764,14 +764,16 @@ lemma OpenFormulaFreeVarSet
   case pred_ X vs =>
     simp only [openFormulaAux]
     simp only [Formula.freeVarSet]
-    simp
+    simp only [Finset.biUnion_subset_iff_forall_subset, List.mem_toFinset, List.mem_map]
     intro v a1
-    trans (Var.freeVarSet v ∪ {free_ y})
-    · exact OpenVarFreeVarSet v k y
+    obtain ⟨u, ⟨a1_left, a1_right⟩⟩ := a1
+    rewrite [← a1_right]
+    trans (Var.freeVarSet u ∪ {free_ y})
+    · apply OpenVarFreeVarSet
     · apply Finset.union_subset_union_left
       apply Finset.subset_biUnion_of_mem
-      simp
-      exact a1
+      simp only [List.mem_toFinset]
+      exact a1_left
   case not_ phi phi_ih =>
     simp only [openFormulaAux]
     simp only [Formula.freeVarSet]
@@ -781,7 +783,18 @@ lemma OpenFormulaFreeVarSet
     specialize psi_ih k
     simp only [openFormulaAux]
     simp only [Formula.freeVarSet]
-    sorry
+    simp only [Finset.union_subset_iff]
+    constructor
+    · trans (phi.freeVarSet ∪ {free_ y})
+      · exact phi_ih
+      · apply Finset.union_subset_union
+        · exact Finset.subset_union_left
+        · apply Set.Subset.refl
+    · trans (psi.freeVarSet ∪ {free_ y})
+      · exact psi_ih
+      · apply Finset.union_subset_union
+        · exact Finset.subset_union_right
+        · apply Set.Subset.refl
   case forall_ phi phi_ih =>
     simp only [openFormulaAux]
     simp only [Formula.freeVarSet]
