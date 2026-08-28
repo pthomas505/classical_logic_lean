@@ -119,7 +119,9 @@ def openFormulaList
   Formula :=
   openFormulaListAux 0 zs F
 
+
 --------------------------------------------------
+
 
 /-
 def Var.instantiate1 (k : Nat) (v : Var) : Var → Var
@@ -164,7 +166,9 @@ def Formula.instantiate
   | imp_ phi psi => imp_ (Formula.instantiate k zs phi) (Formula.instantiate k zs psi)
   | forall_ x phi => forall_ x (Formula.instantiate (k + 1) zs phi)
 
+
 --------------------------------------------------
+
 
 def Var.abstract1
   (v : Var)
@@ -179,7 +183,9 @@ def Var.abstract1
       then bound_ i
       else bound_ (i + 1)
 
+
 --------------------------------------------------
+
 
 /--
   Helper function for closeFormulaAux.
@@ -220,7 +226,9 @@ def closeFormula
   Formula :=
   closeFormulaAux v 0 F
 
+
 --------------------------------------------------
+
 
 /--
   Helper function for Formula.lc_at.
@@ -300,7 +308,9 @@ inductive Formula.lc : Formula → Prop
     lc (Formula.instantiate 0 [Var.free_ z] phi) →
     lc (forall_ x phi)
 
+
 --------------------------------------------------
+
 
 def shift_list
   (D : Type)
@@ -328,7 +338,9 @@ def Interpretation.usingPred
     pred_ := pred_ }
 -/
 
+
 --------------------------------------------------
+
 
 lemma CloseVarOpenVarComp
   (v : Var)
@@ -339,23 +351,31 @@ lemma CloseVarOpenVarComp
   by
   cases v
   case free_ x =>
-    simp at h1
+    simp only [free_.injEq] at h1
 
-    simp
+    simp only [Function.comp_apply]
     simp only [openVar]
     simp only [closeVar]
-    simp
-    simp only [h1]
-    simp
+    split
+    case isTrue c1 =>
+      simp only [free_.injEq] at c1
+      contradiction
+    case isFalse c2 =>
+      apply Eq.refl
   case bound_ i =>
-    simp
+    simp only [Function.comp_apply]
     simp only [openVar]
-    split_ifs
-    case _ c1 =>
+    split
+    case isTrue c1 =>
+      rewrite [c1]
+
       simp only [closeVar]
-      simp
-      simp only [c1]
-    case _ c1 =>
+      split
+      case isTrue c2 =>
+        apply Eq.refl
+      case isFalse c2 =>
+        contradiction
+    case isFalse c1 =>
       simp only [closeVar]
 
 
@@ -368,27 +388,31 @@ lemma OpenVarCloseVarComp
   by
   cases v
   case free_ x =>
-    simp
+    simp only [Function.comp_apply]
     simp only [closeVar]
-    split_ifs
-    case pos c1 =>
-      simp only [c1]
+    split
+    case isTrue c1 =>
+      rewrite [c1]
       simp only [openVar]
-      simp
-    case neg c1 =>
+      split
+      case isTrue c2 =>
+        apply Eq.refl
+      case isFalse c2 =>
+        contradiction
+    case isFalse c1 =>
       simp only [openVar]
   case bound_ i =>
     simp only [Var.lc_at] at h1
 
-    simp
+    simp only [Function.comp_apply]
     simp only [closeVar]
     simp only [openVar]
-    split_ifs
-    case pos c1 =>
-      subst c1
-      simp at h1
-    case neg c1 =>
-      rfl
+    split
+    case isTrue c1 =>
+      rewrite [c1] at h1
+      simp only [lt_self_iff_false] at h1
+    case isFalse c1 =>
+      apply Eq.refl
 
 
 lemma CloseFormulaOpenFormulaComp
@@ -402,49 +426,54 @@ lemma CloseFormulaOpenFormulaComp
   case pred_ X vs =>
     simp only [occursIn] at h1
 
-    simp
+    simp only [Function.comp_apply]
     simp only [openFormulaAux]
     simp only [closeFormulaAux]
-    simp
+    simp only [List.map_map]
+    congr
     simp only [List.map_eq_self_iff_fun_is_id_on_mem]
     intro v a1
     apply CloseVarOpenVarComp
     intro contra
-    simp only [← contra] at a1
+    rewrite [← contra] at a1
     contradiction
   case not_ phi phi_ih =>
     simp only [occursIn] at h1
 
-    simp at phi_ih
+    simp only [Function.comp_apply] at phi_ih
 
-    simp
-    simp only [openFormulaAux]
-    simp only [closeFormulaAux]
-    simp only [phi_ih k h1]
-  case imp_ phi psi phi_ih psi_ih =>
-    simp only [occursIn] at h1
-    push_neg at h1
-
-    simp at phi_ih
-
-    simp
-    simp only [openFormulaAux]
-    simp only [closeFormulaAux]
-    cases h1
-    case _ h1_left h1_right =>
-      congr
-      · exact phi_ih k h1_left
-      · exact psi_ih k h1_right
-  case forall_ phi phi_ih =>
-    simp only [occursIn] at h1
-
-    simp at phi_ih
-
-    simp
+    simp only [Function.comp_apply]
     simp only [openFormulaAux]
     simp only [closeFormulaAux]
     congr
-    exact phi_ih (k + 1) h1
+    apply phi_ih
+    exact h1
+  case imp_ phi psi phi_ih psi_ih =>
+    simp only [occursIn] at h1
+    simp only [not_or] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
+
+    simp only [Function.comp_apply] at phi_ih
+
+    simp only [Function.comp_apply]
+    simp only [openFormulaAux]
+    simp only [closeFormulaAux]
+    congr
+    · apply phi_ih
+      exact h1_left
+    · apply psi_ih
+      exact h1_right
+  case forall_ _ phi phi_ih =>
+    simp only [occursIn] at h1
+
+    simp only [Function.comp_apply] at phi_ih
+
+    simp only [Function.comp_apply]
+    simp only [openFormulaAux]
+    simp only [closeFormulaAux]
+    congr
+    apply phi_ih
+    exact h1
 
 
 lemma OpenFormulaCloseFormulaComp
@@ -458,46 +487,56 @@ lemma OpenFormulaCloseFormulaComp
   case pred_ X vs =>
     simp only [Formula.lc_at] at h1
 
-    simp
+    simp only [Function.comp_apply]
     simp only [closeFormulaAux]
     simp only [openFormulaAux]
-    simp
+    simp only [List.map_map]
+    congr
     simp only [List.map_eq_self_iff_fun_is_id_on_mem]
     intro v a1
     apply OpenVarCloseVarComp
-    exact h1 v a1
+    apply h1
+    exact a1
   case not_ phi phi_ih =>
     simp only [Formula.lc_at] at h1
 
-    simp at phi_ih
+    simp only [Function.comp_apply] at phi_ih
 
-    simp
-    simp only [closeFormulaAux]
-    simp only [openFormulaAux]
-    simp only [phi_ih k h1]
-  case imp_ phi psi phi_ih psi_ih =>
-    simp only [Formula.lc_at] at h1
-
-    simp at phi_ih
-
-    simp
-    simp only [closeFormulaAux]
-    simp only [openFormulaAux]
-    cases h1
-    case _ h1_left h1_right =>
-      congr
-      · exact phi_ih k h1_left
-      · exact psi_ih k h1_right
-  case forall_ phi phi_ih =>
-    simp at phi_ih
-
-    simp
+    simp only [Function.comp_apply]
     simp only [closeFormulaAux]
     simp only [openFormulaAux]
     congr
-    exact phi_ih (k + 1) h1
+    apply phi_ih
+    exact h1
+  case imp_ phi psi phi_ih psi_ih =>
+    simp only [Formula.lc_at] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
+
+    simp only [Function.comp_apply] at phi_ih
+
+    simp only [Function.comp_apply]
+    simp only [closeFormulaAux]
+    simp only [openFormulaAux]
+    congr
+    · apply phi_ih
+      exact h1_left
+    · apply psi_ih
+      exact h1_right
+  case forall_ _ phi phi_ih =>
+    simp only [Formula.lc_at] at h1
+
+    simp only [Function.comp_apply] at phi_ih
+
+    simp only [Function.comp_apply]
+    simp only [closeFormulaAux]
+    simp only [openFormulaAux]
+    congr
+    apply phi_ih
+    exact h1
+
 
 --------------------------------------------------
+
 
 lemma OpenVarLeftInvOn
   (k : ℕ)
@@ -505,9 +544,10 @@ lemma OpenVarLeftInvOn
   Set.LeftInvOn (closeVar (free_ y) k) (openVar k (free_ y)) {v : Var | ¬ (free_ y) = v} :=
   by
   simp only [Set.LeftInvOn]
-  simp
+  simp only [Set.mem_setOf_eq]
   intro v a1
-  apply CloseVarOpenVarComp v y k a1
+  apply CloseVarOpenVarComp
+  exact a1
 
 
 lemma CloseVarLeftInvOn
@@ -516,9 +556,10 @@ lemma CloseVarLeftInvOn
   Set.LeftInvOn (openVar k (free_ y)) (closeVar (free_ y) k) {v : Var | Var.lc_at k v} :=
   by
   simp only [Set.LeftInvOn]
-  simp
+  simp only [Set.mem_setOf_eq]
   intro v a1
-  exact OpenVarCloseVarComp v k y a1
+  apply OpenVarCloseVarComp
+  exact a1
 
 
 lemma OpenVarInjOn
@@ -527,7 +568,7 @@ lemma OpenVarInjOn
   Set.InjOn (openVar k (free_ y)) {v : Var | ¬ (free_ y) = v} :=
   by
   apply Set.LeftInvOn.injOn
-  exact OpenVarLeftInvOn k y
+  apply OpenVarLeftInvOn
 
 
 lemma CloseVarInjOn
@@ -536,7 +577,7 @@ lemma CloseVarInjOn
   Set.InjOn (closeVar (free_ y) k) {v : Var | Var.lc_at k v} :=
   by
   apply Set.LeftInvOn.injOn
-  apply CloseVarLeftInvOn y k
+  apply CloseVarLeftInvOn
 
 
 lemma OpenFormulaLeftInvOn
@@ -545,7 +586,7 @@ lemma OpenFormulaLeftInvOn
   Set.LeftInvOn (closeFormulaAux (free_ y) k) (openFormulaAux k (free_ y)) {F : Formula | ¬ occursIn (free_ y) F} :=
   by
   simp only [Set.LeftInvOn]
-  simp
+  simp only [Set.mem_setOf_eq]
   intro F a1
   apply CloseFormulaOpenFormulaComp
   exact a1
@@ -557,7 +598,7 @@ lemma CloseFormulaLeftInvOn
   Set.LeftInvOn (openFormulaAux k (free_ y)) (closeFormulaAux (free_ y) k) {F : Formula | Formula.lc_at k F} :=
   by
   simp only [Set.LeftInvOn]
-  simp
+  simp only [Set.mem_setOf_eq]
   intro F a1
   apply OpenFormulaCloseFormulaComp
   exact a1
@@ -569,7 +610,7 @@ lemma OpenFormulaInjOn
   Set.InjOn (openFormulaAux k (free_ y)) {F : Formula | ¬ occursIn (free_ y) F} :=
   by
   apply Set.LeftInvOn.injOn
-  exact OpenFormulaLeftInvOn k y
+  apply OpenFormulaLeftInvOn
 
 
 lemma CloseFormulaInjOn
@@ -578,7 +619,7 @@ lemma CloseFormulaInjOn
   Set.InjOn (closeFormulaAux (free_ y) k) {F : Formula | Formula.lc_at k F} :=
   by
   apply Set.LeftInvOn.injOn
-  exact CloseFormulaLeftInvOn y k
+  apply CloseFormulaLeftInvOn
 
 
 example
@@ -591,13 +632,15 @@ example
   F = G :=
   by
   apply OpenFormulaInjOn
-  · simp
+  · simp only [Set.mem_setOf_eq]
     exact h1
-  · simp
+  · simp only [Set.mem_setOf_eq]
     exact h2
   · exact h3
 
+
 --------------------------------------------------
+
 
 lemma OpenVarFreeStringSet
   (v : Var)
@@ -609,16 +652,20 @@ lemma OpenVarFreeStringSet
   case free_ x =>
     simp only [openVar]
     simp only [Var.freeStringSet]
-    simp
+    simp only [Finset.singleton_union, Finset.singleton_subset_iff, Finset.mem_insert, Finset.mem_singleton]
+    left
+    exact True.intro
   case bound_ i =>
     simp only [openVar]
     split
-    case _ c1 =>
+    case isTrue c1 =>
       simp only [Var.freeStringSet]
-      simp
-    case _ c1 =>
+      simp only [Finset.empty_union, subset_refl]
+    case isFalse c1 =>
       simp only [Var.freeStringSet]
-      simp
+      simp only [Finset.empty_union, Finset.subset_singleton_iff, Finset.empty_ne_singleton]
+      left
+      exact True.intro
 
 
 lemma CloseVarFreeStringSet
@@ -631,20 +678,27 @@ lemma CloseVarFreeStringSet
   case free_ x =>
     simp only [closeVar]
     split
-    case _ c1 =>
+    case isTrue c1 =>
       simp only [Var.freeStringSet]
-      simp
-    case _ c1 =>
-      simp at c1
+      simp only [Finset.empty_subset]
+    case isFalse c1 =>
+      simp only [free_.injEq] at c1
       simp only [Var.freeStringSet]
-      simp
-      exact ne_comm.mp c1
+      simp only [Finset.singleton_subset_iff, Finset.mem_sdiff, Finset.mem_singleton]
+      constructor
+      · exact True.intro
+      · intro contra
+        apply c1
+        rewrite [contra]
+        apply Eq.refl
   case bound_ i =>
     simp only [closeVar]
     simp only [Var.freeStringSet]
-    simp
+    simp only [Finset.empty_sdiff, subset_refl]
+
 
 --------------------------------------------------
+
 
 lemma OpenVarFreeVarSet
   (v : Var)
@@ -656,16 +710,20 @@ lemma OpenVarFreeVarSet
   case free_ x =>
     simp only [openVar]
     simp only [Var.freeVarSet]
-    simp
+    simp only [Finset.singleton_union, Finset.singleton_subset_iff, Finset.mem_insert, Finset.mem_singleton]
+    left
+    exact True.intro
   case bound_ i =>
     simp only [openVar]
     split
+    case isTrue c1 =>
+      simp only [Var.freeVarSet]
+      simp only [Finset.empty_union, subset_refl]
     case _ c1 =>
       simp only [Var.freeVarSet]
-      simp
-    case _ c1 =>
-      simp only [Var.freeVarSet]
-      simp
+      simp only [Finset.empty_union, Finset.subset_singleton_iff, Finset.empty_ne_singleton]
+      left
+      exact True.intro
 
 
 lemma CloseVarFreeVarSet
@@ -678,18 +736,22 @@ lemma CloseVarFreeVarSet
   case free_ x =>
     simp only [closeVar]
     split
-    case _ c1 =>
+    case isTrue c1 =>
       simp only [Var.freeVarSet]
-      simp
-    case _ c1 =>
+      simp only [Finset.empty_subset]
+    case isFalse c1 =>
       simp only [Var.freeVarSet]
-      simp
-      simp at c1
-      exact ne_comm.mp c1
+      simp only [Finset.singleton_subset_iff, Finset.mem_sdiff, Finset.mem_singleton]
+      constructor
+      · exact True.intro
+      · intro contra
+        apply c1
+        rewrite [contra]
+        apply Eq.refl
   case bound_ i =>
     simp only [closeVar]
     simp only [Var.freeVarSet]
-    simp
+    simp only [Finset.empty_sdiff, subset_refl]
 
 
 lemma OpenFormulaFreeVarSet
