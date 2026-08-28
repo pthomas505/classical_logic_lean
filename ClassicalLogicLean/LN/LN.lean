@@ -1,5 +1,5 @@
-import Batteries.Data.HashMap.Basic
-import Batteries.Data.HashMap.WF
+import Std.Data.HashMap.Basic
+import Std.Data.HashMap.AdditionalOperations
 import Mathlib.Data.Option.Basic
 import Mathlib.Util.CompileInductive
 
@@ -37,8 +37,10 @@ namespace LN
 
 inductive Term
 | F : String → Term
-| B : ℕ → Term
+| B : Nat → Term
   deriving Inhabited, DecidableEq
+
+compile_inductive% Term
 
 open Term
 
@@ -70,9 +72,9 @@ instance : Repr Formula :=
 end LN
 
 
-def NVToLNAux (env : Batteries.HashMap String ℕ) : NV.Formula → LN.Formula
+def NVToLNAux (env : Std.HashMap String Nat) : NV.Formula → LN.Formula
 | NV.Formula.Var x =>
-    let opt := env.find? x
+    let opt := env.get? x
     if h : Option.isSome opt
     then
       let i := Option.get opt h
@@ -81,10 +83,10 @@ def NVToLNAux (env : Batteries.HashMap String ℕ) : NV.Formula → LN.Formula
 | NV.Formula.App phi psi =>
     LN.Formula.App (NVToLNAux env phi) (NVToLNAux env psi)
 | NV.Formula.Abs x phi =>
-    let env' := (Batteries.HashMap.mapVal (fun _ val => val + 1) env).insert x 0
+    let env' := (Std.HashMap.map (fun _ val => val + 1) env).insert x 0
     LN.Formula.Abs (NVToLNAux env' phi)
 
 def NVToLN (F : NV.Formula) : LN.Formula :=
-  NVToLNAux Batteries.HashMap.empty F
+  NVToLNAux {} F
 
 #eval NVToLN (NV.Formula.Abs "x" (NV.Formula.Abs "x" (NV.Formula.Var "x")))

@@ -1,6 +1,8 @@
 import Mathlib.Tactic
 
-set_option autoImplicit false
+set_option linter.style.docString false
+set_option linter.style.emptyLine false
+set_option linter.style.longLine false
 
 
 namespace NV
@@ -34,7 +36,9 @@ instance : ToString Formula :=
 
 end NV
 
+
 --------------------------------------------------
+
 
 namespace LN
 
@@ -91,6 +95,9 @@ def Formula.toString : Formula → String
 
 instance : ToString Formula :=
   { toString := fun F => F.toString }
+
+
+end LN
 
 
 #lint
