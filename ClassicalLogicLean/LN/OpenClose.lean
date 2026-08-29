@@ -1039,7 +1039,7 @@ lemma Holds_openFormulaListAux
   case pred_ X vs =>
     simp only [openFormulaListAux]
     simp only [Holds]
-    simp
+    simp only [List.map_map]
   case not_ phi phi_ih =>
     simp only [openFormulaListAux]
     simp only [Holds]
@@ -1056,11 +1056,13 @@ lemma Holds_openFormulaListAux
     simp only [Holds]
     apply forall_congr'
     intro d
-    simp only [← phi_ih]
+    rewrite [← phi_ih]
     congr! 1
     apply shift_openVarList
 
+
 --------------------------------------------------
+
 
 lemma Formula.lc_at_instantiate_id
   (F : Formula)
@@ -1074,44 +1076,55 @@ lemma Formula.lc_at_instantiate_id
     simp only [Formula.lc_at] at h1
 
     simp only [Formula.instantiate]
-    simp
+    congr
     apply List.fun_is_id_on_mem_imp_map_eq_self
     intro v a1
     specialize h1 v a1
     cases v
-    case _ x =>
+    case free_ x =>
       simp only [Var.instantiate]
-    case _ i =>
+    case bound_ i =>
       cases i
       case zero =>
         simp only [Var.lc_at] at h1
         simp only [Var.instantiate]
-        simp only [if_pos h1]
+        split
+        case isTrue c1 =>
+          apply Eq.refl
+        case isFalse c1 =>
+          contradiction
       case succ i =>
         simp only [Var.lc_at] at h1
         simp only [Var.instantiate]
-        simp only [if_pos h1]
+        split
+        case isTrue c1 =>
+          apply Eq.refl
+        case isFalse c1 =>
+          contradiction
   case not_ phi phi_ih =>
     simp only [Formula.lc_at] at h1
 
     simp only [Formula.instantiate]
     congr!
-    exact phi_ih k h1
+    apply phi_ih
+    exact h1
   case imp_ phi psi phi_ih psi_ih =>
     simp only [Formula.lc_at] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
 
     simp only [Formula.instantiate]
-    cases h1
-    case _ h1_left h1_right =>
-      congr!
-      · exact phi_ih k h1_left
-      · exact psi_ih k h1_right
+    congr
+    · apply phi_ih
+      exact h1_left
+    · apply psi_ih
+      exact h1_right
   case forall_ x phi phi_ih =>
     simp only [Formula.lc_at] at h1
 
     simp only [Formula.instantiate]
-    simp
-    exact phi_ih (k + 1) h1
+    congr
+    apply phi_ih
+    exact h1
 
 
 lemma lc_at_instantiate
