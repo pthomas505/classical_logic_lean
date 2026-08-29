@@ -1165,7 +1165,9 @@ lemma lc_at_instantiate
             simp only [add_lt_iff_neg_right, not_lt_zero] at a1
             exfalso
             apply a1
-            exact ⟨a2, True.intro⟩
+            constructor
+            · exact a2
+            · exact True.intro
     · intro a1 v a2
       cases v
       case free_ x =>
