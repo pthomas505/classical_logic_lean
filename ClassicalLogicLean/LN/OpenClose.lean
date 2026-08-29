@@ -1170,15 +1170,15 @@ lemma lc_at_instantiate
       case bound_ i =>
         simp only [Var.lc_at]
         simp only [List.mem_map] at a2
-        obtain ⟨z, ⟨a2_left, a2_right⟩⟩ := a2
+        obtain ⟨v, ⟨a2_left, a2_right⟩⟩ := a2
 
-        specialize a1 z a2_left
-        cases z
+        specialize a1 v a2_left
+
+        cases v
         case free_ x =>
           simp only [Var.instantiate] at a2_right
           contradiction
         case bound_ j =>
-          simp only [Var.lc_at] at a1
           simp only [Var.instantiate] at a2_right
           split at a2_right
           case isTrue c1 =>
@@ -1186,7 +1186,6 @@ lemma lc_at_instantiate
             rewrite [← a2_right]
             exact c1
           case isFalse c1 =>
-            simp only [not_lt] at c1
             simp only [List.length_map, List.getElem_map] at a2_right
             split at a2_right
             case isTrue c2 =>
@@ -1194,7 +1193,11 @@ lemma lc_at_instantiate
             case isFalse c2 =>
               exfalso
               apply c2
-              exact Nat.sub_lt_left_of_lt_add c1 a1
+              apply Nat.sub_lt_left_of_lt_add
+              · simp only [not_lt] at c1
+                exact c1
+              · simp only [Var.lc_at] at a1
+                exact a1
   case not_ phi phi_ih =>
     simp only [Formula.instantiate]
     simp only [Formula.lc_at]
@@ -1208,12 +1211,9 @@ lemma lc_at_instantiate
   case forall_ _ phi phi_ih =>
     simp only [Formula.instantiate]
     simp only [Formula.lc_at]
-    simp only [phi_ih]
-    have s1 : k + 1 + List.length zs = k + List.length zs + 1 :=
-    by
-      linarith
-    rewrite [s1]
-    apply Iff.refl
+    rewrite [phi_ih]
+    congr! 1
+    apply Nat.add_right_comm
 
 
 lemma Var.instantiate_append
