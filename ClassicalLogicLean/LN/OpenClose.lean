@@ -1140,9 +1140,8 @@ lemma lc_at_instantiate
     constructor
     · intro a1 v a2
       specialize a1 (Var.instantiate k (List.map free_ zs) v)
-      simp only [List.mem_map, forall_exists_index, and_imp] at a1
-      specialize a1 v a2
-      simp only [forall_const] at a1
+      simp only [List.mem_map, forall_exists_index] at a1
+      specialize a1 v
 
       cases v
       case free_ x =>
@@ -1162,7 +1161,11 @@ lemma lc_at_instantiate
             exact c2
           case isFalse c2 =>
             simp only [Var.lc_at] at a1
-            simp only [List.length_map, add_lt_iff_neg_right, not_lt_zero] at a1
+            simp only [List.length_map] at a1
+            simp only [add_lt_iff_neg_right, not_lt_zero] at a1
+            exfalso
+            apply a1
+            exact ⟨a2, True.intro⟩
     · intro a1 v a2
       cases v
       case free_ x =>
