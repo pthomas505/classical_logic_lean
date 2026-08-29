@@ -1140,61 +1140,61 @@ lemma lc_at_instantiate
     constructor
     · intro a1 v a2
       specialize a1 (Var.instantiate k (List.map free_ zs) v)
-      simp at a1
+      simp only [List.mem_map, forall_exists_index, and_imp] at a1
       specialize a1 v a2
-      simp at a1
+      simp only [forall_const] at a1
+
       cases v
-      case _ x =>
+      case free_ x =>
         simp only [Var.lc_at]
-      case _ i =>
+      case bound_ i =>
         simp only [Var.lc_at]
         simp only [Var.instantiate] at a1
         split at a1
-        case _ c1 =>
-          linarith
-        case _ c1 =>
+        case isTrue c1 =>
+          apply Nat.lt_add_right
+          exact c1
+        case isFalse c1 =>
           split at a1
-          case _ c2 =>
-            simp at c2
-            exact lt_add_of_tsub_lt_left c2
-          case _ c2 =>
+          case isTrue c2 =>
+            simp only [List.length_map] at c2
+            apply lt_add_of_tsub_lt_left
+            exact c2
+          case isFalse c2 =>
             simp only [Var.lc_at] at a1
-            simp at a1
+            simp only [List.length_map, add_lt_iff_neg_right, not_lt_zero] at a1
     · intro a1 v a2
       cases v
-      case _ x =>
+      case free_ x =>
         simp only [Var.lc_at]
-      case _ i =>
+      case bound_ i =>
         simp only [Var.lc_at]
-        simp at a2
-        apply Exists.elim a2
-        intro z a3
-        clear a2
-        cases a3
-        case _ a3_left a3_right =>
-          specialize a1 z a3_left
-          cases z
-          case _ x =>
-            simp only [Var.instantiate] at a3_right
-            simp at a3_right
-          case _ j =>
-            simp only [Var.lc_at] at a1
-            simp only [Var.instantiate] at a3_right
-            split at a3_right
-            case _ c1 =>
-              simp at a3_right
-              subst a3_right
-              exact c1
-            case _ c1 =>
-              simp at c1
-              simp at a3_right
-              split at a3_right
-              case _ c2 =>
-                contradiction
-              case _ c2 =>
-                exfalso
-                apply c2
-                exact Nat.sub_lt_left_of_lt_add c1 a1
+        simp only [List.mem_map] at a2
+        obtain ⟨z, ⟨a2_left, a2_right⟩⟩ := a2
+
+        specialize a1 z a2_left
+        cases z
+        case free_ x =>
+          simp only [Var.instantiate] at a2_right
+          contradiction
+        case bound_ j =>
+          simp only [Var.lc_at] at a1
+          simp only [Var.instantiate] at a2_right
+          split at a2_right
+          case isTrue c1 =>
+            simp only [bound_.injEq] at a2_right
+            rewrite [← a2_right]
+            exact c1
+          case isFalse c1 =>
+            simp only [not_lt] at c1
+            simp only [List.length_map, List.getElem_map] at a2_right
+            split at a2_right
+            case isTrue c2 =>
+              contradiction
+            case isFalse c2 =>
+              exfalso
+              apply c2
+              exact Nat.sub_lt_left_of_lt_add c1 a1
   case not_ phi phi_ih =>
     simp only [Formula.instantiate]
     simp only [Formula.lc_at]
