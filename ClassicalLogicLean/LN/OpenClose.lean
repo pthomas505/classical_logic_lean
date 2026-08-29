@@ -1173,11 +1173,12 @@ lemma lc_at_instantiate
       case free_ x =>
         simp only [Var.lc_at]
       case bound_ i =>
-        simp only [Var.lc_at]
         simp only [List.mem_map] at a2
         obtain ⟨v, ⟨a2_left, a2_right⟩⟩ := a2
 
         specialize a1 v a2_left
+
+        simp only [Var.lc_at]
 
         cases v
         case free_ x =>
