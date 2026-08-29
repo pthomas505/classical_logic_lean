@@ -921,7 +921,7 @@ lemma Holds_openFormulaAux
   case pred_ X vs =>
     simp only [openFormulaAux]
     simp only [Holds]
-    simp
+    simp only [List.map_map]
   case not_ phi phi_ih =>
     simp only [openFormulaAux]
     simp only [Holds]
@@ -938,11 +938,13 @@ lemma Holds_openFormulaAux
     simp only [Holds]
     apply forall_congr'
     intro d
-    simp only [<- phi_ih]
+    rewrite [<- phi_ih]
     congr! 1
     apply shift_openVar
 
+
 --------------------------------------------------
+
 
 lemma shift_openVarList
   (D : Type)
@@ -953,57 +955,74 @@ lemma shift_openVarList
   shift D (V ∘ openVarList k (zs.map Var.free_)) d = shift D V d ∘ openVarList (k + 1) (zs.map Var.free_) :=
   by
   funext v
-  simp
+  simp only [Function.comp_apply]
   cases v
-  case _ a =>
+  case free_ a =>
     simp only [openVarList]
     simp only [shift]
-    simp
-    rfl
-  case _ n =>
+    simp only [Function.comp_apply]
     simp only [openVarList]
-    simp only [shift]
-    simp
-    cases n
-    case zero =>
-      simp
-    case succ n =>
-      simp
-      split_ifs
-      case _ c1 =>
-        have s1 : n + 1 < k + 1
-        exact Nat.add_lt_add_right c1 1
-        simp only [if_pos s1]
+  case bound_ n =>
+    simp only [openVarList]
+    split
+    case isTrue c1 =>
+      cases n
+      case zero =>
+        simp only [shift]
+      case succ n =>
+        simp only [shift]
+        simp only [Function.comp_apply]
         simp only [openVarList]
-        simp only [c1]
-        simp
-
-      case _ c1 c2 =>
-        have s1 : ¬ n + 1 < k + 1
-        intro contra
+        split
+        case isTrue c2 =>
+          apply Eq.refl
+        case isFalse c2 =>
+          simp only [Order.lt_add_one_iff, Order.add_one_le_iff] at c1
+          contradiction
+    case isFalse c1 =>
+      cases n
+      case zero =>
+        exfalso
         apply c1
-        exact Nat.succ_lt_succ_iff.mp contra
+        apply Nat.zero_lt_succ
+      case succ n =>
+        simp only [Order.lt_add_one_iff, Order.add_one_le_iff] at c1
 
-        simp
-        simp only [openVarList]
-        simp only [c1]
-        simp
-        simp only [c2]
-        simp
+        have s1 : n + 1 - (k + 1) = n - k :=
+        by
+          apply Nat.add_sub_add_right
+        rewrite [s1]
 
-      case _ c1 c2 =>
-        have s2 : zs.length ≤ n
-        simp at c2
-        trans (n - k)
-        · exact c2
-        · exact Nat.sub_le n k
+        split
+        case isTrue c2 =>
+          simp only [List.getElem_map]
+          simp only [shift]
+          simp only [Function.comp_apply]
+          simp only [openVarList]
+          split
+          case isTrue c3 =>
+            contradiction
+          case isFalse c3 =>
+            simp only [List.getElem_map]
+        case isFalse c2 =>
+          have s2 : (n + 1) - zs.length = (n - zs.length) + 1 :=
+          by
+            apply Nat.succ_sub
+            trans (n - k)
+            · simp only [List.length_map, not_lt] at c2
+              exact c2
+            · apply Nat.sub_le
 
-        simp only [Nat.succ_sub s2]
-        simp only [openVarList]
-        simp only [c1]
-        simp
-        simp only [c2]
-        simp
+          simp only [List.length_map]
+          rewrite [s2]
+          simp only [shift]
+          simp only [Function.comp_apply]
+          simp only [openVarList]
+          split
+          case isTrue c3 =>
+            contradiction
+          case isFalse c3 =>
+            simp only [List.length_map]
 
 
 lemma Holds_openFormulaListAux
