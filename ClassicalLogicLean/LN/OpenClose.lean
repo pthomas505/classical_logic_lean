@@ -1209,9 +1209,11 @@ lemma lc_at_instantiate
     simp only [Formula.instantiate]
     simp only [Formula.lc_at]
     simp only [phi_ih]
-    have s1 : k + 1 + List.length zs = k + List.length zs + 1
-    linarith;
-    simp only [s1]
+    have s1 : k + 1 + List.length zs = k + List.length zs + 1 :=
+    by
+      linarith
+    rewrite [s1]
+    apply Iff.refl
 
 
 lemma Var.instantiate_append
@@ -1269,7 +1271,7 @@ lemma Var.instantiate_append
       simp
       split_ifs
       case pos c4 =>
-        exact List.getElem_append_left' zs' c4
+        apply List.getElem_append_left'
       case neg c4 =>
         have s1 : i - k < zs.length := by omega
         contradiction
@@ -1281,7 +1283,7 @@ lemma Var.instantiate_append
       rw [a1]
       simp
       rw [← a1]
-      obtain s1 := List.getElem_append (i - k) c2
+      obtain s1 := List.getElem_append c2
       rw [s1]
       have s2 : ¬ i - k < zs.length := by omega
       split_ifs
@@ -1575,7 +1577,9 @@ lemma Holds_instantiate
   case pred_ X vs =>
     simp only [Holds]
     congr! 1
-    simp
+    simp only [Formula.instantiate]
+    simp only [Holds]
+    simp only [List.map_map]
   case not_ phi phi_ih =>
     simp only [Holds]
     congr! 1
@@ -1930,12 +1934,12 @@ example
       simp only [Var.freeVarSet] at h1
       simp at h1
       simp only [Function.updateITE]
-      simp
-      split_ifs
-      case _ c1 =>
-        simp only [c1] at h1
-        simp at h1
-      case _ c1 =>
+      split
+      case isTrue c1 =>
+        simp only [free_.injEq] at c1
+        rewrite [c1] at h1
+        contradiction
+      case isFalse c1 =>
         rfl
     case _ i =>
       cases i
@@ -1957,12 +1961,14 @@ example
     simp only [Holds]
     apply forall_congr'
     intro d'
-    simp only [Holds] at phi_ih
     specialize phi_ih V h1
     simp
     sorry
   all_goals
     sorry
+
+
+end LN
 
 
 --#lint
