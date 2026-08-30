@@ -1874,14 +1874,13 @@ example
 
     simp only [← lc_at_iff_lc] at ih_1
     obtain s1 := lc_at_instantiate phi 0 [z]
-    simp at s1
-    simp only [s1] at ih_1
+    simp only [List.map_cons, List.map_nil, List.length_cons, List.length_nil] at s1
+    rewrite [s1] at ih_1
     clear s1
 
     specialize ih_2 (shift D V d)
 
     obtain s2 := Holds_abstract_instantiate
-
 
     sorry
 
@@ -1902,32 +1901,30 @@ example
     simp only [predSub]
     simp only [Interpretation.usingPred]
     simp only [Holds]
-    simp
+    simp only [List.length_map]
 
-    have s1 : ∀ (v : Var), v ∈ vs → Var.lc_at 0 v
-    intro v a1
-    specialize h1 v a1
-    cases v
-    case _ x =>
-      simp only [Var.lc_at]
-    case _ i =>
-      simp only [Var.lc_at] at h1
-      simp at h1
+    have s1 : ∀ (v : Var), v ∈ vs → Var.lc_at 0 v :=
+    by
+      intro v a1
+      specialize h1 v a1
+      cases v
+      case free_ x =>
+        simp only [Var.lc_at]
+      case bound_ i =>
+        simp only [Var.lc_at] at h1
+        simp only [not_lt_zero] at h1
 
     obtain s2 := free_var_list_to_string_list vs s1
-    apply Exists.elim s2
-    intro zs a1
+    obtain ⟨zs, s2⟩ := s2
 
     obtain s3 := Holds_instantiate D I V zs 0 (τ X (List.length vs))
-    simp only [← a1] at s3
-    simp only [← s3]
-    clear s2
+    rewrite [← s2] at s3
+    rewrite [← s3]
 
     congr! 1
-    simp only [a1]
-    simp
-    obtain s4 := shift_list_instantiate D V zs
-    simp only [s4]
+    rewrite [s2]
+    simp only [List.map_map]
+    apply shift_list_instantiate
   case forall_ x phi phi_ih =>
     simp only [Formula.lc_at] at h1
 
@@ -1959,44 +1956,64 @@ example
   induction F generalizing V
   case pred_ X vs =>
     simp only [Formula.freeVarSet] at h1
-    simp at h1
+    simp only [Finset.mem_biUnion, List.mem_toFinset, not_exists] at h1
+
     simp only [Formula.instantiate]
     simp only [Holds]
-    simp
+    simp only [List.map_map]
     congr! 1
     simp only [List.map_eq_map_iff]
     intro v a1
-    simp
+    simp only [Function.comp_apply]
 
     cases v
-    case _ b =>
+    case free_ b =>
       simp only [Var.instantiate]
       simp only [shift]
-      specialize h1 (free_ b) a1
+      specialize h1 (free_ b)
       simp only [Var.freeVarSet] at h1
-      simp at h1
+      simp only [Finset.mem_singleton] at h1
+      simp only [not_and] at h1
+      specialize h1 a1
+
       simp only [Function.updateITE]
       split
       case isTrue c1 =>
-        simp only [free_.injEq] at c1
         rewrite [c1] at h1
         contradiction
       case isFalse c1 =>
-        rfl
-    case _ i =>
+        apply Eq.refl
+    case bound_ i =>
       cases i
       case zero =>
         simp only [Var.instantiate]
         simp only [shift]
-        simp
         simp only [Function.updateITE]
-        simp
+        split
+        case isTrue c1 =>
+          simp only [lt_self_iff_false] at c1
+        case isFalse c1 =>
+          split
+          case isTrue c2 =>
+            split
+            case isTrue c3 =>
+              apply Eq.refl
+            case isFalse c3 =>
+              exfalso
+              apply c3
+              simp only [tsub_self]
+              simp only [List.getElem_cons_zero]
+          case isFalse c2 =>
+            simp only [List.length_cons, List.length_nil] at c2
+            exfalso
+            apply c2
+            apply Nat.sub_lt_succ
       case succ i =>
         simp only [Var.instantiate]
         simp only [shift]
-        simp
+        simp only [List.length_cons, List.length_nil]
         simp only [Function.updateITE]
-        simp
+        grind only
   case forall_ x' phi phi_ih =>
     simp only [Formula.freeVarSet] at h1
     simp only [Formula.instantiate]
@@ -2004,7 +2021,6 @@ example
     apply forall_congr'
     intro d'
     specialize phi_ih V h1
-    simp
     sorry
   all_goals
     sorry
