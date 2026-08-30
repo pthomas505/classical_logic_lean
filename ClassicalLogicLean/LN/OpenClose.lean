@@ -1751,49 +1751,58 @@ lemma Holds_abstract_instantiate
     simp only [Formula.instantiate]
     simp only [Holds]
     congr! 1
-    simp
+    simp only [List.map_map, List.map_inj_left, Function.comp_apply]
     intro v a1
     specialize h2 v a1
     cases v
-    case _ x =>
+    case free_ x =>
       simp only [Var.instantiate]
       simp only [Var.abstract1]
-
-      have s1 : ¬ free_ z = free_ x
-      intro contra
-      apply h1
-      simp only [contra]
-      exact a1
-
-      simp only [if_neg s1]
-    case _ i =>
+      split
+      case isTrue c1 =>
+        rewrite [c1] at h1
+        contradiction
+      case isFalse c1 =>
+        apply Eq.refl
+    case bound_ i =>
       simp only [Var.lc_at] at h2
 
       simp only [Var.instantiate]
-      simp
-      split_ifs
-      simp only [Var.abstract1]
-      simp only [if_pos h2]
+      split
+      case isTrue c1 =>
+        simp only [Var.abstract1]
+        split
+        case isTrue c2 =>
+          apply Eq.refl
+        case isFalse c2 =>
+          contradiction
+      case isFalse c1 =>
+        contradiction
   case not_ phi phi_ih =>
     simp only [occursIn] at h1
     simp only [Formula.lc_at] at h2
 
     simp only [Holds]
     congr! 1
-    apply phi_ih V k h1 h2
+    apply phi_ih
+    · exact h1
+    · exact h2
   case imp_ phi psi phi_ih psi_ih =>
     simp only [occursIn] at h1
-    push_neg at h1
-    simp only [Formula.lc_at] at h2
+    rewrite [not_or] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
 
-    cases h1
-    case _ h1_left h1_right =>
-      cases h2
-      case _ h2_left h2_right =>
-        simp only [Holds]
-        congr! 1
-        · apply phi_ih V k h1_left h2_left
-        · apply psi_ih V k h1_right h2_right
+    simp only [Formula.lc_at] at h2
+    obtain ⟨h2_left, h2_right⟩ := h2
+
+    simp only [Holds]
+    congr! 1
+    · apply phi_ih
+      · exact h1_left
+      · exact h2_left
+    · apply psi_ih
+      · exact h1_right
+      · exact h2_right
   case forall_ x phi phi_ih =>
     simp only [occursIn] at h1
     simp only [Formula.lc_at] at h2
@@ -1803,11 +1812,13 @@ lemma Holds_abstract_instantiate
     apply forall_congr'
     intro d
     specialize phi_ih (shift D V d) (k + 1) h1 h2
-    simp only [phi_ih]
+    rewrite [phi_ih]
     congr! 1
     apply shift_extract1
 
+
 --------------------------------------------------
+
 
 example
   (D : Type)
@@ -1824,31 +1835,29 @@ example
     simp only [predSub]
     simp only [Interpretation.usingPred]
     simp only [Holds]
-    simp
+    simp only [List.length_map]
 
-    have s1 : ∀ (v : Var), v ∈ vs → Var.lc_at 0 v
-    intro v a1
-    specialize ih v a1
-    cases v
-    case _ x =>
-      simp only [Var.lc_at]
-    case _ i =>
-      simp only [Var.isFree] at ih
+    have s1 : ∀ (v : Var), v ∈ vs → Var.lc_at 0 v :=
+    by
+      intro v a1
+      specialize ih v a1
+      cases v
+      case free_ x =>
+        simp only [Var.lc_at]
+      case bound_ i =>
+        simp only [Var.isFree] at ih
 
     obtain s2 := free_var_list_to_string_list vs s1
-    apply Exists.elim s2
-    intro zs a1
+    obtain ⟨zs, s2⟩ := s2
 
     obtain s3 := Holds_instantiate D I V zs 0 (τ X (List.length vs))
-    simp only [← a1] at s3
-    simp only [← s3]
-    clear s2
+    rewrite [← s2] at s3
+    rewrite [← s3]
 
     congr! 1
-    simp only [a1]
-    simp
-    obtain s4 := shift_list_instantiate D V zs
-    simp only [s4]
+    rewrite [s2]
+    simp only [List.map_map]
+    apply shift_list_instantiate
   case not_ phi ih_1 ih_2 =>
     simp only [Holds]
     congr! 1
