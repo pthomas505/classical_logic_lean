@@ -1253,7 +1253,7 @@ lemma Var.instantiate_append
       simp only [instantiate]
       simp only [List.length_append]
       simp only [List.getElem_append]
-      grind
+      grind only
     case isFalse c1 =>
       simp only
       split
@@ -1265,10 +1265,13 @@ lemma Var.instantiate_append
 
         rewrite [Var.instantiate_free k zs zs'[i - (k + zs.length)] s1]
         rewrite [instantiate]
-        grind
+        simp only [List.length_append]
+        simp only [List.getElem_append]
+        grind only
       case isFalse c2 =>
         simp only [instantiate]
-        grind
+        simp only [List.length_append]
+        grind only
 
 
 lemma Formula.instantiate_append
