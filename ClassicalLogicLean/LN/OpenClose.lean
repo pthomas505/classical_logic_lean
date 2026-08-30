@@ -1681,48 +1681,55 @@ lemma shift_extract1
   shift D V d ∘ Var.abstract1 (free_ z) (k + 1) = shift D (V ∘ Var.abstract1 (free_ z) k) d :=
   by
   funext v
-  simp
+  simp only [Function.comp_apply]
   cases v
-  case _ x =>
+  case free_ x =>
     conv =>
       rhs
       simp only [shift]
-      simp
+      simp only [Function.comp_apply]
     simp only [Var.abstract1]
-    simp
-    split_ifs
-    case _ c1 =>
+    split
+    case isTrue c1 =>
       simp only [shift]
-    case _ c1 =>
+    case isFalse c1 =>
       simp only [shift]
-  case _ i =>
+  case bound_ i =>
     cases i
     case zero =>
       conv =>
         rhs
         simp only [shift]
       simp only [Var.abstract1]
-      simp
-      simp only [shift]
+      split
+      case isTrue c1 =>
+        simp only [shift]
+      case isFalse c1 =>
+        exfalso
+        apply c1
+        apply Nat.zero_lt_succ
     case succ i =>
       conv =>
         rhs
         simp only [shift]
-        simp
+        simp only [Function.comp_apply]
         simp only [Var.abstract1]
       simp only [Var.abstract1]
       split
-      case _ c1 =>
-        have s1 : i < k
-        linarith
-        simp only [if_pos s1]
+      case isTrue c1 =>
         simp only [shift]
-      case _ c1 =>
-        simp at c1
-        have s1 : ¬ i < k
-        linarith
-        simp only [if_neg s1]
+        split
+        case isTrue c2 =>
+          apply Eq.refl
+        case isFalse c2 =>
+          linarith
+      case isFalse c1 =>
         simp only [shift]
+        split
+        case isTrue c2 =>
+          linarith
+        case isFalse c2 =>
+          apply Eq.refl
 
 
 lemma Holds_abstract_instantiate
