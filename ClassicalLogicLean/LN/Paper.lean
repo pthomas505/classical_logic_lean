@@ -264,11 +264,10 @@ lemma FormulaOpenFreeVarSet
     simp only [Finset.biUnion_subset_iff_forall_subset, List.mem_toFinset, List.mem_map, forall_exists_index]
     intro u v a1
     obtain ⟨a1_left, a1_right⟩ := a1
-    obtain s1 := VarOpenFreeVarSet j z v
-    rewrite [a1_right] at s1
 
     trans Var.freeVarSet v ∪ {free_ z}
-    · exact s1
+    · rewrite [← a1_right]
+      apply VarOpenFreeVarSet
     · apply Finset.union_subset_union_left
       apply Finset.subset_biUnion_of_mem
       simp only [List.mem_toFinset]
@@ -341,15 +340,18 @@ lemma FormulaOpenListFreeVarSet
   case pred_ X vs =>
     simp only [Formula.openList]
     simp only [Formula.freeVarSet]
-    simp
-    intro v a1
+    simp only [Finset.biUnion_subset_iff_forall_subset, List.mem_toFinset, List.mem_map,
+      forall_exists_index]
+    intro u v a1
+    obtain ⟨a1_left, a1_right⟩ := a1
 
     trans v.freeVarSet ∪ (zs.map free_).toFinset
-    · exact VarOpenListFreeVarSet j zs v
+    · rewrite [← a1_right]
+      apply VarOpenListFreeVarSet
     · apply Finset.union_subset_union_left
       apply Finset.subset_biUnion_of_mem
-      simp
-      exact a1
+      simp only [List.mem_toFinset]
+      exact a1_left
   case not_ phi phi_ih =>
     simp only [Formula.openList]
     simp only [Formula.freeVarSet]
@@ -358,14 +360,16 @@ lemma FormulaOpenListFreeVarSet
     simp only [Formula.openList]
     simp only [Formula.freeVarSet]
     apply Finset.union_subset_union_left_right
-    · exact phi_ih j
-    · exact psi_ih j
+    · apply phi_ih
+    · apply psi_ih j
   case forall_ x phi phi_ih =>
     simp only [Formula.openList]
     simp only [Formula.freeVarSet]
     apply phi_ih
 
+
 --------------------------------------------------
+
 
 -- 2.
 
@@ -379,19 +383,21 @@ lemma VarOpenFreeVarSet'
   case free_ x =>
     simp only [Var.open]
     simp only [Var.freeVarSet]
-    simp
+    apply Set.Subset.refl
   case bound_ i =>
     simp only [Var.open]
-    split_ifs
-    case _ c1 =>
+    split
+    case isTrue c1 =>
       simp only [Var.freeVarSet]
-      simp
-    case _ c1 c2 =>
-      simp only [Var.freeVarSet]
-      simp
-    case _ c1 c2 =>
-      simp only [Var.freeVarSet]
-      simp
+      apply Set.Subset.refl
+    case isFalse c1 =>
+      split
+      case isTrue c2 =>
+        simp only [Var.freeVarSet]
+        apply Finset.empty_subset
+      case isFalse c2 =>
+        simp only [Var.freeVarSet]
+        apply Set.Subset.refl
 
 
 lemma FormulaOpenFreeVarSet'
