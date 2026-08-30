@@ -1284,25 +1284,25 @@ lemma Formula.instantiate_append
   induction F generalizing k
   case pred_ X vs =>
     simp only [Formula.instantiate]
-    simp
-    intro v _
+    congr! 1
+    simp only [List.map_map, List.map_inj_left, Function.comp_apply]
+    intro v a1
     apply Var.instantiate_append
     exact h1
   case not_ phi phi_ih =>
     simp only [Formula.instantiate]
     congr! 1
-    exact phi_ih k
+    apply phi_ih
   case imp_ phi psi phi_ih psi_ih =>
     simp only [Formula.instantiate]
     congr! 1
-    · exact phi_ih k
-    · exact psi_ih k
+    · apply phi_ih
+    · apply psi_ih
   case forall_ x phi phi_ih =>
     simp only [Formula.instantiate]
-    congr! 1
-    simp only [← phi_ih]
-    congr! 2
-    linarith
+    rewrite [← phi_ih]
+    congr! 3
+    apply Nat.add_right_comm
 
 
 lemma lc_at_imp_lc_instantiate
@@ -1319,60 +1319,58 @@ lemma lc_at_imp_lc_instantiate
     apply Formula.lc.pred_
     intro v a1
     cases v
-    case _ x =>
+    case free_ x =>
       simp only [isFree]
-    case _ i =>
-      simp at a1
-      apply Exists.elim a1
-      intro z a2
-      cases a2
-      case _ a2_left a2_right =>
-        specialize h1 z a2_left
+    case bound_ i =>
+      simp only [List.mem_map] at a1
+      obtain ⟨v, ⟨a1_left, a1_right⟩⟩ := a1
 
-        cases z
-        case _ x =>
-          simp only [Var.instantiate] at a2_right
-          simp at a2_right
-        case _ j =>
-          simp only [Var.lc_at] at h1
+      specialize h1 v a1_left
 
-          simp only [Var.instantiate] at a2_right
-          simp at a2_right
-          split at a2_right
-          case _ c1 =>
-            contradiction
-          case _ c1 =>
-            contradiction
+      cases v
+      case free_ x =>
+        simp only [Var.instantiate] at a1_right
+        contradiction
+      case bound_ j =>
+        simp only [Var.lc_at] at h1
+
+        simp only [Var.instantiate] at a1_right
+        simp only [List.length_map, List.getElem_map] at a1_right
+        grind only
   case not_ phi phi_ih =>
     simp only [Formula.lc_at] at h1
 
     apply Formula.lc.not_
-    exact phi_ih zs h1
+    apply phi_ih
+    exact h1
   case imp_ phi psi phi_ih psi_ih =>
     simp only [Formula.lc_at] at h1
-    cases h1
-    case _ h1_left h1_right =>
-      apply Formula.lc.imp_
-      · exact phi_ih zs h1_left
-      · exact psi_ih zs h1_right
+    obtain ⟨h1_left, h1_right⟩ := h1
+
+    apply Formula.lc.imp_
+    · apply phi_ih
+      exact h1_left
+    · apply psi_ih
+      exact h1_right
   case forall_ x phi phi_ih =>
     simp only [Formula.lc_at] at h1
 
     specialize phi_ih (default :: zs)
-    simp at phi_ih
+    simp only [List.length_cons, List.map_cons] at phi_ih
     specialize phi_ih h1
 
     simp only [Formula.instantiate]
     apply Formula.lc.forall_ x (Formula.instantiate (0 + 1) (List.map free_ zs) phi) default
-    simp
 
     obtain s1 := Formula.instantiate_append 0 [Var.free_ default] (zs.map Var.free_) phi
-    simp at s1
-    simp only [isFree] at s1
-    simp at s1
-
-    simp only [s1]
-    exact phi_ih
+    simp only [List.length_cons, List.length_nil, List.cons_append, List.nil_append] at s1
+    rewrite [s1]
+    · exact phi_ih
+    · intro v a1
+      simp only [List.mem_map] at a1
+      obtain ⟨z, ⟨a1_left, a1_right⟩⟩ := a1
+      rewrite [← a1_right]
+      simp only [isFree]
 
 
 lemma lc_at_imp_lc
@@ -1388,11 +1386,11 @@ lemma lc_at_imp_lc
     intro v a1
     specialize h1 v a1
     cases v
-    case _ x =>
+    case free_ x =>
       simp only [Var.isFree]
-    case _ i =>
+    case bound_ i =>
       simp only [Var.lc_at] at h1
-      simp at h1
+      simp only [not_lt_zero] at h1
   case not_ phi phi_ih =>
     simp only [Formula.lc_at] at h1
 
@@ -1400,19 +1398,17 @@ lemma lc_at_imp_lc
     exact phi_ih h1
   case imp_ phi psi phi_ih psi_ih =>
     simp only [Formula.lc_at] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
 
-    cases h1
-    case _ h1_left h1_right =>
-      apply Formula.lc.imp_
-      · exact phi_ih h1_left
-      · exact psi_ih h1_right
-  case forall_ x phi _ =>
+    apply Formula.lc.imp_
+    · exact phi_ih h1_left
+    · exact psi_ih h1_right
+  case forall_ x phi phi_ih =>
     simp only [Formula.lc_at] at h1
-    simp at h1
 
     apply Formula.lc.forall_ x phi default
     apply lc_at_imp_lc_instantiate phi [default]
-    simp
+    simp only [List.length_cons, List.length_nil]
     exact h1
 
 
@@ -1427,9 +1423,9 @@ lemma lc_imp_lc_at
     intro v a1
     specialize ih v a1
     cases v
-    case _ x =>
+    case free_ x =>
       simp only [Var.lc_at]
-    case _ i =>
+    case bound_ i =>
       simp only [isFree] at ih
   case not_ phi ih_1 ih_2 =>
     simp only [Formula.lc_at]
@@ -1441,11 +1437,10 @@ lemma lc_imp_lc_at
     · exact psi_ih_2
   case forall_ x phi z ih_1 ih_2 =>
     simp only [Formula.lc_at]
-    simp
 
     obtain s1 := lc_at_instantiate phi 0 [z]
-    simp at s1
-    simp only [← s1]
+    simp only [List.map_cons, List.map_nil, List.length_cons, List.length_nil] at s1
+    rewrite [← s1]
     exact ih_2
 
 
@@ -1455,11 +1450,15 @@ lemma lc_at_iff_lc
   by
   constructor
   · intro a1
-    exact lc_at_imp_lc F a1
+    apply lc_at_imp_lc
+    exact a1
   · intro a1
-    exact lc_imp_lc_at F a1
+    apply lc_imp_lc_at
+    exact a1
+
 
 --------------------------------------------------
+
 
 lemma free_var_list_to_string_list
   (vs : List Var)
@@ -1469,22 +1468,35 @@ lemma free_var_list_to_string_list
   induction vs
   case nil =>
     apply Exists.intro []
-    simp
+    simp only [List.map_nil]
   case cons hd tl ih =>
-    simp at h1
-    cases h1
-    case intro h1_left h1_right =>
-      specialize ih h1_right
-      apply Exists.elim ih
-      intro xs a1
-      cases hd
-      case free_ x =>
-        apply Exists.intro (x :: xs)
-        simp
-        exact a1
-      case bound_ i =>
-        simp only [Var.lc_at] at h1_left
-        simp at h1_left
+    simp only [List.mem_cons] at h1
+
+    have s1 : ∀ v ∈ tl, Var.lc_at 0 v :=
+    by
+      intro v a1
+      apply h1
+      right
+      exact a1
+
+    specialize ih s1
+    obtain ⟨xs, ih⟩ := ih
+
+    cases hd
+    case free_ x =>
+      apply Exists.intro (x :: xs)
+      simp only [List.map_cons]
+      rewrite [ih]
+      apply Eq.refl
+    case bound_ i =>
+      have s1 : Var.lc_at 0 (bound_ i) :=
+      by
+        apply h1
+        left
+        apply Eq.refl
+
+      simp only [Var.lc_at] at s1
+      simp only [not_lt_zero] at s1
 
 
 theorem shift_instantiate
@@ -1497,47 +1509,45 @@ theorem shift_instantiate
     shift D V d ∘ Var.instantiate (k + 1) (List.map free_ zs) :=
   by
   funext v
-  simp
+  simp only [Function.comp_apply]
   cases v
-  case _ x =>
+  case free_ x =>
     simp only [Var.instantiate]
     simp only [shift]
-    simp
-    rfl
-  case _ i =>
+    simp only [Function.comp_apply]
+    simp only [Var.instantiate]
+  case bound_ i =>
     cases i
     case zero =>
-      simp only [shift]
       simp only [Var.instantiate]
-      simp
-    case succ i =>
+      split
+      case isTrue c1 =>
         simp only [shift]
+      case isFalse c1 =>
+        exfalso
+        apply c1
+        apply Nat.zero_lt_succ
+    case succ i =>
         simp only [Var.instantiate]
-        simp
-        split_ifs
-        case _ c1 =>
-          have s1 : i + 1 < k + 1
-          linarith
-          simp only [if_pos s1]
+        simp only [List.length_map, List.getElem_map]
+        split
+        case isTrue c1 =>
+          simp only [shift]
+          simp only [Function.comp_apply]
           simp only [Var.instantiate]
-          simp only [c1]
-          simp
-        case _ c1 c2 =>
-          have s1 : ¬ i + 1 < k + 1
-          linarith
-          simp only [if_neg s1]
-          simp only [Var.instantiate]
-          simp only [c1]
-          simp
-          simp only [c2]
-          simp
-        case _ c1 c2 =>
-          simp
-          simp only [Var.instantiate]
-          simp only [c1]
-          simp
-          simp only [c2]
-          simp
+          grind only
+        case isFalse c1 =>
+          split
+          case isTrue c2 =>
+            simp only [shift]
+            simp only [Function.comp_apply]
+            simp only [Var.instantiate]
+            grind
+          case isFalse c2 =>
+            simp only [shift]
+            simp only [Function.comp_apply]
+            simp only [Var.instantiate]
+            grind
 
 
 lemma Holds_instantiate
