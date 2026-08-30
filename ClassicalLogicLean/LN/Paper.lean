@@ -261,15 +261,18 @@ lemma FormulaOpenFreeVarSet
   case pred_ X vs =>
     simp only [Formula.open]
     simp only [Formula.freeVarSet]
-    simp
-    intro v a1
+    simp only [Finset.biUnion_subset_iff_forall_subset, List.mem_toFinset, List.mem_map, forall_exists_index]
+    intro u v a1
+    obtain ⟨a1_left, a1_right⟩ := a1
+    obtain s1 := VarOpenFreeVarSet j z v
+    rewrite [a1_right] at s1
 
     trans Var.freeVarSet v ∪ {free_ z}
-    · exact VarOpenFreeVarSet j z v
+    · exact s1
     · apply Finset.union_subset_union_left
       apply Finset.subset_biUnion_of_mem
-      simp
-      exact a1
+      simp only [List.mem_toFinset]
+      exact a1_left
   case not_ phi phi_ih =>
     simp only [Formula.open]
     simp only [Formula.freeVarSet]
@@ -278,14 +281,16 @@ lemma FormulaOpenFreeVarSet
     simp only [Formula.open]
     simp only [Formula.freeVarSet]
     apply Finset.union_subset_union_left_right
-    · exact phi_ih j
-    · exact psi_ih j
+    · apply phi_ih
+    · apply psi_ih
   case forall_ x phi phi_ih =>
     simp only [Formula.open]
     simp only [Formula.freeVarSet]
     apply phi_ih
 
+
 --------------------------------------------------
+
 
 -- 1. for list
 
@@ -299,20 +304,31 @@ lemma VarOpenListFreeVarSet
   case free_ x =>
     simp only [Var.openList]
     simp only [Var.freeVarSet]
-    simp
+    simp only [Finset.singleton_union, Finset.singleton_subset_iff]
+    apply Finset.mem_insert_self
   case bound_ i =>
     simp only [Var.openList]
-    split_ifs
-    case pos c1 =>
+    split
+    case isTrue c1 =>
       simp only [Var.freeVarSet]
-      simp
-    case pos c1 c2 =>
-      simp
-      simp only [Var.freeVarSet]
-      simp
-    case neg c1 c2 =>
-      simp only [Var.freeVarSet]
-      simp
+      simp only [Finset.empty_union, Finset.empty_subset]
+    case isFalse c2 =>
+      split
+      case isTrue c3 =>
+        simp only [List.length_map] at c3
+
+        simp only [List.getElem_map]
+        simp only [Var.freeVarSet]
+        simp only [Finset.empty_union]
+        simp only [Finset.singleton_subset_iff, List.mem_toFinset, List.mem_map]
+
+        apply Exists.intro (zs[i - j])
+        constructor
+        · apply List.getElem_mem
+        · apply Eq.refl
+      case isFalse c3 =>
+        simp only [Var.freeVarSet]
+        apply Finset.empty_subset
 
 
 lemma FormulaOpenListFreeVarSet
