@@ -448,24 +448,28 @@ lemma VarCloseFreeVarSet
   cases v
   case free_ x =>
     simp only [Var.close]
-    split_ifs
-    case _ c1 =>
+    split
+    case isTrue c1 =>
       simp only [Var.freeVarSet]
-      simp
-    case _ c1 =>
+      simp only [Finset.empty_subset]
+    case isFalse c1 =>
       simp only [Var.freeVarSet]
-      simp
-      simp at c1
-      exact c1
+      simp only [Finset.singleton_subset_iff, Finset.mem_sdiff]
+      constructor
+      · simp only [Finset.mem_singleton]
+      · simp only [Finset.mem_singleton]
+        exact c1
   case bound_ i =>
     simp only [Var.close]
-    split_ifs
-    case _ c1 =>
+    split
+    case isTrue c1 =>
       simp only [Var.freeVarSet]
-      simp
-    case _ c1 =>
+      simp only [Finset.empty_sdiff]
+      apply Set.Subset.refl
+    case isFalse c1 =>
       simp only [Var.freeVarSet]
-      simp
+      simp only [Finset.empty_sdiff]
+      apply Set.Subset.refl
 
 
 lemma FormulaCloseFreeVarSet
@@ -478,16 +482,19 @@ lemma FormulaCloseFreeVarSet
   case pred_ X vs =>
     simp only [Formula.close]
     simp only [Formula.freeVarSet]
-    simp
-    intro v a1
+    simp only [Finset.biUnion_subset_iff_forall_subset, List.mem_toFinset, List.mem_map,
+      forall_exists_index]
+    intro u v a1
+    obtain ⟨a1_left, a1_right⟩ := a1
+    rewrite [← a1_right]
 
     trans Var.freeVarSet v \ {free_ z}
-    · exact VarCloseFreeVarSet j z v
+    · apply VarCloseFreeVarSet
     · apply Finset.sdiff_subset_sdiff
       · apply Finset.subset_biUnion_of_mem
-        simp
-        exact a1
-      · simp
+        simp only [List.mem_toFinset]
+        exact a1_left
+      · apply Set.Subset.refl
   case not_ phi phi_ih =>
     simp only [Formula.close]
     simp only [Formula.freeVarSet]
@@ -496,14 +503,16 @@ lemma FormulaCloseFreeVarSet
     simp only [Formula.close]
     simp only [Formula.freeVarSet]
     apply Finset.union_subset_diff
-    · exact phi_ih j
-    · exact psi_ih j
+    · apply phi_ih
+    · apply psi_ih
   case forall_ x phi phi_ih =>
     simp only [Formula.close]
     simp only [Formula.freeVarSet]
     apply phi_ih
 
+
 --------------------------------------------------
+
 
 -- 4.
 
@@ -516,24 +525,27 @@ lemma VarSubstFreeVarSet
   cases v
   case free_ x =>
     simp only [Var.subst]
-    split_ifs
-    case pos c1 =>
+    split
+    case isTrue c1 =>
       apply Finset.subset_union_left
-    case neg c1 =>
-      have s1 : Var.freeVarSet (free_ x) \ {free_ z} = {free_ x}
-      simp only [Var.freeVarSet]
-      simp
-      simp at c1
-      exact c1
+    case isFalse c1 =>
+      have s1 : Var.freeVarSet (free_ x) \ {free_ z} = {free_ x} :=
+      by
+        simp only [Var.freeVarSet]
+        simp only [sdiff_eq_left, Finset.disjoint_singleton_left, Finset.mem_singleton]
+        intro contra
+        apply c1
+        rewrite [contra]
+        apply Eq.refl
 
-      simp only [s1]
+      rewrite [s1]
       apply Finset.subset_union_right
   case bound_ i =>
     simp only [Var.subst]
     conv =>
       lhs
       simp only [Var.freeVarSet]
-    simp
+    apply Finset.empty_subset
 
 
 lemma FormulaSubstFreeVarSet
@@ -546,16 +558,19 @@ lemma FormulaSubstFreeVarSet
   case pred_ X vs =>
     simp only [Formula.subst]
     simp only [Formula.freeVarSet]
-    simp
-    intro v a1
+    simp only [Finset.biUnion_subset_iff_forall_subset, List.mem_toFinset, List.mem_map, forall_exists_index]
+    intro u v a1
+    obtain ⟨a1_left, a1_right⟩ := a1
+    rewrite [← a1_right]
 
     trans Var.freeVarSet t ∪ Var.freeVarSet v \ {free_ z}
-    · exact VarSubstFreeVarSet z t v
+    · apply VarSubstFreeVarSet
     · apply Finset.union_subset_union_right
-      simp only [← List.mem_toFinset] at a1
       apply Finset.sdiff_subset_sdiff
-      · apply Finset.subset_biUnion_of_mem Var.freeVarSet a1
-      · simp
+      · apply Finset.subset_biUnion_of_mem
+        simp only [List.mem_toFinset]
+        exact a1_left
+      · apply Set.Subset.refl
   case not_ phi phi_ih =>
     simp only [Formula.subst]
     simp only [Formula.freeVarSet]
@@ -571,7 +586,9 @@ lemma FormulaSubstFreeVarSet
     simp only [Formula.freeVarSet]
     exact phi_ih
 
+
 --------------------------------------------------
+
 
 lemma VarSubstFreeVarSet'
   (z : String)
