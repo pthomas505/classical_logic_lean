@@ -2,7 +2,10 @@ import ClassicalLogicLean.LN.Formula
 import ClassicalLogicLean.LN.OpenClose
 import ClassicalLogicLean.LN.Semantics
 
-set_option autoImplicit false
+
+set_option linter.style.docString false
+set_option linter.style.emptyLine false
+set_option linter.style.longLine false
 
 
 namespace LN
