@@ -599,21 +599,21 @@ lemma VarSubstFreeVarSet'
   cases v
   case free_ x =>
     simp only [Var.subst]
-    split_ifs
-    case pos c1 =>
-      simp only [c1]
+    split
+    case isTrue c1 =>
+      rewrite [c1]
       conv =>
         lhs
         simp only [Var.freeVarSet]
-      simp
-    case neg c1 =>
+      simp only [sdiff_self, Finset.bot_eq_empty, Finset.empty_subset]
+    case isFalse c1 =>
       simp only [Var.freeVarSet]
       exact Finset.sdiff_subset
   case bound_ i =>
     conv =>
       lhs
       simp only [Var.freeVarSet]
-    simp
+    simp only [Finset.empty_sdiff, Finset.empty_subset]
 
 
 lemma FormulaSubstFreeVarSet'
@@ -629,15 +629,19 @@ lemma FormulaSubstFreeVarSet'
 
     induction vs
     case nil =>
-      simp
+      simp only [List.toFinset_nil, Finset.biUnion_empty, Finset.empty_sdiff, List.map_nil]
+      apply Set.Subset.refl
     case cons hd tl ih =>
-      simp
+      simp only [List.toFinset_cons, Finset.biUnion_insert, List.map_cons]
 
-      have s1 : (Var.freeVarSet hd ∪ Finset.biUnion (List.toFinset tl) Var.freeVarSet) \ {free_ z} = (Var.freeVarSet hd \ {free_ z}) ∪ ((Finset.biUnion (List.toFinset tl) Var.freeVarSet) \ {free_ z})
-      exact Finset.union_sdiff_distrib (Var.freeVarSet hd) (Finset.biUnion (List.toFinset tl) Var.freeVarSet) {free_ z}
+      have s1 : (Var.freeVarSet hd ∪ Finset.biUnion (List.toFinset tl) Var.freeVarSet) \ {free_ z} = (Var.freeVarSet hd \ {free_ z}) ∪ ((Finset.biUnion (List.toFinset tl) Var.freeVarSet) \ {free_ z}) :=
+      by
+        apply Finset.union_sdiff_distrib
+      rewrite [s1]
 
-      simp only [s1]
-      exact Finset.union_subset_union (VarSubstFreeVarSet' z t hd) ih
+      apply Finset.union_subset_union
+      · apply VarSubstFreeVarSet'
+      · exact ih
   case not_ phi phi_ih =>
     simp only [Formula.subst]
     simp only [Formula.freeVarSet]
@@ -653,7 +657,9 @@ lemma FormulaSubstFreeVarSet'
     simp only [Formula.freeVarSet]
     exact phi_ih
 
+
 --------------------------------------------------
+
 
 def str_fun_to_var_fun
   (σ : String → String) :
