@@ -684,28 +684,40 @@ lemma SubOpenVar
       simp only [Var.open]
       simp only [Var.substFun]
       simp only [str_fun_to_var_fun]
-    rfl
+    apply Eq.refl
   case bound_ i =>
     conv =>
       lhs
       simp only [Var.open]
-    split_ifs
-    case pos c1 =>
+    split
+    case isTrue c1 =>
       simp only [Var.substFun]
       simp only [Var.open]
-      simp only [if_pos c1]
-    case pos c1 c2 =>
-      simp only [Var.substFun]
-      simp only [str_fun_to_var_fun]
-      simp only [Var.open]
-      simp only [if_neg c1]
-      simp only [if_pos c2]
-      simp only [h1]
-    case neg c1 c2 =>
-      simp only [Var.substFun]
-      simp only [Var.open]
-      simp only [if_neg c1]
-      simp only [if_neg c2]
+      split
+      case isTrue c2 =>
+        apply Eq.refl
+      case isFalse c2 =>
+        contradiction
+    case isFalse c1 =>
+      split
+      case isTrue c2 =>
+        simp only [Var.substFun]
+        simp only [str_fun_to_var_fun]
+        simp only [Var.open]
+        split
+        case isTrue c3 =>
+          contradiction
+        case isFalse c3 =>
+          rewrite [h1]
+          apply Eq.refl
+      case isFalse c2 =>
+        simp only [Var.substFun]
+        simp only [Var.open]
+        split
+        case isTrue c3 =>
+          contradiction
+        case isFalse c3 =>
+          apply Eq.refl
 
 /-
 lemma SubCloseVar
