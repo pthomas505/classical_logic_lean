@@ -410,14 +410,15 @@ lemma FormulaOpenFreeVarSet'
   case pred_ X vs =>
     simp only [Formula.open]
     simp only [Formula.freeVarSet]
-    simp
+    simp only [Finset.biUnion_subset_iff_forall_subset, List.mem_toFinset]
     intro v a1
 
     trans Var.freeVarSet (Var.open j (free_ z) v)
     · apply VarOpenFreeVarSet'
-    · apply Finset.subset_biUnion_of_mem Var.freeVarSet
-      apply List.mem_toFinset.mpr
-      exact List.mem_map_of_mem (Var.open j (free_ z)) a1
+    · apply Finset.subset_biUnion_of_mem
+      simp only [List.mem_toFinset, List.mem_map]
+      apply Exists.intro v
+      exact ⟨a1, rfl⟩
   case not_ phi phi_ih =>
     simp only [Formula.open]
     simp only [Formula.freeVarSet]
@@ -426,12 +427,13 @@ lemma FormulaOpenFreeVarSet'
     simp only [Formula.open]
     simp only [Formula.freeVarSet]
     apply Finset.union_subset_left_right
-    · exact phi_ih j
-    · exact psi_ih j
+    · apply phi_ih
+    · apply psi_ih j
   case forall_ x phi phi_ih =>
     simp only [Formula.open]
     simp only [Formula.freeVarSet]
     apply phi_ih
+
 
 --------------------------------------------------
 
