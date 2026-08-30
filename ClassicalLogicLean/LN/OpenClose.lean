@@ -1580,7 +1580,7 @@ lemma Holds_instantiate
     simp only [Holds]
     apply forall_congr'
     intro d
-    simp only [← phi_ih]
+    rewrite [← phi_ih]
     congr!
     apply shift_instantiate
 
@@ -1595,43 +1595,82 @@ theorem shift_list_instantiate
   induction xs
   case nil =>
     funext v
-    simp
+    simp only [List.map_nil, Function.comp_apply]
     simp only [shift_list]
     cases v
-    case _ x =>
+    case free_ x =>
       simp only [Var.instantiate]
-    case _ i =>
+    case bound_ i =>
       simp only [Var.instantiate]
       split
-      case _ c1 =>
-        rfl
-      case _ c1 =>
-        simp
-  case _ hd tl ih =>
+      case isTrue c1 =>
+        apply Eq.refl
+      case isFalse c1 =>
+        simp only [List.length_nil]
+        simp only [tsub_zero]
+        split
+        case isTrue c2 =>
+          simp only [not_lt_zero] at c2
+        case isFalse c2 =>
+          simp only [add_zero]
+  case cons hd tl ih =>
     funext v
-    simp
+    simp only [List.map_cons, Function.comp_apply]
     simp only [shift_list]
     cases v
-    case _ x =>
+    case free_ x =>
       simp only [shift]
       simp only [← ih]
       simp only [Var.instantiate]
-      simp
-      rfl
-    case _ i =>
+      simp only [Function.comp_apply]
+      apply Eq.refl
+    case bound_ i =>
       cases i
       case zero =>
         simp only [shift]
         simp only [Var.instantiate]
-        simp
+        split
+        case isTrue c1 =>
+          simp only [lt_self_iff_false] at c1
+        case isFalse c1 =>
+          split
+          case isTrue c2 =>
+            simp only [tsub_self, List.getElem_cons_zero]
+          case isFalse c2 =>
+            simp only [List.length_cons, List.length_map] at c2
+            omega
       case succ i =>
         simp only [shift]
         simp only [← ih]
-        simp
+        simp only [Function.comp_apply]
         simp only [Var.instantiate]
-        simp
+        split
+        case isTrue c1 =>
+          simp only [not_lt_zero] at c1
+        case isFalse c1 =>
+          simp only [List.length_cons, List.length_map, List.getElem_map]
+          split
+          case isTrue c2 =>
+            split
+            case isTrue c3 =>
+              simp only [not_lt_zero] at c3
+            case isFalse c3 =>
+              split
+              case isTrue c4 =>
+                simp only [tsub_zero]
+                simp only [List.getElem_cons_succ, List.getElem_map]
+              case isFalse c4 =>
+                omega
+          case isFalse c2 =>
+            split
+            case isTrue c3 =>
+              simp only [not_lt_zero] at c3
+            case isFalse c3 =>
+              grind only
+
 
 --------------------------------------------------
+
 
 lemma shift_extract1
   (D : Type)
