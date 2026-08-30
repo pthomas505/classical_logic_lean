@@ -1222,6 +1222,20 @@ lemma lc_at_instantiate
     apply Nat.add_right_comm
 
 
+theorem Var.instantiate_free
+  (k : ℕ)
+  (zs : List Var)
+  (v : Var)
+  (h1 : v.isFree) :
+  Var.instantiate k zs v = v :=
+  by
+  cases v
+  case free_ x =>
+    simp only [instantiate]
+  case bound_ i =>
+    simp only [isFree] at h1
+
+
 lemma Var.instantiate_append
   (k : ℕ)
   (zs zs' : List Var)
@@ -1229,78 +1243,32 @@ lemma Var.instantiate_append
   (h1 : ∀ (z' : Var), z' ∈ zs' → z'.isFree) :
   Var.instantiate k zs (Var.instantiate (k + List.length zs) zs' v) = Var.instantiate k (zs ++ zs') v :=
   by
-  rcases v with _ | i; · rfl
-  conv => rhs; simp only [Var.instantiate]
-  split_ifs
-  case pos c1 =>
-    have s1 : i < k + zs.length := by exact Nat.lt_add_right zs.length c1
-    have s2 : ¬ k ≤ i := by exact Nat.not_le_of_lt c1
+  cases v
+  case free_ x =>
+    simp only [instantiate]
+  case bound_ i =>
+    rewrite [instantiate]
+    split
+    case isTrue c1 =>
+      simp only [instantiate]
+      simp only [List.length_append]
+      simp only [List.getElem_append]
+      grind
+    case isFalse c1 =>
+      simp only
+      split
+      case isTrue c2 =>
+        have s1 : zs'[i - (k + zs.length)].isFree :=
+        by
+          apply h1
+          exact List.getElem_mem c2
 
-    simp only [instantiate]
-    split_ifs
-    simp
-    intro a1
-    contradiction
-  case neg c1 c2 =>
-    simp at c2
-    simp
-    simp only [instantiate]
-    split_ifs
-    case pos c3 =>
-      simp
-      split_ifs
-      case pos c4 =>
-        have s1 : ¬ i - k < zs.length := by omega
-        contradiction
-      case neg c4 =>
-        have s1 : i - k < zs.length := by omega
-        contradiction
-    case pos c3 c4 =>
-      have s1 : ¬ zs.length + zs'.length ≤ i - k := by omega
-      contradiction
-    case neg c3 c4 =>
-      simp
-      split_ifs
-      case pos c5 =>
-        have s1 : ¬ zs.length + zs'.length ≤ i - k := by omega
-        contradiction
-      case pos c5 c6 =>
-        have s1 : ¬ zs.length + zs'.length ≤ i - k := by omega
-        contradiction
-      case neg c5 c6 =>
-        simp
-        omega
-  case pos c1 c2 =>
-    simp only [instantiate]
-    split_ifs
-    case pos c3 =>
-      simp
-      split_ifs
-      case pos c4 =>
-        apply List.getElem_append_left'
-      case neg c4 =>
-        have s1 : i - k < zs.length := by omega
-        contradiction
-    case pos c3 c4 =>
-      specialize h1 zs'[i - (k + zs.length)]
-      simp at h1
-      simp only [IsFreeIffExistsString zs'[i - (k + zs.length)]] at h1
-      obtain ⟨x, a1⟩ := h1
-      rw [a1]
-      simp
-      rw [← a1]
-      obtain s1 := List.getElem_append c2
-      rw [s1]
-      have s2 : ¬ i - k < zs.length := by omega
-      split_ifs
-      congr 1
-      omega
-    case neg c3 c4 =>
-      have s1 : ¬ i - k < (zs ++ zs').length :=
-      by
-        simp
-        omega
-      contradiction
+        rewrite [Var.instantiate_free k zs zs'[i - (k + zs.length)] s1]
+        rewrite [instantiate]
+        grind
+      case isFalse c2 =>
+        simp only [instantiate]
+        grind
 
 
 lemma Formula.instantiate_append
