@@ -53,21 +53,29 @@ lemma SubOpenVar
     openVar k (free_ y) (Var.sub_Var (str_fun_to_var_fun σ) v) :=
   by
   cases v
-  case _ x =>
+  case free_ x =>
     simp only [openVar]
     simp only [Var.sub_Var]
     simp only [str_fun_to_var_fun]
-  case _ i =>
+  case bound_ i =>
     simp only [openVar]
     split
-    case _ c1 =>
+    case isTrue c1 =>
       simp only [Var.sub_Var]
-      simp only [if_pos c1]
       simp only [str_fun_to_var_fun]
-      simp only [h1]
-    case _ c1 =>
+      rewrite [h1]
+      split
+      case isTrue c2 =>
+        apply Eq.refl
+      case isFalse c2 =>
+        contradiction
+    case isFalse c1 =>
       simp only [Var.sub_Var]
-      simp only [if_neg c1]
+      split
+      case isTrue c2 =>
+        contradiction
+      case isFalse c2 =>
+        apply Eq.refl
 
 
 lemma SubCloseVar
@@ -75,26 +83,40 @@ lemma SubCloseVar
   (σ : String → String)
   (y : String)
   (k : ℕ)
-  (h1 : σ y = y)
-  (h2 : ∀ (x : String), ¬ y = σ x) :
+  (h1 : σ y = y) :
+  -- (h2 : ∀ (x : String), ¬ y = σ x) :
   Var.sub_Var (str_fun_to_var_fun σ) (closeVar (free_ y) k v) =
     closeVar (free_ y) k (Var.sub_Var (str_fun_to_var_fun σ) v) :=
   by
   cases v
   case free_ x =>
-    simp only [closeVar]
-    by_cases c1 : y = x
-    · subst c1
+    rewrite [closeVar]
+    split
+    case isTrue c1 =>
+      rewrite [c1]
       simp only [Var.sub_Var]
       simp only [str_fun_to_var_fun]
-      simp only [h1]
-      simp
-    · simp
-      simp only [if_neg c1]
+      rewrite [closeVar]
+      split
+      case isTrue c2 =>
+        apply Eq.refl
+      case isFalse c2 =>
+        simp only [free_.injEq] at c1
+        simp only [free_.injEq] at c2
+        rewrite [c1] at h1
+        rewrite [h1] at c2
+        contradiction
+    case isFalse c1 =>
       simp only [Var.sub_Var]
       simp only [str_fun_to_var_fun]
-      specialize h2 x
-      simp only [if_neg h2]
+      rewrite [closeVar]
+      split
+      case isTrue c2 =>
+        simp only [free_.injEq] at c1
+        simp only [free_.injEq] at c2
+        sorry
+      case isFalse c2 =>
+        apply Eq.refl
   case bound_ i =>
     simp only [closeVar]
     simp only [Var.sub_Var]
@@ -113,24 +135,28 @@ lemma SubOpenFormula
   case pred_ X vs =>
     simp only [openFormulaAux]
     simp only [Formula.sub_Var]
-    simp
-    intro v _
-    exact SubOpenVar v σ k x h1
+    simp only [List.map_map]
+    simp only [openFormulaAux]
+    congr 1
+    simp only [List.map_map, List.map_inj_left, Function.comp_apply]
+    intro v a1
+    apply SubOpenVar
+    exact h1
   case not_ phi phi_ih =>
     simp only [openFormulaAux]
     simp only [Formula.sub_Var]
-    congr! 1
+    congr 1
     apply phi_ih
   case imp_ phi psi phi_ih psi_ih =>
     simp only [openFormulaAux]
     simp only [Formula.sub_Var]
-    congr! 1
+    congr 1
     · apply phi_ih
     · apply psi_ih
   case forall_ phi phi_ih =>
     simp only [openFormulaAux]
     simp only [Formula.sub_Var]
-    congr! 1
+    congr 1
     apply phi_ih
 
 
@@ -139,35 +165,40 @@ lemma SubCloseFormula
   (σ : String → String)
   (x : String)
   (k : ℕ)
-  (h1 : σ x = x)
-  (h2 : ∀ (y : String), ¬ x = σ y) :
+  (h1 : σ x = x) :
+  -- (h2 : ∀ (y : String), ¬ x = σ y) :
   Formula.sub_Var (str_fun_to_var_fun σ) (closeFormulaAux (free_ x) k F) = closeFormulaAux (free_ x) k (Formula.sub_Var (str_fun_to_var_fun σ) F) :=
   by
   induction F generalizing k
   case pred_ X vs =>
     simp only [closeFormulaAux]
     simp only [Formula.sub_Var]
-    simp
-    intro v _
-    exact SubCloseVar v σ x k h1 h2
+    simp only [closeFormulaAux]
+    congr 1
+    simp only [List.map_map, List.map_inj_left, Function.comp_apply]
+    intro v a1
+    apply SubCloseVar
+    exact h1
   case not_ phi phi_ih =>
     simp only [closeFormulaAux]
     simp only [Formula.sub_Var]
-    congr! 1
+    congr 1
     apply phi_ih
   case imp_ phi psi phi_ih psi_ih =>
     simp only [closeFormulaAux]
     simp only [Formula.sub_Var]
-    congr! 1
+    congr 1
     · apply phi_ih
     · apply psi_ih
   case forall_ phi phi_ih =>
     simp only [closeFormulaAux]
     simp only [Formula.sub_Var]
-    congr! 1
+    congr 1
     apply phi_ih
 
+
 --------------------------------------------------
+
 
 theorem shift_sub_Var
   (D : Type)
@@ -178,15 +209,16 @@ theorem shift_sub_Var
     shift D V d ∘ Var.sub_Var (str_fun_to_var_fun σ) :=
   by
   funext v
-  simp
+  simp only [Function.comp_apply]
   cases v
-  case _ x =>
+  case free_ x =>
     simp only [Var.sub_Var]
-    simp only [shift]
     simp only [str_fun_to_var_fun]
-    simp
-    rfl
-  case _ i =>
+    simp only [shift]
+    simp only [Function.comp_apply]
+    simp only [Var.sub_Var]
+    simp only [str_fun_to_var_fun]
+  case bound_ i =>
     cases i
     case zero =>
       simp only [Var.sub_Var]
@@ -194,8 +226,8 @@ theorem shift_sub_Var
     case succ n =>
       simp only [Var.sub_Var]
       simp only [shift]
-      simp
-      rfl
+      simp only [Function.comp_apply]
+      simp only [Var.sub_Var]
 
 
 theorem HoldsIffSubHolds
@@ -212,7 +244,7 @@ theorem HoldsIffSubHolds
     simp only [Formula.sub_Var]
     simp only [Holds]
     congr! 1
-    simp
+    simp only [List.map_map]
   case not_ phi phi_ih =>
     simp only [Formula.sub_Var]
     simp only [Holds]
@@ -229,6 +261,9 @@ theorem HoldsIffSubHolds
     simp only [Holds]
     apply forall_congr'
     intro d
-    simp only [← phi_ih]
+    rewrite [← phi_ih]
     congr!
     apply shift_sub_Var
+
+
+end LN
