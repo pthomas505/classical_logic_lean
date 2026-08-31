@@ -885,6 +885,7 @@ theorem HoldsIffSubHolds
 -/
 --------------------------------------------------
 
+
 theorem ShiftVarOpenList
   (D : Type)
   (V : VarAssignment D)
@@ -895,47 +896,78 @@ theorem ShiftVarOpenList
     shift D V d ∘ Var.openList (j + 1) (List.map free_ zs) :=
   by
   funext v
-  simp
+  simp only [Function.comp_apply]
   cases v
-  case _ x =>
+  case free_ x =>
     simp only [Var.openList]
     simp only [shift]
-    simp
-    rfl
-  case _ i =>
+    simp only [Function.comp_apply]
+    apply Eq.refl
+  case bound_ i =>
     cases i
     case zero =>
-      simp only [shift]
       simp only [Var.openList]
-      simp
-    case succ i =>
+      split
+      case isTrue c1 =>
         simp only [shift]
+      case isFalse c1 =>
+        exfalso
+        apply c1
+        apply Nat.zero_lt_succ
+    case succ i =>
+      simp only [Var.openList]
+      split
+      case isTrue c1 =>
+        simp only [Nat.succ_lt_succ_iff] at c1
+
+        simp only [shift]
+        simp only [Function.comp_apply]
         simp only [Var.openList]
-        simp
-        split_ifs
-        case _ c1 =>
-          have s1 : i + 1 < j + 1
-          linarith
-          simp only [if_pos s1]
+        split
+        case isTrue c2 =>
+          apply Eq.refl
+        case isFalse c2 =>
+          contradiction
+      case isFalse c1 =>
+        simp only [Nat.succ_lt_succ_iff] at c1
+
+        have s1 : i + 1 - (j + 1) = i - j :=
+        by
+          apply Nat.add_sub_add_right
+        rewrite [s1]
+
+        simp only [List.length_map, List.getElem_map]
+
+        split
+        case isTrue c2 =>
+          simp only [shift]
+          simp only [Function.comp_apply]
           simp only [Var.openList]
-          simp only [c1]
-          simp
-        case _ c1 c2 =>
-          have s1 : ¬ i + 1 < j + 1
-          linarith
-          simp only [if_neg s1]
+          split
+          case isTrue c3 =>
+            contradiction
+          case isFalse c3 =>
+            split
+            case isTrue c4 =>
+              simp only [List.getElem_map]
+            case isFalse c4 =>
+              simp only [List.length_map] at c4
+              contradiction
+        case isFalse c2 =>
+          simp only [shift]
+          simp only [Function.comp_apply]
           simp only [Var.openList]
-          simp only [c1]
-          simp
-          simp only [c2]
-          simp
-        case _ c1 c2 =>
-          simp
-          simp only [Var.openList]
-          simp only [c1]
-          simp
-          simp only [c2]
-          simp
+          split
+          case isTrue c3 =>
+            contradiction
+          case isFalse c3 =>
+            split
+            case isTrue c4 =>
+              simp only [List.length_map] at c4
+              contradiction
+            case isFalse c4 =>
+              simp only [List.length_map]
+              simp only [Nat.add_eq]
 
 
 lemma HoldsOpenList
