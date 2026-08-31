@@ -983,8 +983,10 @@ lemma HoldsOpenList
   induction F generalizing V j
   case pred_ X vs =>
     simp only [Holds]
+    simp only [Formula.openList]
+    simp only [Holds]
     congr! 1
-    simp
+    simp only [List.map_map]
   case not_ phi phi_ih =>
     simp only [Holds]
     congr! 1
@@ -1002,7 +1004,9 @@ lemma HoldsOpenList
     congr!
     apply ShiftVarOpenList
 
+
 --------------------------------------------------
+
 
 theorem ShiftListVarOpenList
   (D : Type)
@@ -1014,41 +1018,57 @@ theorem ShiftListVarOpenList
   induction xs
   case nil =>
     funext v
-    simp
+    simp only [List.map_nil, Function.comp_apply]
     simp only [shiftList]
     cases v
-    case _ x =>
+    case free_ x =>
       simp only [Var.openList]
-    case _ i =>
+    case bound_ i =>
       simp only [Var.openList]
       split
-      case _ c1 =>
-        rfl
-      case _ c1 =>
-        simp
-  case _ hd tl ih =>
+      case isTrue c1 =>
+        apply Eq.refl
+      case isFalse c1 =>
+        split
+        case isTrue c2 =>
+          simp only [tsub_zero, List.length_nil, not_lt_zero] at c2
+        case isFalse c2 =>
+          simp only [tsub_zero, List.length_nil, add_zero]
+  case cons hd tl ih =>
     funext v
-    simp
+    simp only [List.map_cons, Function.comp_apply]
     simp only [shiftList]
     cases v
-    case _ x =>
+    case free_ x =>
       simp only [shift]
-      simp only [← ih]
+      rewrite [← ih]
       simp only [Var.openList]
-      simp
-      rfl
-    case _ i =>
+      simp only [Function.comp_apply]
+      simp only [Var.openList]
+    case bound_ i =>
       cases i
       case zero =>
         simp only [shift]
         simp only [Var.openList]
-        simp
+        split
+        case isTrue c1 =>
+          simp only [lt_self_iff_false] at c1
+        case isFalse c1 =>
+          split
+          case isTrue c2 =>
+            simp only [tsub_self, List.getElem_cons_zero]
+          case isFalse c2 =>
+            exfalso
+            apply c2
+            simp only [List.length_cons, List.length_map]
+            simp only [tsub_self]
+            apply Nat.zero_lt_succ
       case succ i =>
         simp only [shift]
-        simp only [← ih]
-        simp
+        rewrite [← ih]
+        simp only [Function.comp_apply]
         simp only [Var.openList]
-        simp
+        grind
 
 
 lemma lc_at_iff_lc
