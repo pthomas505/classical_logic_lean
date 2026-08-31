@@ -1103,7 +1103,8 @@ theorem HoldsCoincideVar
 
     simp only [Holds]
     congr! 1
-    exact phi_ih V V' h1
+    apply phi_ih
+    exact h1
   case imp_ phi psi phi_ih psi_ih =>
     simp only [Holds]
     congr! 1
@@ -1111,12 +1112,14 @@ theorem HoldsCoincideVar
       intro v a1
       apply h1
       simp only [occursFreeIn]
-      tauto
+      left
+      exact a1
     · apply psi_ih
       intro v a1
       apply h1
       simp only [occursFreeIn]
-      tauto
+      right
+      exact a1
   case forall_ x phi phi_ih =>
     simp only [occursFreeIn] at h1
 
@@ -1154,29 +1157,31 @@ lemma HoldsShift
   intro d
   apply HoldsCoincideVar
   intro v a1
-  simp
+  simp only [Function.comp_apply]
   simp only [Function.updateITE]
   cases v
-  case _ x' =>
+  case free_ x =>
     simp only [shift]
     simp only [Var.openList]
-    split_ifs
-    case _ c1 =>
-      simp at c1
-      simp only [← c1] at h1
+    split
+    case isTrue c1 =>
+      simp only [free_.injEq] at c1
+      rewrite [← c1] at h1
       contradiction
-    case _ c1 =>
-      rfl
-  case _ i =>
+    case isFalse c1 =>
+      apply Eq.refl
+  case bound_ i =>
     cases i
     case zero =>
       simp only [shift]
       simp only [Var.openList]
-      simp
+      simp only [List.length_cons, List.length_nil]
+      grind
     case succ i =>
       simp only [shift]
       simp only [Var.openList]
-      simp
+      simp only [List.length_cons, List.length_nil]
+      grind only
 
 
 lemma HoldsForall
@@ -1194,7 +1199,7 @@ lemma HoldsForall
   apply forall_congr'
   intro d
   obtain s1 := HoldsOpenList D I (Function.updateITE V (free_ z) d) 0 [z] F
-  simp at s1
+  simp only [List.map_cons, List.map_nil] at s1
   exact s1
 
 
@@ -1207,48 +1212,55 @@ theorem extracted_1
   shift D V d ∘ Var.close (j + 1) (free_ z) = shift D (V ∘ Var.close j (free_ z)) d :=
   by
   funext v
-  simp
+  simp only [Function.comp_apply]
   cases v
-  case _ x =>
+  case free_ x =>
     conv =>
       rhs
       simp only [shift]
-      simp
+      simp only [Function.comp_apply]
     simp only [Var.close]
-    simp
-    split_ifs
-    case _ c1 =>
+    split
+    case isTrue c1 =>
       simp only [shift]
-    case _ c1 =>
+    case isFalse c1 =>
       simp only [shift]
-  case _ i =>
+  case bound_ i =>
     cases i
     case zero =>
       conv =>
         rhs
         simp only [shift]
       simp only [Var.close]
-      simp
-      simp only [shift]
+      split
+      case isTrue c1 =>
+        simp only [shift]
+      case isFalse c1 =>
+        exfalso
+        apply c1
+        apply Nat.zero_lt_succ
     case succ i =>
       conv =>
         rhs
         simp only [shift]
-        simp
+        simp only [Function.comp_apply]
         simp only [Var.close]
       simp only [Var.close]
       split
-      case _ c1 =>
-        have s1 : i < j
-        linarith
-        simp only [if_pos s1]
-        simp only [shift]
-      case _ c1 =>
-        simp at c1
-        have s1 : ¬ i < j
-        linarith
-        simp only [if_neg s1]
-        simp only [shift]
+      case isTrue c1 =>
+        split
+        case isTrue c2 =>
+          simp only [shift]
+        case isFalse c2 =>
+          simp only [Nat.succ_lt_succ_iff] at c1
+          contradiction
+      case isFalse c1 =>
+        simp only [Nat.succ_lt_succ_iff] at c1
+        split
+        case isTrue c2 =>
+          contradiction
+        case isFalse c2 =>
+          simp only [shift]
 
 
 lemma HoldsClose
@@ -1270,49 +1282,61 @@ lemma HoldsClose
     simp only [Formula.openList]
     simp only [Holds]
     congr! 1
-    simp
+    simp only [List.map_map, List.map_inj_left, Function.comp_apply]
     intro v a1
     specialize h2 v a1
     cases v
-    case _ x =>
+    case free_ x =>
       simp only [Var.openList]
       simp only [Var.close]
 
-      have s1 : ¬ free_ x = free_ z
-      intro contra
-      apply h1
-      simp only [← contra]
-      exact a1
-
-      simp only [if_neg s1]
-    case _ i =>
+      split
+      case isTrue c1 =>
+        simp only [free_.injEq] at c1
+        rewrite [c1] at a1
+        contradiction
+      case isFalse c1 =>
+        apply Eq.refl
+    case bound_ i =>
       simp only [Var.lc_at] at h2
 
       simp only [Var.openList]
-      simp
-      split_ifs
-      simp only [Var.close]
-      simp only [if_pos h2]
+      simp only [List.length_cons, List.length_nil, List.getElem_singleton]
+      split
+      case isTrue c1 =>
+        simp only [Var.close]
+        split
+        case isTrue c2 =>
+          apply Eq.refl
+        case isFalse c2 =>
+          contradiction
+      case isFalse c1 =>
+        contradiction
   case not_ phi phi_ih =>
     simp only [occursIn] at h1
     simp only [Formula.lc_at] at h2
 
     simp only [Holds]
     congr! 1
-    exact phi_ih V j h1 h2
+    apply phi_ih
+    · exact h1
+    · exact h2
   case imp_ phi psi phi_ih psi_ih =>
     simp only [occursIn] at h1
-    push_neg at h1
-    simp only [Formula.lc_at] at h2
+    rewrite [not_or] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
 
-    cases h1
-    case _ h1_left h1_right =>
-      cases h2
-      case _ h2_left h2_right =>
-        simp only [Holds]
-        congr! 1
-        · exact phi_ih V j h1_left h2_left
-        · exact psi_ih V j h1_right h2_right
+    simp only [Formula.lc_at] at h2
+    obtain ⟨h2_left, h2_right⟩ := h2
+
+    simp only [Holds]
+    congr! 1
+    · apply phi_ih
+      · exact h1_left
+      · exact h2_left
+    · apply psi_ih
+      · exact h1_right
+      · exact h2_right
   case forall_ x phi phi_ih =>
     simp only [occursIn] at h1
     simp only [Formula.lc_at] at h2
@@ -1322,7 +1346,7 @@ lemma HoldsClose
     apply forall_congr'
     intro d
     specialize phi_ih (shift D V d) (j + 1) h1 h2
-    simp only [phi_ih]
+    rewrite [phi_ih]
     congr! 1
     apply extracted_1
 
@@ -1339,44 +1363,55 @@ lemma Formula.OpenListLC
     simp only [Formula.lc_at] at h1
 
     simp only [Formula.openList]
-    simp
+    congr
     apply List.fun_is_id_on_mem_imp_map_eq_self
     intro v a1
     specialize h1 v a1
     cases v
-    case _ x =>
+    case free_ x =>
       simp only [Var.openList]
-    case _ i =>
+    case bound_ i =>
       cases i
       case zero =>
         simp only [Var.lc_at] at h1
         simp only [Var.openList]
-        simp only [if_pos h1]
+        split
+        case isTrue c1 =>
+          apply Eq.refl
+        case isFalse c1 =>
+          contradiction
       case succ i =>
         simp only [Var.lc_at] at h1
         simp only [Var.openList]
-        simp only [if_pos h1]
+        split
+        case isTrue c1 =>
+          apply Eq.refl
+        case isFalse c1 =>
+          contradiction
   case not_ phi phi_ih =>
     simp only [Formula.lc_at] at h1
 
     simp only [Formula.openList]
     congr!
-    exact phi_ih j h1
+    apply phi_ih
+    exact h1
   case imp_ phi psi phi_ih psi_ih =>
     simp only [Formula.lc_at] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
 
     simp only [Formula.openList]
-    cases h1
-    case _ h1_left h1_right =>
-      congr!
-      · exact phi_ih j h1_left
-      · exact psi_ih j h1_right
+    congr!
+    · apply phi_ih
+      exact h1_left
+    · apply psi_ih
+      exact h1_right
   case forall_ x phi phi_ih =>
     simp only [Formula.lc_at] at h1
 
     simp only [Formula.openList]
-    simp
-    exact phi_ih (j + 1) h1
+    congr
+    apply phi_ih
+    exact h1
 
 
 lemma lc_at_instantiate
@@ -1392,61 +1427,62 @@ lemma lc_at_instantiate
     constructor
     · intro a1 v a2
       specialize a1 (Var.openList j (List.map free_ zs) v)
-      simp at a1
+      simp only [List.mem_map, forall_exists_index] at a1
+      simp only [and_imp] at a1
       specialize a1 v a2
-      simp at a1
+
       cases v
-      case _ x =>
+      case free_ x =>
         simp only [Var.lc_at]
-      case _ i =>
+      case bound_ i =>
         simp only [Var.lc_at]
+        simp only [forall_const] at a1
         simp only [Var.openList] at a1
         split at a1
-        case _ c1 =>
+        case isTrue c1 =>
           linarith
-        case _ c1 =>
+        case isFalse c1 =>
           split at a1
-          case _ c2 =>
-            simp at c2
+          case isTrue c2 =>
+            simp only [List.length_map] at c2
             exact lt_add_of_tsub_lt_left c2
-          case _ c2 =>
+          case isFalse c2 =>
             simp only [Var.lc_at] at a1
-            simp at a1
+            have s1 : i - j < (List.map free_ zs).length :=
+            by
+              linarith
+            contradiction
     · intro a1 v a2
       cases v
-      case _ x =>
+      case free_ x =>
         simp only [Var.lc_at]
-      case _ i =>
+      case bound_ i =>
         simp only [Var.lc_at]
-        simp at a2
-        apply Exists.elim a2
-        intro z a3
-        clear a2
-        cases a3
-        case _ a3_left a3_right =>
-          specialize a1 z a3_left
-          cases z
-          case _ x =>
-            simp only [Var.openList] at a3_right
-            simp at a3_right
-          case _ i' =>
-            simp only [Var.lc_at] at a1
-            simp only [Var.openList] at a3_right
-            split at a3_right
-            case _ c1 =>
-              simp at a3_right
-              subst a3_right
-              exact c1
-            case _ c1 =>
-              simp at c1
-              simp at a3_right
-              split at a3_right
-              case _ c2 =>
-                contradiction
-              case _ c2 =>
-                exfalso
-                apply c2
-                exact Nat.sub_lt_left_of_lt_add c1 a1
+        simp only [List.mem_map] at a2
+        obtain ⟨z, ⟨a2_left, a2_right⟩⟩ := a2
+
+        specialize a1 z a2_left
+        cases z
+        case free_ x =>
+          simp only [Var.openList] at a2_right
+          contradiction
+        case bound_ i' =>
+          simp only [Var.lc_at] at a1
+          simp only [Var.openList] at a2_right
+          split at a2_right
+          case isTrue c1 =>
+            simp only [bound_.injEq] at a2_right
+            rewrite [a2_right] at c1
+            exact c1
+          case isFalse c1 =>
+            simp only [List.length_map, List.getElem_map] at a2_right
+            split at a2_right
+            case isTrue c2 =>
+              contradiction
+            case isFalse c2 =>
+              exfalso
+              apply c2
+              omega
   case not_ phi phi_ih =>
     simp only [Formula.openList]
     simp only [Formula.lc_at]
@@ -1461,9 +1497,11 @@ lemma lc_at_instantiate
     simp only [Formula.openList]
     simp only [Formula.lc_at]
     simp only [phi_ih]
-    have s1 : j + 1 + List.length zs = j + List.length zs + 1
-    linarith;
-    simp only [s1]
+    have s1 : j + 1 + List.length zs = j + List.length zs + 1 :=
+    by
+      linarith;
+    rewrite [s1]
+    apply Iff.refl
 
 
 example
@@ -1471,16 +1509,18 @@ example
   (j j' : ℕ)
   (zs zs' : List String)
   (F : Formula) :
-  predSub τ (Formula.openList j (zs.map free_) F) = Formula.openList j' (zs'.map free_) (predSub τ F) := by
+  predSub τ (Formula.openList j (zs.map free_) F) = Formula.openList j' (zs'.map free_) (predSub τ F) :=
+  by
   induction F generalizing j j'
   case pred_ X vs =>
     simp only [predSub]
-    simp
     sorry
   case forall_ x phi phi_ih =>
     simp only [predSub]
     simp only [Formula.openList]
-    simp only [phi_ih (j + 1) (j' + 1)]
+    simp only [predSub]
+    congr
+    apply phi_ih
   all_goals
     sorry
 
@@ -1500,58 +1540,56 @@ example
     simp only [predSub]
     simp only [Interpretation.usingPred]
     simp only [Holds]
-    simp
+    simp only [List.length_map]
 
-    have s1 : ∀ (v : Var), v ∈ vs → Var.lc_at 0 v
-    intro v a1
-    specialize ih v a1
-    cases v
-    case _ x =>
-      simp only [Var.lc_at]
-    case _ i =>
-      simp only [Var.isFree] at ih
+    have s1 : ∀ (v : Var), v ∈ vs → Var.lc_at 0 v :=
+    by
+      intro v a1
+      specialize ih v a1
+      cases v
+      case free_ x =>
+        simp only [Var.lc_at]
+      case bound_ i =>
+        simp only [Var.isFree] at ih
 
     obtain s2 := free_var_list_to_string_list vs s1
-    apply Exists.elim s2
-    intro zs a1
+    obtain ⟨zs, s2⟩ := s2
 
     obtain s3 := HoldsOpenList D I V 0 zs (τ X (List.length vs))
-    simp only [← a1] at s3
-    simp only [← s3]
-    clear s2
+    rewrite [← s2] at s3
+    rewrite [← s3]
 
     congr! 1
-    simp only [a1]
-    simp
+    rewrite [s2]
+    simp only [List.map_map]
     simp only [ShiftListVarOpenList]
   case forall_ x phi z ih_1 ih_2 =>
     simp only [← lc_at_iff_lc] at ih_1
 
     simp only [predSub]
 
-    obtain s0 := lc_at_instantiate phi 0 [z]
-    simp at s0
-    simp only [s0] at ih_1
-    clear s0
+    obtain s1 := lc_at_instantiate phi 0 [z]
+    simp only [List.map_cons, List.map_nil, List.length_cons, List.length_nil] at s1
+    rewrite [s1] at ih_1
 
     simp only [Holds]
     apply forall_congr'
     intro d
 
-
     obtain s1 := HoldsForall D I V x (predSub τ phi) z
     simp only [Holds] at s1
 
     obtain s2 := ShiftListVarOpenList D V [z]
-    simp at s2
+    simp only [List.map_cons, List.map_nil, Function.comp_apply] at s2
 
     obtain s3 := Formula.OpenListLC phi 1 [z] ih_1
-    simp at s3
+    simp only [List.map_cons, List.map_nil] at s3
 
     obtain s4 := HoldsClose D I V z
-
-
 
     sorry
   all_goals
     sorry
+
+
+end LN
