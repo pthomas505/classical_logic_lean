@@ -4,7 +4,9 @@ import ClassicalLogicLean.NV.Semantics
 
 import Mathlib.Data.List.Defs
 
-set_option autoImplicit false
+set_option linter.style.docString false
+set_option linter.style.emptyLine false
+set_option linter.style.longLine false
 
 
 namespace FOL.NV
