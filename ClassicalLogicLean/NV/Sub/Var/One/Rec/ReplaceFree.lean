@@ -314,27 +314,50 @@ theorem not_var_is_free_in_fast_replace_free_var_one_rec_self
 
     simp only [fast_replace_free_var_one_rec]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    simp
+    congr
     simp only [List.map_eq_self_iff_fun_is_id_on_mem]
-    simp
-    intro x a1 a2
-    subst a2
-    contradiction
+    intro x a1
+    split
+    case isTrue c1 =>
+      rewrite [c1] at h1
+      contradiction
+    case isFalse c1 =>
+      apply Eq.refl
   case eq_ x y =>
-    simp
-    tauto
+    rewrite [not_or] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
+
+    congr
+    all_goals
+      split
+      case isTrue c1 =>
+        contradiction
+      case isFalse c1 =>
+        apply Eq.refl
   case not_ phi phi_ih =>
-    tauto
+    congr
+    exact phi_ih h1
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    simp
-    tauto
+    rewrite [not_or] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
+
+    congr
+    · exact phi_ih h1_left
+    · exact psi_ih h1_right
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    simp
-    tauto
+    split
+    case isTrue c1 =>
+      apply Eq.refl
+    case isFalse c1 =>
+      congr
+      apply phi_ih
+      intro contra
+      apply h1
+      exact ⟨c1, contra⟩
 
 
 theorem fast_replace_free_var_one_rec_inverse
