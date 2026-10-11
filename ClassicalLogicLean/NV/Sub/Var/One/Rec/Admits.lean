@@ -532,12 +532,13 @@ theorem fast_admits_var_one_rec_aux_add_binders
 
     simp only [fast_admits_var_one_rec_aux]
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    simp
     cases h1
     case inl h1 =>
-      tauto
+      left
+      exact h1
     case inr h1 =>
       right
+      simp only [Finset.union_assoc]
       simp only [Finset.union_right_comm_assoc]
       apply phi_ih
       exact h1
