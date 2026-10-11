@@ -60,26 +60,42 @@ theorem replace_var_one_rec_self
   any_goals
     simp only [replace_var_one_rec]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    simp
+    congr
     simp only [List.map_eq_self_iff_fun_is_id_on_mem]
-    simp
+    intro x a1
+    split
+    case isTrue c1 =>
+      exact c1
+    case isFalse c1 =>
+      apply Eq.refl
   case eq_ x y =>
-    simp
+    congr
+    all_goals
+      split
+      case isTrue c1 =>
+        exact c1
+      case isFalse c1 =>
+        apply Eq.refl
   case not_ phi phi_ih =>
-    congr!
+    rewrite [phi_ih]
+    apply Eq.refl
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    congr!
+    rewrite [phi_ih]
+    rewrite [psi_ih]
+    apply Eq.refl
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    split_ifs
-    case pos c1 =>
-      rw [phi_ih]
-      rw [c1]
-    case neg c1 =>
-      rw [phi_ih]
+    split
+    case isTrue c1 =>
+      rewrite [phi_ih]
+      rewrite [c1]
+      apply Eq.refl
+    case isFalse c1 =>
+      rewrite [phi_ih]
+      apply Eq.refl
 
 
 theorem not_var_occurs_in_replace_var_one_rec_self
@@ -94,30 +110,50 @@ theorem not_var_occurs_in_replace_var_one_rec_self
 
     simp only [replace_var_one_rec]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    simp
+    congr
     simp only [List.map_eq_self_iff_fun_is_id_on_mem]
-    simp
-    intro x a1 a2
-    subst a2
-    contradiction
+    intro x a1
+    split
+    case isTrue c1 =>
+      rewrite [c1] at h1
+      contradiction
+    case isFalse c1 =>
+      apply Eq.refl
   case eq_ x y =>
-    simp
-    tauto
+    rewrite [not_or] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
+
+    congr
+    all_goals
+      split
+      case isTrue c1 =>
+        contradiction
+      case isFalse c1 =>
+        apply Eq.refl
   case not_ phi phi_ih =>
-    tauto
+    congr
+    exact phi_ih h1
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    simp
-    tauto
-  case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    simp at h1
+    rewrite [not_or] at h1
     obtain ⟨h1_left, h1_right⟩ := h1
 
-    split_ifs
-    rw [phi_ih h1_right]
+    congr
+    · exact phi_ih h1_left
+    · exact psi_ih h1_right
+  case forall_ x phi phi_ih | exists_ x phi phi_ih =>
+    rewrite [not_or] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
+
+    split
+    case isTrue c1 =>
+      contradiction
+    case isFalse c1 =>
+      congr
+      exact phi_ih h1_right
 
 
 theorem replace_var_one_rec_inverse
@@ -132,47 +168,75 @@ theorem replace_var_one_rec_inverse
 
     simp only [replace_var_one_rec]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    congr!
-    simp
+    congr
+    simp only [List.map_map]
     simp only [List.map_eq_self_iff_fun_is_id_on_mem]
-    simp
+    simp only [Function.comp_apply]
     intro x a1
-    by_cases c1 : v = x
-    · simp only [if_pos c1]
-      simp
-      exact c1
-    · simp only [if_neg c1]
-      simp
-      intro a2
-      subst a2
-      contradiction
+    split
+    case isTrue c1 =>
+      split
+      case isTrue c2 =>
+        exact c1
+      case isFalse c2 =>
+        contradiction
+    case isFalse c1 =>
+      split
+      case isTrue c2 =>
+        rewrite [c2] at h1
+        contradiction
+      case isFalse c2 =>
+        apply Eq.refl
   case eq_ x y =>
-      congr!
-      · split_ifs <;> tauto
-      · split_ifs <;> tauto
+    rewrite [not_or] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
+
+    congr
+    all_goals
+      split
+      case isTrue c1 =>
+        split
+        case isTrue c2 =>
+          exact c1
+        case isFalse c2 =>
+          contradiction
+      case isFalse c1 =>
+        apply Eq.refl
   case not_ phi phi_ih =>
-    congr!
+    congr
     exact phi_ih h1
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-      congr! <;> tauto
-  case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    push_neg at h1
+    rewrite [not_or] at h1
     obtain ⟨h1_left, h1_right⟩ := h1
 
-    split_ifs
-    case pos c1 =>
+    congr
+    · exact phi_ih h1_left
+    · exact psi_ih h1_right
+  case forall_ x phi phi_ih | exists_ x phi phi_ih =>
+    rewrite [not_or] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
+
+    split
+    case isTrue c1 =>
       simp only [replace_var_one_rec]
-      simp
-      tauto
-    case neg c1 =>
+      split
+      case isTrue c2 =>
+        congr
+        exact phi_ih h1_right
+      case isFalse c2 =>
+        contradiction
+    case isFalse c1 =>
       simp only [replace_var_one_rec]
-      simp only [if_neg h1_left]
-      congr!
-      exact phi_ih h1_right
+      split
+      case isTrue c2 =>
+        contradiction
+      case isFalse c2 =>
+        congr
+        exact phi_ih h1_right
 
 
 theorem not_var_occurs_in_replace_var_one_rec
@@ -186,13 +250,28 @@ theorem not_var_occurs_in_replace_var_one_rec
     simp only [replace_var_one_rec]
     simp only [var_occurs_in]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    simp
-    intro x
-    split_ifs <;> tauto
+    simp only [List.mem_map, not_exists]
+    intro x a1
+    obtain ⟨a1_left, a1_right⟩ := a1
+    split at a1_right
+    case isTrue c1 =>
+      rewrite [a1_right] at h1
+      contradiction
+    case isFalse c1 =>
+      rewrite [a1_right] at c1
+      contradiction
   case eq_ x y =>
-    split_ifs <;> tauto
+    rewrite [not_or]
+    constructor
+    all_goals
+      split
+      case isTrue c1 =>
+        exact h1
+      case isFalse c1 =>
+        exact c1
   case true_ | false_ =>
-    simp
+    intro contra
+    exact contra
   case not_ phi phi_ih =>
     exact phi_ih
   case
@@ -200,17 +279,20 @@ theorem not_var_occurs_in_replace_var_one_rec
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    tauto
+    rewrite [not_or]
+    constructor
+    · exact phi_ih
+    · exact psi_ih
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
     simp only [replace_var_one_rec]
-    split_ifs
-    case pos c1 =>
+    split
+    case isTrue c1 =>
       simp only [var_occurs_in]
-      simp
+      rewrite [not_or]
       exact ⟨h1, phi_ih⟩
-    case neg c1 =>
+    case isFalse c1 =>
       simp only [var_occurs_in]
-      simp
+      rewrite [not_or]
       exact ⟨c1, phi_ih⟩
 
 
@@ -227,52 +309,105 @@ theorem replace_var_one_rec_free_var_set_sdiff
       simp only [replace_var_one_rec]
       simp only [free_var_set]
       ext x
-      simp
+      simp only [Finset.mem_sdiff, List.mem_toFinset, Finset.mem_singleton, List.mem_map]
       constructor
       · intro a1
         obtain ⟨a1_left, a1_right⟩ := a1
         constructor
         · apply Exists.intro x
-          simp only [eq_comm] at a1_right
-          split_ifs
-          exact ⟨a1_left, rfl⟩
+          simp only [Eq.comm] at a1_right
+          split
+          case isTrue c1 =>
+            contradiction
+          case isFalse c1 =>
+            exact ⟨a1_left, rfl⟩
         · intro contra
           apply h1
-          rw [← contra]
-          simp
+          rewrite [← contra]
+          simp only [List.mem_toFinset]
           exact a1_left
       · intro a1
         obtain ⟨⟨y, ⟨a1_left_left, a1_left_right⟩⟩, a1_right⟩ := a1
-        split_ifs at a1_left_right
-        case pos c1 =>
-          rw [a1_left_right] at a1_right
+        split at a1_left_right
+        case isTrue c1 =>
+          rewrite [a1_left_right] at a1_right
           contradiction
-        case neg c1 =>
-          subst a1_left_right
-          tauto
+        case isFalse c1 =>
+          rewrite [← a1_left_right]
+          constructor
+          · exact a1_left_left
+          · intro contra
+            apply c1
+            rewrite [contra]
+            apply Eq.refl
     case eq_ x y =>
-      simp at h1
+      simp only [Finset.mem_insert, Finset.mem_singleton] at h1
+      rewrite [not_or] at h1
       obtain ⟨h1_left, h1_right⟩ := h1
 
       simp only [replace_var_one_rec]
       simp only [free_var_set]
       simp only [Finset.sdiff_singleton_eq_erase]
-      split_ifs
-      case pos c1 c2 =>
-        rw [← c1]
-        rw [← c2]
-        simp
-      case neg c1 c2 =>
-        rw [← c1]
-        simp_all
-      case pos c1 c2 =>
-        aesop
-      case neg c1 c2 =>
-        simp_all
+      split
+      case isTrue c1 =>
+        split
+        case isTrue c2 =>
+          rewrite [← c1]
+          rewrite [← c2]
+          simp only [Finset.mem_singleton, Finset.insert_eq_of_mem, Finset.erase_singleton]
+        case isFalse c2 =>
+          rewrite [← c1]
+          simp only [Finset.erase_insert_eq_erase]
+
+          simp only [← Finset.mem_singleton] at c2
+          obtain s1 := Finset.erase_eq_of_notMem c2
+          rewrite [s1]
+
+          simp only [← Finset.mem_singleton] at h1_right
+          obtain s2 := Finset.erase_eq_of_notMem h1_right
+          rewrite [s2]
+
+          apply Eq.refl
+      case isFalse c1 =>
+        split
+        case isTrue c2 =>
+          simp only [Finset.pair_comm x y]
+          simp only [Finset.pair_comm x t]
+          rewrite [c2]
+          simp only [Finset.erase_insert_eq_erase]
+          rewrite [← c2]
+
+          simp only [← Finset.mem_singleton] at c1
+          obtain s1 := Finset.erase_eq_of_notMem c1
+          rewrite [s1]
+
+          simp only [← Finset.mem_singleton] at h1_left
+          obtain s2 := Finset.erase_eq_of_notMem h1_left
+          rewrite [s2]
+
+          apply Eq.refl
+        case isFalse c2 =>
+          have s1 : v ∉ ({x, y} : Finset VarName_) :=
+          by
+            simp only [Finset.mem_insert, Finset.mem_singleton]
+            rewrite [not_or]
+            exact ⟨c1, c2⟩
+          obtain s2 := Finset.erase_eq_of_notMem s1
+          rewrite [s2]
+
+          have s3 : t ∉ ({x, y} : Finset VarName_) :=
+          by
+            simp only [Finset.mem_insert, Finset.mem_singleton]
+            rewrite [not_or]
+            exact ⟨h1_left, h1_right⟩
+          obtain s4 := Finset.erase_eq_of_notMem s3
+          rewrite [s4]
+
+          apply Eq.refl
     case true_ | false_ =>
       simp only [replace_var_one_rec]
       simp only [free_var_set]
-      simp
+      simp only [Finset.empty_sdiff]
     case not_ phi phi_ih =>
       simp only [replace_var_one_rec]
       simp only [free_var_set]
@@ -282,30 +417,33 @@ theorem replace_var_one_rec_free_var_set_sdiff
       | and_ phi psi phi_ih psi_ih
       | or_ phi psi phi_ih psi_ih
       | iff_ phi psi phi_ih psi_ih =>
-      simp at h1
+      simp only [Finset.mem_union] at h1
+      rewrite [not_or] at h1
       obtain ⟨h1_left, h1_right⟩ := h1
 
       simp only [replace_var_one_rec]
       simp only [free_var_set]
       simp only [Finset.union_sdiff_distrib]
-      rw [phi_ih h1_left]
-      rw [psi_ih h1_right]
+      rewrite [phi_ih h1_left]
+      rewrite [psi_ih h1_right]
+      apply Eq.refl
     case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-      simp at h1
+      simp only [Finset.union_singleton, Finset.mem_insert] at h1
+      rewrite [not_or] at h1
       obtain ⟨h1_left, h1_right⟩ := h1
 
       simp only [replace_var_one_rec]
-      split_ifs
-      case pos c1 =>
-        rw [← c1]
+      split
+      case isTrue c1 =>
+        rewrite [← c1]
         simp only [free_var_set]
-        simp
-        exact phi_ih h1_left
-      case neg c1 =>
+        simp only [sdiff_idem]
+        exact phi_ih h1_right
+      case isFalse c1 =>
         simp only [free_var_set]
         simp only [sdiff_sdiff_comm]
         congr 1
-        exact phi_ih h1_left
+        exact phi_ih h1_right
 
 
 #lint
