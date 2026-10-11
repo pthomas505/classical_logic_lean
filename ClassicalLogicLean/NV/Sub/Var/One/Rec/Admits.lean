@@ -715,16 +715,21 @@ theorem fast_admits_var_one_rec_aux_imp_free_and_bound_unchanged
       · exact h1
       · exact h2_right
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    split_ifs
-    case pos c1 =>
-      rfl
-    case neg c1 =>
+    split
+    case isTrue c1 =>
       simp only [to_is_bound_var_one_rec_aux]
-      simp
+    case isFalse c1 =>
+      simp only [to_is_bound_var_one_rec_aux]
+      congr 1
       apply phi_ih
-      · simp
-        tauto
-      · tauto
+      · simp only [Finset.union_singleton, Finset.mem_insert]
+        rewrite [not_or]
+        exact ⟨c1, h1⟩
+      · cases h2
+        case inl h2 =>
+          contradiction
+        case inr h2 =>
+          exact h2
 
 
 theorem free_and_bound_unchanged_imp_fast_admits_var_one_rec_aux
