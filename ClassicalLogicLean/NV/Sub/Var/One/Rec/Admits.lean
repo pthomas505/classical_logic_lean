@@ -679,24 +679,41 @@ theorem fast_admits_var_one_rec_aux_imp_free_and_bound_unchanged
     case isFalse c1 =>
       apply Iff.refl
   case eq_ x y =>
-    simp
-    constructor
-    case left | right =>
-      split_ifs
-      case pos c1 =>
-        subst c1
-        tauto
-      case neg c1 =>
-        rfl
+    congr 1
+    all_goals
+      simp only [decide_eq_decide]
+      split
+      case isTrue c1 =>
+        rewrite [c1] at h1
+        constructor
+        · intro a1
+          contradiction
+        · intro a1
+          exfalso
+          apply h2
+          · first | left; exact c1 | right; exact c1
+          · exact a1
+      case isFalse c1 =>
+        apply Iff.refl
   case not_ phi phi_ih =>
-    tauto
+    congr 1
+    apply phi_ih
+    · exact h1
+    · exact h2
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    simp
-    tauto
+    obtain ⟨h2_left, h2_right⟩ := h2
+
+    congr 1
+    · apply phi_ih
+      · exact h1
+      · exact h2_left
+    · apply psi_ih
+      · exact h1
+      · exact h2_right
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
     split_ifs
     case pos c1 =>
