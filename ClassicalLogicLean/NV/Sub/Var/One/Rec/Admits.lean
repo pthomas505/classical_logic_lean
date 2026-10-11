@@ -620,6 +620,7 @@ theorem fast_admits_var_one_rec_aux_var_is_free_in
     simp only [var_is_free_in] at h2
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
     obtain ⟨h2_left, h2_right⟩ := h2
+
     cases h1
     case inl h1 =>
       contradiction
@@ -661,13 +662,22 @@ theorem fast_admits_var_one_rec_aux_imp_free_and_bound_unchanged
   any_goals
     simp only [to_is_bound_var_one_rec_aux]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    simp
+    congr 1
+    simp only [List.map_map]
+    simp only [List.map_inj_left, Function.comp_apply, decide_eq_decide]
     intro x a1
-    by_cases c1 : v = x
-    · subst c1
-      simp
-      tauto
-    · simp only [if_neg c1]
+    split
+    case isTrue c1 =>
+      rewrite [c1] at h1
+      rewrite [c1] at h2
+      specialize h2 a1
+      constructor
+      · intro a2
+        contradiction
+      · intro a2
+        contradiction
+    case isFalse c1 =>
+      apply Iff.refl
   case eq_ x y =>
     simp
     constructor
