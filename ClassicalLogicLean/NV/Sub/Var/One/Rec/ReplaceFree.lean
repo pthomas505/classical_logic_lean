@@ -22,6 +22,7 @@ If `P` is a formula, `v` is a variable, and `t` is a term, then `P(t/v)` is the 
 /--
   Helper function for `replace_free_var_one_rec`.
 -/
+@[nolint defsWithUnderscore]
 def replace_free_var_one_rec_aux
   (v t : VarName_)
   (binders : Finset VarName_) :
@@ -73,6 +74,7 @@ def replace_free_var_one_rec_aux
 
   The result of replacing each free occurrence of `v` in `P` by an occurrence of `t`.
 -/
+@[nolint defsWithUnderscore]
 def replace_free_var_one_rec (v t : VarName_) (F : Formula_) : Formula_ :=
   replace_free_var_one_rec_aux v t ∅ F
 
@@ -88,6 +90,7 @@ def replace_free_var_one_rec (v t : VarName_) (F : Formula_) : Formula_ :=
 
   This is a more efficient version of `replace_free_var_one_rec`.
 -/
+@[nolint defsWithUnderscore]
 def fast_replace_free_var_one_rec (v t : VarName_) : Formula_ → Formula_
   | pred_const_ X xs =>
       pred_const_
@@ -372,51 +375,79 @@ theorem fast_replace_free_var_one_rec_inverse
 
     simp only [fast_replace_free_var_one_rec]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    congr!
-    simp
+    congr
+    simp only [List.map_map]
     simp only [List.map_eq_self_iff_fun_is_id_on_mem]
-    simp
+    simp only [Function.comp_apply]
     intro x a1
-    by_cases c1 : v = x
-    · simp only [if_pos c1]
-      simp
-      exact c1
-    · simp only [if_neg c1]
-      simp
-      intro a2
-      subst a2
-      contradiction
+    split
+    case isTrue c1 =>
+      split
+      case isTrue c2 =>
+        exact c1
+      case isFalse c2 =>
+        contradiction
+    case isFalse c1 =>
+      split
+      case isTrue c2 =>
+        rewrite [c2] at h1
+        contradiction
+      case isFalse c2 =>
+        apply Eq.refl
   case eq_ x y =>
-      congr!
-      · split_ifs <;> tauto
-      · split_ifs <;> tauto
+    rewrite [not_or] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
+
+    congr
+    all_goals
+      split
+      case isTrue c1 =>
+        split
+        case isTrue c2 =>
+          exact c1
+        case isFalse c2 =>
+          contradiction
+      case isFalse c1 =>
+        apply Eq.refl
   case not_ phi phi_ih =>
-    congr!
+    congr
     exact phi_ih h1
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-      congr! <;> tauto
-  case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    push_neg at h1
+    rewrite [not_or] at h1
     obtain ⟨h1_left, h1_right⟩ := h1
 
-    split_ifs
-    case pos c1 =>
+    congr
+    · exact phi_ih h1_left
+    · exact psi_ih h1_right
+  case forall_ x phi phi_ih | exists_ x phi phi_ih =>
+    rewrite [not_or] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
+
+    split
+    case isTrue c1 =>
       simp only [fast_replace_free_var_one_rec]
-      simp only [if_neg h1_left]
-      congr!
-      apply not_var_is_free_in_fast_replace_free_var_one_rec_self
-      contrapose! h1_right
-      apply var_is_free_in_imp_var_occurs_in
-      exact h1_right
-    case neg c1 =>
+      split
+      case isTrue c2 =>
+        apply Eq.refl
+      case isFalse c2 =>
+        congr
+        apply not_var_is_free_in_fast_replace_free_var_one_rec_self
+        intro contra
+        apply h1_right
+        apply var_is_free_in_imp_var_occurs_in
+        exact contra
+    case isFalse c1 =>
       simp only [fast_replace_free_var_one_rec]
-      simp only [if_neg h1_left]
-      congr!
-      exact phi_ih h1_right
+      split
+      case isTrue c2 =>
+        contradiction
+      case isFalse c2 =>
+        congr
+        exact phi_ih h1_right
 
 
 theorem not_var_is_free_in_fast_replace_free_var_one_rec
@@ -430,13 +461,30 @@ theorem not_var_is_free_in_fast_replace_free_var_one_rec
     simp only [fast_replace_free_var_one_rec]
     simp only [var_is_free_in]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    simp
-    intro x
-    split_ifs <;> tauto
+    simp only [List.mem_map, not_exists]
+    intro x a1
+    obtain ⟨a1_left, a1_right⟩ := a1
+    split at a1_right
+    case isTrue c1 =>
+      apply h1
+      rewrite [a1_right]
+      apply Eq.refl
+    case isFalse c1 =>
+      apply c1
+      rewrite [a1_right]
+      apply Eq.refl
   case eq_ x y =>
-    split_ifs <;> tauto
+    rewrite [not_or]
+    constructor
+    all_goals
+      split
+      case isTrue c1 =>
+        exact h1
+      case isFalse c1 =>
+        exact c1
   case true_ | false_ =>
-    simp
+    intro contra
+    exact contra
   case not_ phi phi_ih =>
     exact phi_ih
   case
@@ -444,20 +492,23 @@ theorem not_var_is_free_in_fast_replace_free_var_one_rec
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    tauto
+    rewrite [not_or]
+    exact ⟨phi_ih, psi_ih⟩
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
     simp only [fast_replace_free_var_one_rec]
-    split_ifs
-    case pos c1 =>
+    split
+    case isTrue c1 =>
       simp only [var_is_free_in]
-      simp
+      rewrite [not_and]
       intro a1
       contradiction
-    case neg c1 =>
+    case isFalse c1 =>
       simp only [var_is_free_in]
-      simp
-      intro _
+      simp only [not_and]
+      intro a1
       exact phi_ih
 
+
+end FOL.NV.Sub.Var.One.Rec
 
 #lint
