@@ -761,19 +761,29 @@ theorem free_and_bound_unchanged_imp_fast_admits_var_one_rec_aux
     case isFalse c1 =>
       contradiction
   case eq_ x y =>
-    simp at h2
+    injection h2 with a1 a2
 
-    obtain ⟨h2_left, h2_right⟩ := h2
-    intros a1
-    cases a1
-    case inl a1 =>
-      subst a1
-      simp at h2_left
-      tauto
-    case inr a1 =>
-      subst a1
-      simp at h2_right
-      tauto
+    simp only [decide_eq_decide] at a1
+    simp only [decide_eq_decide] at a2
+
+    intro a3
+    cases a3
+    case inl a3 =>
+      rewrite [a3] at h1
+      split at a1
+      case isTrue c1 =>
+        rewrite [← a1]
+        exact h1
+      case isFalse c1 =>
+        contradiction
+    case inr a3 =>
+      rewrite [a3] at h1
+      split at a2
+      case isTrue c1 =>
+        rewrite [← a2]
+        exact h1
+      case isFalse c1 =>
+        contradiction
   case not_ phi phi_ih =>
     simp at h2
 
