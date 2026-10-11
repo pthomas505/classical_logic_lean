@@ -749,12 +749,17 @@ theorem free_and_bound_unchanged_imp_fast_admits_var_one_rec_aux
   any_goals
     simp only [to_is_bound_var_one_rec_aux] at h2
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    simp at h2
+    injection h2 with a1 a2
+    simp only [List.map_map, List.map_inj_left, Function.comp_apply, decide_eq_decide] at a2
 
-    intro a1
-    specialize h2 v a1
-    simp at h2
-    tauto
+    intro a3
+    specialize a2 v a3
+    split at a2
+    case isTrue c1 =>
+      rewrite [← a2]
+      exact h1
+    case isFalse c1 =>
+      contradiction
   case eq_ x y =>
     simp at h2
 
