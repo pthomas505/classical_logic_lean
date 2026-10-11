@@ -135,33 +135,45 @@ theorem replace_free_var_one_rec_aux_mem_binders
   any_goals
     simp only [replace_free_var_one_rec_aux]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    simp
+    congr
     simp only [List.map_eq_self_iff_fun_is_id_on_mem]
-    simp
-    intro x _ a2 a3
-    subst a2
-    contradiction
-  case eq_ x y =>
-    simp
-    constructor
-    case left | right =>
-      intro a1 a2
-      subst a1
+    intro x a1
+    split
+    case isTrue c1 =>
+      obtain ⟨c1_left, c1_right⟩ := c1
+      rewrite [c1_left] at h1
       contradiction
+    case isFalse c1 =>
+      apply Eq.refl
+  case eq_ x y =>
+    congr
+    all_goals
+      split
+      case isTrue c1 =>
+        obtain ⟨c1_left, c1_right⟩ := c1
+        rewrite [c1_left] at h1
+        contradiction
+      case isFalse c1 =>
+        apply Eq.refl
   case not_ phi phi_ih =>
-    tauto
+    congr
+    apply phi_ih
+    exact h1
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    simp
-    tauto
+    congr
+    · apply phi_ih
+      exact h1
+    · apply psi_ih
+      exact h1
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    simp
+    congr
     apply phi_ih
-    simp
-    left
+    simp only [Finset.union_singleton, Finset.mem_insert]
+    right
     exact h1
 
 
@@ -178,47 +190,64 @@ theorem replace_free_var_one_rec_aux_eq_fast_replace_free_var_one_rec
     simp only [replace_free_var_one_rec_aux]
     simp only [fast_replace_free_var_one_rec]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    congr!
-    case _ x =>
-      constructor
-      case mp =>
-        tauto
-      case mpr =>
-        intro a1
-        subst a1
-        tauto
+    congr 1
+    simp only [List.map_inj_left]
+    intro x a1
+    split
+    case isTrue c1 =>
+      obtain ⟨c1_left, c1_right⟩ := c1
+      split
+      case isTrue c2 =>
+        apply Eq.refl
+      case isFalse c2 =>
+        contradiction
+    case isFalse c1 =>
+      split
+      case isTrue c2 =>
+        rewrite [c2] at h1
+        exfalso
+        apply c1
+        exact ⟨c2, h1⟩
+      case isFalse c2 =>
+        apply Eq.refl
   case eq_ x y =>
     congr!
-    case _ | _ =>
+    all_goals
       constructor
-      case mp =>
-        tauto
-      case mpr =>
-        intro a1
-        subst a1
-        tauto
+      · intro a1
+        obtain ⟨a1_left, a1_right⟩ := a1
+        exact a1_left
+      · intro a1
+        rewrite [a1] at h1
+        exact ⟨a1, h1⟩
   case not_ phi phi_ih =>
-    tauto
+    congr
+    apply phi_ih
+    exact h1
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    simp
-    tauto
+    congr
+    · apply phi_ih
+      exact h1
+    · apply psi_ih
+      exact h1
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    split_ifs
-    case pos c1 =>
+    split
+    case isTrue c1 =>
       congr! 1
       apply replace_free_var_one_rec_aux_mem_binders
-      simp
-      right
+      simp only [Finset.union_singleton, Finset.mem_insert]
+      left
       exact c1
-    case neg c1 =>
+    case isFalse c1 =>
       congr! 1
       apply phi_ih
-      simp
-      tauto
+      simp only [Finset.union_singleton, Finset.mem_insert]
+      rewrite [not_or]
+      exact ⟨c1, h1⟩
 
 
 theorem replace_free_var_one_rec_eq_fast_replace_free_var_one_rec
@@ -228,7 +257,7 @@ theorem replace_free_var_one_rec_eq_fast_replace_free_var_one_rec
   by
   simp only [replace_free_var_one_rec]
   apply replace_free_var_one_rec_aux_eq_fast_replace_free_var_one_rec
-  simp
+  apply Finset.notMem_empty
 
 --
 
@@ -241,23 +270,36 @@ theorem fast_replace_free_var_one_rec_self
   any_goals
     simp only [fast_replace_free_var_one_rec]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    simp
+    congr
     simp only [List.map_eq_self_iff_fun_is_id_on_mem]
-    simp
+    intro x a1
+    split
+    case isTrue c1 =>
+      exact c1
+    case isFalse c1 =>
+      apply Eq.refl
   case eq_ x y =>
-    simp
+    congr
+    all_goals
+      split
+      case isTrue c1 =>
+        exact c1
+      case isFalse c1 =>
+        apply Eq.refl
   case not_ phi phi_ih =>
-    congr!
+    congr
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    congr!
+    congr
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    simp
-    intro _
-    exact phi_ih
+    split
+    case isTrue c1 =>
+      apply Eq.refl
+    case isFalse c1 =>
+      congr
 
 
 theorem not_var_is_free_in_fast_replace_free_var_one_rec_self
