@@ -231,8 +231,9 @@ theorem admits_var_one_rec_aux_imp_fast_admits_var_one_rec_aux
       exact c1
     · right
       apply phi_ih
-      · simp
-        tauto
+      · simp only [Finset.union_singleton, Finset.mem_insert]
+        rewrite [not_or]
+        exact ⟨c1, h1⟩
       · exact h2
   all_goals
     tauto
@@ -250,8 +251,8 @@ theorem mem_binders_imp_admits_var_one_rec_aux
     simp only [admits_var_one_rec_aux]
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
     apply phi_ih
-    simp
-    left
+    simp only [Finset.union_singleton, Finset.mem_insert]
+    right
     exact h1
   all_goals
     tauto
@@ -273,8 +274,10 @@ theorem fast_admits_var_one_rec_aux_imp_admits_var_one_rec_aux
     cases h1
     case inl h1 =>
       apply mem_binders_imp_admits_var_one_rec_aux
-      subst h1
-      simp
+      rewrite [h1]
+      simp only [Finset.union_singleton, Finset.mem_insert]
+      left
+      exact True.intro
     case inr h1 =>
       apply phi_ih
       exact h1
@@ -291,7 +294,7 @@ theorem admits_var_one_rec_iff_fast_admits_var_one_rec
   simp only [fast_admits_var_one_rec]
   constructor
   · apply admits_var_one_rec_aux_imp_fast_admits_var_one_rec_aux
-    simp
+    apply Finset.notMem_empty
   · apply fast_admits_var_one_rec_aux_imp_admits_var_one_rec_aux
 
 
@@ -313,8 +316,9 @@ theorem fast_admits_var_one_rec_aux_self
       exact c1
     · right
       apply phi_ih
-      simp
-      tauto
+      simp only [Finset.union_singleton, Finset.mem_insert]
+      rewrite [not_or]
+      exact ⟨c1, h1⟩
   all_goals
     tauto
 
@@ -326,7 +330,7 @@ theorem fast_admits_var_one_rec_self
   by
   simp only [fast_admits_var_one_rec]
   apply fast_admits_var_one_rec_aux_self
-  simp
+  apply Finset.notMem_empty
 
 --
 
@@ -372,13 +376,15 @@ theorem not_var_is_bound_in_imp_fast_admits_var_one_rec_aux
 
     simp only [fast_admits_var_one_rec_aux]
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    simp at h1
+    rewrite [not_or] at h1
     obtain ⟨h1_left, h1_right⟩ := h1
+
     right
     apply phi_ih
     · exact h1_right
-    · simp
-      tauto
+    · simp only [Finset.union_singleton, Finset.mem_insert]
+      rewrite [not_or]
+      exact ⟨h1_left, h2⟩
   all_goals
     tauto
 
@@ -391,7 +397,7 @@ theorem not_var_is_bound_in_imp_fast_admits_var_one_rec
   by
   simp only [fast_admits_var_one_rec]
   apply not_var_is_bound_in_imp_fast_admits_var_one_rec_aux F v u ∅ h1
-  simp
+  apply Finset.notMem_empty
 
 --
 
@@ -411,26 +417,26 @@ theorem fast_replace_free_var_one_rec_fast_admits_var_one_rec_aux
   any_goals
     simp only [fast_admits_var_one_rec_aux]
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    simp at h1
+    rewrite [not_or] at h1
     obtain ⟨h1_left, h1_right⟩ := h1
 
-    split_ifs
-    case pos c1 =>
+    split
+    case isTrue c1 =>
       simp only [fast_admits_var_one_rec_aux]
-      subst c1
       right
       apply not_var_is_free_in_imp_fast_admits_var_one_rec_aux
       intro contra
       apply h1_right
       apply var_is_free_in_imp_var_occurs_in
       exact contra
-    case neg c1 =>
+    case isFalse c1 =>
       simp only [fast_admits_var_one_rec_aux]
       right
       apply phi_ih
       · exact h1_right
-      · simp
-        tauto
+      · simp only [Finset.union_singleton, Finset.mem_insert]
+        rewrite [not_or]
+        exact ⟨c1, h2⟩
   all_goals
     tauto
 
@@ -444,7 +450,7 @@ theorem fast_replace_free_var_one_rec_fast_admits_var_one_rec
   simp only [fast_admits_var_one_rec]
   apply fast_replace_free_var_one_rec_fast_admits_var_one_rec_aux
   · exact h1
-  · simp
+  · apply Finset.notMem_empty
 
 --
 
@@ -462,33 +468,39 @@ theorem replace_free_var_one_rec_aux_fast_admits_var_one_rec_aux
     simp only [replace_free_var_one_rec_aux]
     simp only [fast_admits_var_one_rec_aux]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    simp
+    simp only [List.mem_map]
+    simp only [forall_exists_index]
     intro x a1 a2
-    by_cases c1 : v = x ∧ x ∉ binders
-    · obtain ⟨c1_left, c1_right⟩ := c1
-      rw [c1_left]
-      exact c1_right
-    · push_neg at c1
-      specialize a2 c1
-      rw [a2] at a1
+    obtain ⟨a1_left, a1_right⟩ := a1
+    split at a1_right
+    case isTrue c1 =>
+      obtain ⟨c1_left, c1_right⟩ := c1
+      rewrite [c1_left] at a2
+      contradiction
+    case isFalse c1 =>
+      rewrite [a1_right] at a1_left
       contradiction
   case eq_ x y =>
-    intros a1
-    split_ifs at a1
-    case _ c1 c2 =>
-      obtain ⟨c1_left, c1_right⟩ := c1
-      rw [c1_left]
-      exact c1_right
-    case _ c1 c2 =>
-      obtain ⟨c1_left, c1_right⟩ := c1
-      rw [c1_left]
-      exact c1_right
-    case _ c1 c2 =>
-      obtain ⟨c2_left, c2_right⟩ := c2
-      rw [c2_left]
-      exact c2_right
-    case _ c1 c2 =>
-      tauto
+    rewrite [not_or] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
+    intro a1
+    cases a1
+    case inl a1 =>
+      split at a1
+      case isTrue c1 =>
+        obtain ⟨c1_left, c1_right⟩ := c1
+        rewrite [c1_left]
+        exact c1_right
+      case isFalse c1 =>
+        contradiction
+    case inr a1 =>
+      split at a1
+      case isTrue c1 =>
+        obtain ⟨c1_left, c1_right⟩ := c1
+        rewrite [c1_left]
+        exact c1_right
+      case isFalse c1 =>
+        contradiction
   all_goals
     tauto
 
