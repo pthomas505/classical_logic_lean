@@ -17,6 +17,7 @@ open Formula_
 
   The result of replacing each occurrence of `v` in `P` by an occurrence of `t`.
 -/
+@[nolint defsWithUnderscore]
 def replace_var_one_rec (v t : VarName_) : Formula_ → Formula_
   | pred_const_ X xs =>
       pred_const_
@@ -373,6 +374,7 @@ theorem replace_var_one_rec_free_var_set_sdiff
         case isTrue c2 =>
           simp only [Finset.pair_comm x y]
           simp only [Finset.pair_comm x t]
+
           rewrite [c2]
           simp only [Finset.erase_insert_eq_erase]
           rewrite [← c2]
