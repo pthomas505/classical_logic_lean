@@ -561,25 +561,47 @@ theorem fast_admits_var_one_rec_aux_del_binders
 
     simp only [fast_admits_var_one_rec_aux]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    simp at h1
+    simp only [Finset.mem_union] at h1
+    rewrite [not_or] at h1
 
-    tauto
+    intro a1
+    specialize h1 a1
+    obtain ⟨h1_left, h1_right⟩ := h1
+    exact h1_left
   case eq_ x y =>
-    simp at h1
+    simp only [Finset.mem_union] at h1
+    rewrite [not_or] at h1
 
-    tauto
+    intro a1
+    specialize h1 a1
+    obtain ⟨h1_left, h1_right⟩ := h1
+    exact h1_left
   case not_ phi phi_ih =>
-    tauto
+    apply phi_ih
+    exact h1
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    tauto
+    obtain ⟨h1_left, h1_right⟩ := h1
+
+    constructor
+    · apply phi_ih
+      exact h1_left
+    · apply psi_ih
+      exact h1_right
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
     simp only [Finset.union_right_comm S T {x}] at h1
 
-    tauto
+    cases h1
+    case inl h1 =>
+      left
+      exact h1
+    case inr h1 =>
+      right
+      apply phi_ih
+      exact h1
 
 --
 
