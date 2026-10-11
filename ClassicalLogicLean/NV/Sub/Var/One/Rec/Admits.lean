@@ -785,19 +785,25 @@ theorem free_and_bound_unchanged_imp_fast_admits_var_one_rec_aux
       case isFalse c1 =>
         contradiction
   case not_ phi phi_ih =>
-    simp at h2
+    injection h2 with a1
 
     apply phi_ih
     · exact h1
-    · exact h2
+    · exact a1
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    simp at h2
+    injection h2 with a1 a2
 
-    tauto
+    constructor
+    · apply phi_ih
+      · exact h1
+      · exact a1
+    · apply psi_ih
+      · exact h1
+      · exact a2
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
     split_ifs at h2
     case pos c1 =>
