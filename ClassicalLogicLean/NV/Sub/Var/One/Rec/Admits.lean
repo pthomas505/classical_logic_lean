@@ -805,18 +805,18 @@ theorem free_and_bound_unchanged_imp_fast_admits_var_one_rec_aux
       · exact h1
       · exact a2
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    split_ifs at h2
-    case pos c1 =>
+    split at h2
+    case isTrue c1 =>
       left
       exact c1
-    case neg c1 =>
+    case isFalse c1 =>
       right
       apply phi_ih
-      · simp
-        tauto
+      · simp only [Finset.union_singleton, Finset.mem_insert]
+        rewrite [not_or]
+        exact ⟨c1, h1⟩
       · simp only [to_is_bound_var_one_rec_aux] at h2
-        simp at h2
-        exact h2
+        injection h2
 
 
 example
@@ -829,9 +829,9 @@ example
   simp only [to_is_bound_var_one_rec]
   constructor
   · apply fast_admits_var_one_rec_aux_imp_free_and_bound_unchanged
-    simp
+    apply Finset.notMem_empty
   · apply free_and_bound_unchanged_imp_fast_admits_var_one_rec_aux
-    simp
+    apply Finset.notMem_empty
 
 
 -- admits
