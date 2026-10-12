@@ -1120,7 +1120,7 @@ theorem substitution_theorem_fast_admits_var_one_rec_aux
       simp only [fast_replace_free_var_one_rec]
       simp only [holds]
     case pred_const_ X xs | pred_var_ X xs =>
-      simp
+      simp only [List.map_map]
       congr! 1
       simp only [List.map_eq_map_iff]
       intro x a1
@@ -1222,14 +1222,15 @@ theorem substitution_theorem_fast_admits_var_one_rec_aux
 
   case cons.def_ hd tl ih X xs =>
     unfold Function.updateITE
+
     congr! 1
     case _ =>
-      simp
+      simp only [List.length_map]
     case _ c1 =>
       apply holds_coincide_var
       intro v' a1
-      simp
-      simp only [eq_comm]
+      simp only [List.map_map]
+      simp only [Eq.comm]
 
       have s1 :
         (List.map (fun (x : VarName_) =>
@@ -1239,24 +1240,26 @@ theorem substitution_theorem_fast_admits_var_one_rec_aux
       by
         simp only [List.map_eq_map_iff]
         intro x a2
-        simp
-        split_ifs
-        case _ c2 =>
+        simp only [Function.comp_apply]
+        split
+        case isTrue c2 =>
           apply h2
-          subst c2
           apply h1
+          rewrite [c2]
           exact a2
-        case _ c2 =>
-          rfl
+        case isFalse c2 =>
+          apply Eq.refl
 
       simp only [s1]
       apply Function.updateFromPairOfListsITE_mem_eq_len
       · simp only [var_is_free_in_iff_mem_free_var_set] at a1
         simp only [← List.mem_toFinset]
         exact Finset.mem_of_subset hd.h1 a1
-      · simp at c1
-        simp
-        tauto
+      · simp only [List.length_map] at c1
+        obtain ⟨c1_left, c1_right⟩ := c1
+        simp only [List.length_map]
+        rewrite [c1_right]
+        apply Eq.refl
     case _ _ =>
       apply ih V binders
       · simp only [fast_admits_var_one_rec_aux]
@@ -1278,7 +1281,8 @@ theorem substitution_theorem_fast_admits_var_one_rec
   simp only [fast_admits_var_one_rec] at h1
 
   apply substitution_theorem_fast_admits_var_one_rec_aux D I V V E v t ∅ F h1
-  simp
+  intro v a1
+  apply Eq.refl
 
 
 theorem substitution_is_valid_fast_admits_var_one_rec
