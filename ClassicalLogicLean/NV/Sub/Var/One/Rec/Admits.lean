@@ -1014,11 +1014,20 @@ theorem admits_var_one_rec_aux_add_binders
 
     simp only [admits_var_one_rec_aux]
   case pred_const_ X xs | pred_var_ X xs | eq_ x y |def_ X xs =>
-    simp
-    tauto
+    simp only [Finset.mem_union]
+    intro a1
+    rewrite [not_or] at a1
+    obtain ⟨a1_left, ⟨a1_right_left, a1_right_right⟩⟩ := a1
+
+    rewrite [not_or]
+    constructor
+    · apply h1
+      exact ⟨a1_left, a1_right_left⟩
+    · exact h2
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
     simp only [Finset.union_right_comm S T {x}]
-    tauto
+    apply phi_ih
+    exact h1
   all_goals
     tauto
 
@@ -1037,7 +1046,7 @@ theorem admits_var_one_rec_aux_del_binders
 
     simp only [admits_var_one_rec_aux]
   case pred_const_ X xs | pred_var_ X xs | eq_ x y | def_ X xs =>
-    simp at h1
+    simp only [Finset.mem_union] at h1
 
     tauto
   case not_ phi phi_ih =>
@@ -1048,11 +1057,17 @@ theorem admits_var_one_rec_aux_del_binders
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    tauto
+    obtain ⟨h1_left, h1_right⟩ := h1
+    constructor
+    · apply phi_ih
+      exact h1_left
+    · apply psi_ih
+      exact h1_right
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
     simp only [Finset.union_right_comm S T {x}] at h1
 
-    tauto
+    apply phi_ih
+    exact h1
 
 
 theorem admits_var_one_rec_aux_var_is_free_in
@@ -1071,10 +1086,11 @@ theorem admits_var_one_rec_aux_var_is_free_in
     simp only [var_is_free_in] at h2
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
     obtain ⟨h2_left, h2_right⟩ := h2
+
     apply phi_ih
     · apply admits_var_one_rec_aux_del_binders phi v u binders {x}
       · exact h1
-      · simp
+      · simp only [Finset.mem_singleton]
         exact h2_left
     · exact h2_right
     · exact h3
@@ -1108,20 +1124,26 @@ theorem substitution_theorem_fast_admits_var_one_rec_aux
       congr! 1
       simp only [List.map_eq_map_iff]
       intro x a1
-      simp
+      simp only [Function.comp_apply]
       simp only [Function.updateITE]
-      split_ifs
-      case _ c1 c2 =>
-        subst c1
-        tauto
-      case _ c1 c2 =>
-        subst c1
-        contradiction
-      case _ c1 c2 =>
-        subst c2
-        contradiction
-      case _ c1 c2 =>
-        rfl
+      split
+      case isTrue c1 =>
+        split
+        case isTrue c2 =>
+          apply h2
+          apply h1
+          rewrite [c2]
+          exact a1
+        case isFalse c2 =>
+          rewrite [c1] at c2
+          contradiction
+      case isFalse c1 =>
+        split
+        case isTrue c2 =>
+          rewrite [c2] at c1
+          contradiction
+        case isFalse c2 =>
+          apply Eq.refl
     case eq_ x y =>
       simp only [Function.updateITE]
       simp only [eq_comm]
