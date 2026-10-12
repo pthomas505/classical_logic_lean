@@ -1146,15 +1146,25 @@ theorem substitution_theorem_fast_admits_var_one_rec_aux
           apply Eq.refl
     case eq_ x y =>
       simp only [Function.updateITE]
-      simp only [eq_comm]
       congr! 1
       all_goals
-        split_ifs
-        case _ c1 =>
-          subst c1
-          tauto
-        case _ c1 =>
-          rfl
+        split
+        case isTrue c1 =>
+          split
+          case isTrue c2 =>
+            apply h2
+            apply h1
+            first | left; exact c2 | right; exact c2
+          case isFalse c2 =>
+            rewrite [c1] at c2
+            contradiction
+        case isFalse c1 =>
+          split
+          case isTrue c2 =>
+            rewrite [c2] at c1
+            contradiction
+          case isFalse c2 =>
+            apply Eq.refl
     case not_ phi phi_ih =>
       congr! 1
       exact phi_ih V binders h1 h2
