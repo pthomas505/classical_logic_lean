@@ -22,6 +22,7 @@ If `v` and `u` are variables and `P` is a formula, then `P` admits `u` for `v` i
 /--
   Helper function for `admits_var_one_rec`.
 -/
+@[nolint defsWithUnderscore]
 def admits_var_one_rec_aux (v u : VarName_) (binders : Finset VarName_) : Formula_ → Prop
   | pred_const_ _ xs =>
       v ∈ xs ∧ v ∉ binders → -- if there is a free occurrence of `v` in `P`
@@ -49,6 +50,7 @@ def admits_var_one_rec_aux (v u : VarName_) (binders : Finset VarName_) : Formul
       v ∈ xs ∧ v ∉ binders → -- if there is a free occurrence of `v` in `P`
         u ∉ binders -- then it does not become a bound occurrence of `u` in `P(u/v)`
 
+@[nolint defsWithUnderscore]
 instance
   (v u : VarName_)
   (binders : Finset VarName_)
@@ -68,9 +70,11 @@ instance
 
   `v → u` in `P`
 -/
+@[nolint defsWithUnderscore]
 def admits_var_one_rec (v u : VarName_) (F : Formula_) : Prop :=
   admits_var_one_rec_aux v u ∅ F
 
+@[nolint defsWithUnderscore]
 instance
   (v u : VarName_)
   (F : Formula_) :
@@ -83,6 +87,7 @@ instance
 /--
   Helper function for `fast_admits_var_one_rec`.
 -/
+@[nolint defsWithUnderscore]
 def fast_admits_var_one_rec_aux (v u : VarName_) (binders : Finset VarName_) : Formula_ → Prop
   | pred_const_ _ xs =>
       v ∈ xs → -- if there is a free occurrence of `v` in `P`
@@ -110,6 +115,7 @@ def fast_admits_var_one_rec_aux (v u : VarName_) (binders : Finset VarName_) : F
       v ∈ xs → -- if there is a free occurrence of `v` in `P`
         u ∉ binders -- then it does not become a bound occurrence of `u` in `P(u/v)`
 
+@[nolint defsWithUnderscore]
 instance
   (v u : VarName_)
   (binders : Finset VarName_)
@@ -131,9 +137,11 @@ instance
 
   This is a more efficient version of `admits_var_one_rec`.
 -/
+@[nolint defsWithUnderscore]
 def fast_admits_var_one_rec (v u : VarName_) (F : Formula_) : Prop :=
   fast_admits_var_one_rec_aux v u ∅ F
 
+@[nolint defsWithUnderscore]
 instance
   (v u : VarName_)
   (F : Formula_) :
@@ -166,6 +174,7 @@ inductive BoolFormula : Type
 /--
   Helper function for `to_is_bound_var_one_rec`.
 -/
+@[nolint defsWithUnderscore]
 def to_is_bound_var_one_rec_aux (binders : Finset VarName_) : Formula_ → BoolFormula
   | pred_const_ X xs =>
       BoolFormula.pred_const_ X (xs.map fun (v : VarName_) => v ∈ binders)
@@ -206,6 +215,7 @@ def to_is_bound_var_one_rec_aux (binders : Finset VarName_) : Formula_ → BoolF
 /--
   Creates a `BoolFormula` from a formula. Each bound occurence of a variable in the formula is mapped to true in the bool formula. Each free occurence of a variable in the formula is mapped to false in the bool formula.
 -/
+@[nolint defsWithUnderscore]
 def to_is_bound_var_one_rec (F : Formula_) : BoolFormula :=
   to_is_bound_var_one_rec_aux ∅ F
 
@@ -1298,6 +1308,9 @@ theorem substitution_is_valid_fast_admits_var_one_rec
   intro D I V E
   simp only [← substitution_theorem_fast_admits_var_one_rec D I V E v t F h1]
   apply h2
+
+
+end FOL.NV.Sub.Var.One.Rec
 
 
 #lint
