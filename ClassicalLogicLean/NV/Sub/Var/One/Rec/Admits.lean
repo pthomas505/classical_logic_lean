@@ -1178,18 +1178,26 @@ theorem substitution_theorem_fast_admits_var_one_rec_aux
       · exact phi_ih V binders h1_left h2
       · exact psi_ih V binders h1_right h2
     case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-      split_ifs
-      case _ c1 =>
-        subst c1
+      split
+      case isTrue c1 =>
         simp only [holds]
         first | apply forall_congr' | apply exists_congr
         intro d
 
         congr! 1
-        funext x
+        funext z
         simp only [Function.updateITE]
-        split_ifs <;> rfl
-      case _ c1 =>
+        split
+        case isTrue c2 =>
+          apply Eq.refl
+        case isFalse c2 =>
+          split
+          case isTrue c3 =>
+            rewrite [c3] at c2
+            contradiction
+          case isFalse c3 =>
+            apply Eq.refl
+      case isFalse c1 =>
         simp only [holds]
         first | apply forall_congr' | apply exists_congr
         intro d
@@ -1201,11 +1209,16 @@ theorem substitution_theorem_fast_admits_var_one_rec_aux
           simp only [Function.updateITE_comm V v x d (V' t) c1]
           apply phi_ih (Function.updateITE V x d) (binders ∪ {x}) h1
           simp only [Function.updateITE]
-          simp
-          intros v' a1 a2
-          simp only [if_neg a2]
-          apply h2
-          exact a1
+          simp only [Finset.union_singleton, Finset.mem_insert]
+          intro v' a1
+          rewrite [not_or] at a1
+          obtain ⟨a1_left, a1_right⟩ := a1
+          split
+          case isTrue c2 =>
+            contradiction
+          case isFalse c2 =>
+            apply h2
+            exact a1_right
 
   case cons.def_ hd tl ih X xs =>
     unfold Function.updateITE
