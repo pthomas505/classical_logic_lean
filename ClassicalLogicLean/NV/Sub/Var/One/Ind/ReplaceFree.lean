@@ -132,27 +132,29 @@ example
   all_goals
     simp only [Rec.fast_replace_free_var_one_rec]
   case not_ phi v' t' phi' ih_1 ih_2 =>
-    simp
-    exact ih_2
+    congr
   case
     imp_ phi psi v' t' phi' psi' phi_ih_1 psi_ih_1 phi_ih_2 psi_ih_2
   | and_ phi psi v' t' phi' psi' phi_ih_1 psi_ih_1 phi_ih_2 psi_ih_2
   | or_ phi psi v' t' phi' psi' phi_ih_1 psi_ih_1 phi_ih_2 psi_ih_2
   | iff_ phi psi v' t' phi' psi' phi_ih_1 psi_ih_1 phi_ih_2 psi_ih_2 =>
-    simp
-    tauto
+    congr
   case
     forall_not_free_in x phi v' t' ih
   | exists_not_free_in x phi v' t' ih =>
-    simp
-    intro a1
-    contradiction
+    split
+    case isTrue c1 =>
+      apply Eq.refl
+    case isFalse c1 =>
+      contradiction
   case
     forall_free_in x phi v' t' phi' ih_1 ih_2 ih_3
   | exists_free_in x phi v' t' phi' ih_1 ih_2 ih_3 =>
-    simp only [if_neg ih_1]
-    simp
-    exact ih_3
+    split
+    case isTrue c1 =>
+      contradiction
+    case isFalse c1 =>
+      congr
 
 
 example
@@ -161,7 +163,8 @@ example
   (h1 : Rec.fast_replace_free_var_one_rec v t F = F') :
   is_replace_free_var_one_ind F v t F' :=
   by
-  subst h1
+  rewrite [← h1]
+  clear h1
   induction F
   all_goals
     simp only [Rec.fast_replace_free_var_one_rec]
@@ -195,23 +198,26 @@ example
     · exact phi_ih
     · exact psi_ih
   case forall_ x phi phi_ih =>
-    split_ifs
-    case _ c1 =>
+    split
+    case isTrue c1 =>
       apply is_replace_free_var_one_ind.forall_not_free_in
       exact c1
-    case _ c1 =>
+    case isFalse c1 =>
       apply is_replace_free_var_one_ind.forall_free_in
       · exact c1
       · exact phi_ih
   case exists_ x phi phi_ih =>
-    split_ifs
-    case _ c1 =>
+    split
+    case isTrue c1 =>
       apply is_replace_free_var_one_ind.exists_not_free_in
       exact c1
-    case _ c1 =>
+    case isFalse c1 =>
       apply is_replace_free_var_one_ind.exists_free_in
       · exact c1
       · exact phi_ih
+
+
+end FOL.NV.Sub.Var.One.Ind
 
 
 #lint
