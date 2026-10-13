@@ -132,7 +132,8 @@ theorem fast_admits_var_one_rec_aux_and_fast_replace_free_var_one_rec_imp_is_sub
   (h2 : Rec.fast_replace_free_var_one_rec v u F = F') :
   is_sub_var_one_ind F v u F' :=
   by
-  subst h2
+  rewrite [← h2]
+  clear h2
   induction F generalizing binders
   all_goals
     simp only [Rec.fast_admits_var_one_rec_aux] at h1
@@ -167,35 +168,47 @@ theorem fast_admits_var_one_rec_aux_and_fast_replace_free_var_one_rec_imp_is_sub
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
     cases h1
     case inl h1 =>
-      split_ifs
-      all_goals
+      split
+      case isTrue c1 =>
         first
           | apply is_sub_var_one_ind.forall_not_free_in
           | apply is_sub_var_one_ind.exists_not_free_in
-        subst h1
+        rewrite [h1]
         simp only [var_is_free_in]
-        simp
+        intro contra
+        obtain ⟨contra_left, contra_right⟩ := contra
+        apply contra_left
+        exact True.intro
+      case isFalse c1 =>
+        contradiction
     case inr h1 =>
-      split_ifs
-      case pos c1 =>
+      split
+      case isTrue c1 =>
         first
           | apply is_sub_var_one_ind.forall_not_free_in
           | apply is_sub_var_one_ind.exists_not_free_in
         simp only [var_is_free_in]
-        tauto
-      case neg c1 =>
+        intro contra
+        obtain ⟨contra_left, contra_right⟩ := contra
+        contradiction
+      case isFalse c1 =>
         by_cases c2 : var_is_free_in v phi
         · first
             | apply is_sub_var_one_ind.forall_free_in
             | apply is_sub_var_one_ind.exists_free_in
-          simp only [var_is_free_in]
-          constructor
-          · exact c1
-          . exact c2
-          . have s1 : ¬ u ∈ binders ∪ {x} := Rec.fast_admits_var_one_rec_aux_var_is_free_in phi v u (binders ∪ {x}) h1 c2
+          · simp only [var_is_free_in]
+            constructor
+            · exact c1
+            · exact c2
+          · have s1 : ¬ u ∈ binders ∪ {x} := Rec.fast_admits_var_one_rec_aux_var_is_free_in phi v u (binders ∪ {x}) h1 c2
 
-            simp at s1
-            tauto
+            simp only [Finset.union_singleton, Finset.mem_insert] at s1
+            rewrite [not_or] at s1
+            obtain ⟨s1_left, s1_right⟩ := s1
+            intro contra
+            apply s1_left
+            rewrite [contra]
+            apply Eq.refl
           · exact phi_ih (binders ∪ {x}) h1
         · have s1 : Rec.fast_replace_free_var_one_rec v u phi = phi :=
           by
@@ -207,7 +220,10 @@ theorem fast_admits_var_one_rec_aux_and_fast_replace_free_var_one_rec_imp_is_sub
             | apply is_sub_var_one_ind.forall_not_free_in
             | apply is_sub_var_one_ind.exists_not_free_in
           simp only [var_is_free_in]
-          tauto
+          intro contra
+          obtain ⟨contra_left, contra_right⟩ := contra
+          apply c2
+          exact contra_right
   case def_ X xs =>
     apply is_sub_var_one_ind.def_
 
@@ -220,31 +236,36 @@ theorem is_sub_var_one_ind_imp_fast_admits_var_one_rec_aux
   (h2 : u ∉ binders) :
   Rec.fast_admits_var_one_rec_aux v u binders F :=
   by
-  apply Exists.elim h1
-  intro F' h1_1
-  clear h1
-  induction h1_1 generalizing binders
+  obtain ⟨F', h1⟩ := h1
+  induction h1 generalizing binders
   all_goals
     simp only [Rec.fast_admits_var_one_rec_aux]
   case
       forall_not_free_in h1_1_x h1_1_phi h1_1_v h1_1_t h1_1_1
     | exists_not_free_in h1_1_x h1_1_phi h1_1_v h1_1_t h1_1_1 =>
     simp only [var_is_free_in] at h1_1_1
-    simp at h1_1_1
 
     by_cases c1 : h1_1_v = h1_1_x
     · left
       exact c1
     · right
       apply Rec.not_var_is_free_in_imp_fast_admits_var_one_rec_aux
-      exact h1_1_1 c1
+      intro contra
+      apply h1_1_1
+      exact ⟨c1, contra⟩
   case
       forall_free_in h1_1_x h1_1_phi h1_1_v h1_1_t _ _ h1_1_2 _ h1_1_ih
     | exists_free_in h1_1_x h1_1_phi h1_1_v h1_1_t _ _ h1_1_2 _ h1_1_ih =>
     right
     apply h1_1_ih
-    simp
-    tauto
+    simp only [Finset.union_singleton, Finset.mem_insert]
+    rewrite [not_or]
+    constructor
+    · intro contra
+      apply h1_1_2
+      rewrite [contra]
+      apply Eq.refl
+    · exact h2
   all_goals
     tauto
 
@@ -265,32 +286,35 @@ theorem is_sub_var_one_ind_imp_fast_replace_free_var_one_rec
   | and_ h1_phi h1_psi h1_v h1_t h1_phi' h1_psi' h1_1 h1_2 h1_ih_1 h1_ih_2
   | or_ h1_phi h1_psi h1_v h1_t h1_phi' h1_psi' h1_1 h1_2 h1_ih_1 h1_ih_2
   | iff_ h1_phi h1_psi h1_v h1_t h1_phi' h1_psi' h1_1 h1_2 h1_ih_1 h1_ih_2 =>
-    subst h1_ih_1
-    subst h1_ih_2
-    rfl
+    rewrite [h1_ih_1]
+    rewrite [h1_ih_2]
+    apply Eq.refl
   case
     forall_not_free_in h1_x h1_phi h1_v h1_t h1_1
   | exists_not_free_in h1_x h1_phi h1_v h1_t h1_1 =>
     simp only [var_is_free_in] at h1_1
-    simp at h1_1
 
-    split_ifs
-    case pos c1 =>
-      rfl
-    case neg c1 =>
-      congr!
+    split
+    case isTrue c1 =>
+      apply Eq.refl
+    case isFalse c1 =>
+      congr
       apply Rec.not_var_is_free_in_fast_replace_free_var_one_rec_self
-      exact h1_1 c1
+      intro contra
+      apply h1_1
+      exact ⟨c1, contra⟩
   case
     forall_free_in h1_x h1_phi h1_v h1_t h1_phi' h1_1 _ _ h1_ih
   | exists_free_in h1_x h1_phi h1_v h1_t h1_phi' h1_1 _ _ h1_ih =>
     simp only [var_is_free_in] at h1_1
+    obtain ⟨h1_1_left, h1_1_right⟩ := h1_1
 
-    cases h1_1
-    case intro h1_1_left h1_1_right =>
-      simp only [if_neg h1_1_left]
-      subst h1_ih
-      rfl
+    split
+    case isTrue c1 =>
+      contradiction
+    case isFalse c1 =>
+      rewrite [h1_ih]
+      apply Eq.refl
 
 
 example
@@ -305,7 +329,7 @@ example
     constructor
     · apply is_sub_var_one_ind_imp_fast_admits_var_one_rec_aux
       · exact ⟨F', a1⟩
-      · simp
+      · apply Finset.notMem_empty
     · apply is_sub_var_one_ind_imp_fast_replace_free_var_one_rec
       exact a1
   · intro a1
@@ -328,20 +352,44 @@ theorem substitution_theorem_is_sub_var_one_ind
   case pred_const_ h1_X h1_xs h1_v h1_t | pred_var_ h1_X h1_xs h1_v h1_t =>
     simp only [holds]
     congr! 1
-    simp
-    intro x _
+    simp only [List.map_map, List.map_inj_left, Function.comp_apply]
+    intro x a1
     simp only [Function.updateITE]
-    simp only [eq_comm]
-    split_ifs
-    case _ c1 =>
-      simp
-    case _ c1 =>
-      simp
+    split
+    case isTrue c1 =>
+      split
+      case isTrue c2 =>
+        apply Eq.refl
+      case isFalse c2 =>
+        rewrite [c1] at c2
+        contradiction
+    case isFalse c1 =>
+      split
+      case isTrue c2 =>
+        rewrite [c2] at c1
+        contradiction
+      case isFalse c2 =>
+        apply Eq.refl
   case eq_ h1_x h1_y h1_v h1_t =>
     simp only [holds]
     simp only [Function.updateITE]
-    simp only [eq_comm]
-    congr! 1 <;> { split_ifs <;> rfl }
+    congr!
+    all_goals
+      split
+      case isTrue c1 =>
+        split
+        case isTrue c2 =>
+          apply Eq.refl
+        case isFalse c2 =>
+          rewrite [c1] at c2
+          contradiction
+      case isFalse c1 =>
+        split
+        case isTrue c2 =>
+          rewrite [c2] at c1
+          contradiction
+        case isFalse c2 =>
+          apply Eq.refl
   case true_ _ _ | false_ _ _ =>
     simp only [holds]
   case not_ h1_phi h1_v h1_t h1_phi' _ h1_ih =>
@@ -361,7 +409,6 @@ theorem substitution_theorem_is_sub_var_one_ind
     forall_not_free_in h1_x h1_phi h1_v h1_t h1_1
   | exists_not_free_in h1_x h1_phi h1_v h1_t h1_1 =>
     simp only [var_is_free_in] at h1_1
-    simp at h1_1
 
     simp only [holds]
     first
@@ -371,18 +418,24 @@ theorem substitution_theorem_is_sub_var_one_ind
     apply holds_coincide_var
     intro x a1
     simp only [Function.updateITE]
-    split_ifs
-    case _ c1 =>
-      rfl
-    case _ c1 c2 =>
-      subst c2
-      tauto
-    case _ c1 c2 =>
-      rfl
+    split
+    case isTrue c1 =>
+      apply Eq.refl
+    case isFalse c1 =>
+      split
+      case isTrue c2 =>
+        rewrite [c2] at a1
+        rewrite [c2] at c1
+        exfalso
+        apply h1_1
+        exact ⟨c1, a1⟩
+      case isFalse c2 =>
+        apply Eq.refl
   case
     forall_free_in h1_x h1_phi h1_v h1_t h1_phi' h1_1 h1_2 _ h1_ih
   | exists_free_in h1_x h1_phi h1_v h1_t h1_phi' h1_1 h1_2 _ h1_ih =>
     simp only [var_is_free_in] at h1_1
+    obtain ⟨h1_1_left, h1_1_right⟩ := h1_1
 
     simp only [holds]
     first
@@ -392,55 +445,83 @@ theorem substitution_theorem_is_sub_var_one_ind
     specialize h1_ih (Function.updateITE V h1_x d)
     simp only [← h1_ih]
     apply holds_coincide_var
-    intro x _
+    intro x a1
     simp only [Function.updateITE]
-    simp only [eq_comm]
-    split_ifs
-    case _ c1 c2 c3 =>
-      subst c2
-      obtain ⟨h1_1_left, h1_1_right⟩ := h1_1
-      contradiction
-    case _ | _ | _ =>
-      rfl
+    split
+    case isTrue c1 =>
+      split
+      case isTrue c2 =>
+        rewrite [← c1] at h1_1_left
+        rewrite [c2] at h1_1_left
+        contradiction
+      case isFalse c2 =>
+        apply Eq.refl
+    case isFalse c1 =>
+      split
+      case isTrue c2 =>
+        split
+        case isTrue c3 =>
+          rewrite [c3] at h1_2
+          contradiction
+        case isFalse c3 =>
+          apply Eq.refl
+      case isFalse c2 =>
+        apply Eq.refl
   case def_ h1_X h1_xs h1_v h1_t =>
     induction E
     case nil =>
       simp only [holds]
     case cons hd tl ih =>
       simp only [holds]
-      split_ifs
-      case _ c1 c2 =>
-        simp
-        apply holds_coincide_var
-        intro v' a1
-        have s1 : List.map (Function.updateITE V h1_v (V h1_t)) h1_xs = List.map (V ∘ fun (x : VarName_) => if h1_v = x then h1_t else x) h1_xs :=
-        by
-          simp only [List.map_eq_map_iff]
-          intro x _
-          simp only [Function.updateITE]
-          simp only [eq_comm]
-          simp
-          split_ifs
-          case _ c3 =>
-            simp only [if_pos c3]
-          case _ c3 =>
-            simp only [if_neg c3]
+      split
+      case isTrue c1 =>
+        split
+        case isTrue c2 =>
+          simp only [List.map_map]
+          apply holds_coincide_var
+          intro v' a1
 
-        simp only [s1]
-        apply Function.updateFromPairOfListsITE_mem_eq_len
-        · simp only [var_is_free_in_iff_mem_free_var_set] at a1
-          simp only [← List.mem_toFinset]
-          apply Finset.mem_of_subset hd.h1 a1
-        · simp
-          tauto
-      case _ c1 c2 =>
-        simp only [List.length_map] at c2
-        contradiction
-      case _ c1 c2 =>
-        simp at c2
-        contradiction
-      case _ c1 c2 =>
-        exact ih
+          have s1 : List.map (Function.updateITE V h1_v (V h1_t)) h1_xs = List.map (V ∘ fun (x : VarName_) => if h1_v = x then h1_t else x) h1_xs :=
+          by
+            simp only [List.map_eq_map_iff]
+            intro x a2
+            simp only [Function.updateITE]
+            simp only [Function.comp_apply]
+            split
+            case isTrue c3 =>
+              split
+              case isTrue c4 =>
+                apply Eq.refl
+              case isFalse c4 =>
+                rewrite [c3] at c4
+                contradiction
+            case isFalse c3 =>
+              split
+              case isTrue c4 =>
+                rewrite [c4] at c3
+                contradiction
+              case isFalse c4 =>
+                apply Eq.refl
+          simp only [s1]
+
+          apply Function.updateFromPairOfListsITE_mem_eq_len
+          · simp only [var_is_free_in_iff_mem_free_var_set] at a1
+            simp only [← List.mem_toFinset]
+            apply Finset.mem_of_subset hd.h1 a1
+          · simp only [List.length_map]
+            obtain ⟨c1_left, c1_right⟩ := c1
+            rewrite [c1_right]
+            apply Eq.refl
+        case isFalse c2 =>
+          simp only [List.length_map] at c2
+          contradiction
+      case isFalse c1 =>
+        split
+        case isTrue c2 =>
+          simp only [List.length_map] at c2
+          contradiction
+        case isFalse c2 =>
+          exact ih
 
 
 theorem substitution_is_valid_is_sub_var_one_ind
@@ -456,6 +537,9 @@ theorem substitution_is_valid_is_sub_var_one_ind
   intro D I V E
   simp only [← substitution_theorem_is_sub_var_one_ind D I V E v t F F' h1]
   apply h2
+
+
+end FOL.NV.Sub.Var.One.Ind
 
 
 #lint
