@@ -15,6 +15,7 @@ open Formula_
 /--
   Helper function for `replace_free_var_all_rec`.
 -/
+@[nolint defsWithUnderscore]
 def replace_free_var_all_rec_aux
   (σ : VarName_ → VarName_)
   (binders : Finset VarName_) :
@@ -63,6 +64,7 @@ def replace_free_var_all_rec_aux
 /--
   `replace_free_var_all_rec σ F` := The simultaneous replacement of each free occurrence of any variable `v` in the formula `F` by `σ v`.
 -/
+@[nolint defsWithUnderscore]
 def replace_free_var_all_rec
   (σ : VarName_ → VarName_)
   (F : Formula_) :
@@ -73,6 +75,7 @@ def replace_free_var_all_rec
 /--
   `fast_replace_free_var_all_rec σ F` := The simultaneous replacement of each free occurrence of any variable `v` in the formula `F` by `σ v`.
 -/
+@[nolint defsWithUnderscore]
 def fast_replace_free_var_all_rec
   (σ : VarName_ → VarName_) :
   Formula_ → Formula_
@@ -113,20 +116,20 @@ theorem fast_replace_free_var_all_rec_id
   all_goals
     simp only [fast_replace_free_var_all_rec]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    congr!
-    simp
+    congr
+    apply List.map_id
   case eq_ x y =>
-    congr!
+    congr
   case not_ phi phi_ih =>
-    congr!
+    congr
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    congr!
+    congr
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    congr!
+    congr
     simp only [Function.updateITE_id]
     exact phi_ih
 
@@ -142,39 +145,69 @@ example
     simp only [fast_replace_free_var_all_rec]
     simp only [One.Rec.fast_replace_free_var_one_rec]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    simp
-    intro x _
+    congr 2
+    ext x
     simp only [Function.updateITE]
-    simp only [eq_comm]
-    simp
+    simp only [id_eq]
+    split
+    case isTrue c1 =>
+      split
+      case isTrue c2 =>
+        apply Eq.refl
+      case isFalse c2 =>
+        rewrite [c1] at c2
+        contradiction
+    case isFalse c1 =>
+      split
+      case isTrue c2 =>
+        rewrite [c2] at c1
+        contradiction
+      case isFalse c2 =>
+        apply Eq.refl
   case eq_ x y =>
-    simp only [Function.updateITE]
-    simp only [eq_comm]
-    simp
+    congr 1
+    all_goals
+      simp only [Function.updateITE]
+      simp only [id_eq]
+      split
+      case isTrue c1 =>
+        split
+        case isTrue c2 =>
+          apply Eq.refl
+        case isFalse c2 =>
+          rewrite [c1] at c2
+          contradiction
+      case isFalse c1 =>
+        split
+        case isTrue c2 =>
+          rewrite [c2] at c1
+          contradiction
+        case isFalse c2 =>
+          apply Eq.refl
   case not_ phi phi_ih =>
-    simp
-    exact phi_ih
+    congr
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    simp
-    tauto
+    congr
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    split_ifs
-    case pos c1 =>
-      subst c1
-      simp
+    split
+    case isTrue c1 =>
+      congr
+      rewrite [c1]
       simp only [Function.updateITE_idem]
       simp only [Function.updateITE_id]
       apply fast_replace_free_var_all_rec_id
-    case neg c1 =>
-      simp
-      simp only [← phi_ih]
-      congr! 1
-      apply Function.updateITE_comm_id x v t
-      tauto
+    case isFalse c1 =>
+      rewrite [← phi_ih]
+      congr 2
+      apply Function.updateITE_comm_id
+      intro contra
+      apply c1
+      rewrite [contra]
+      apply Eq.refl
 
 
 theorem fast_replace_free_var_all_rec_same_on_free
@@ -189,19 +222,19 @@ theorem fast_replace_free_var_all_rec_same_on_free
 
     simp only [fast_replace_free_var_all_rec]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    congr! 1
+    congr 1
     simp only [List.map_eq_map_iff]
     exact h1
   case eq_ x y =>
-    congr! 1
+    congr 1
     · apply h1
       left
-      rfl
+      apply Eq.refl
     · apply h1
       right
-      rfl
+      apply Eq.refl
   case not_ phi phi_ih =>
-    congr! 1
+    congr 1
     apply phi_ih
     exact h1
   case
@@ -221,16 +254,16 @@ theorem fast_replace_free_var_all_rec_same_on_free
       right
       exact a1
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    congr! 1
+    congr 1
     apply phi_ih
     intro v a1
     simp only [Function.updateITE]
-    split_ifs
-    case _ c1 =>
-      rfl
-    case _ c1 =>
+    split
+    case isTrue c1 =>
+      apply Eq.refl
+    case isFalse c1 =>
       apply h1
-      tauto
+      exact ⟨c1, a1⟩
 
 
 theorem replace_free_var_all_rec_aux_same_on_free
@@ -245,29 +278,47 @@ theorem replace_free_var_all_rec_aux_same_on_free
   all_goals
     simp only [replace_free_var_all_rec_aux]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    congr! 1
+    congr 1
     simp only [List.map_eq_map_iff]
-    intro x _
-    split_ifs <;> tauto
+    intro x a1
+    split
+    case isTrue c1 =>
+      apply h1
+      exact c1
+    case isFalse c1 =>
+      apply Eq.refl
   case eq_ x y =>
-    congr! 1
-    · split_ifs <;> tauto
-    · split_ifs <;> tauto
+    congr 1
+    all_goals
+    split
+    case isTrue c1 =>
+      apply h1
+      exact c1
+    case isFalse c1 =>
+      apply Eq.refl
   case not_ phi phi_ih =>
-    simp
-    tauto
+    congr 1
+    apply phi_ih
+    exact h1
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    simp
-    tauto
+    congr 1
+    · apply phi_ih
+      exact h1
+    · apply psi_ih
+      exact h1
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    congr! 1
+    congr 1
     apply phi_ih
-    simp
-    tauto
+    intro v a1
+    simp only [Finset.union_singleton, Finset.mem_insert] at a1
+    rewrite [not_or] at a1
+    obtain ⟨a1_left, a1_right⟩ := a1
+    apply h1
+    exact a1_right
 
 
 example
@@ -283,14 +334,14 @@ example
     simp only [fast_replace_free_var_all_rec]
     simp only [replace_free_var_all_rec_aux]
   case pred_const_ X xs | pred_var_ X xs | def_ X xs =>
-    congr! 1
+    congr 1
     simp only [List.map_eq_map_iff]
-    intro x _
-    split_ifs <;> tauto
+    intro x a1
+    split <;> tauto
   case eq_ x y =>
-    congr! 1
-    · split_ifs <;> tauto
-    · split_ifs <;> tauto
+    congr 1
+    · split <;> tauto
+    · split <;> tauto
   case not_ phi phi_ih =>
     tauto
   case
@@ -298,30 +349,47 @@ example
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    simp
-    tauto
+    congr
+    all_goals
+      tauto
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
     congr! 1
 
     have s1 : (∀ (v : VarName_), v ∈ binders ∪ {x} → v = Function.updateITE σ x x v) :=
     by
       intros v a1
-      simp at a1
+      simp only [Finset.union_singleton, Finset.mem_insert] at a1
       simp only [Function.updateITE]
       cases a1
-      case _ c1 =>
-        split_ifs <;> tauto
-      case _ c1 =>
-        simp only [if_pos c1]
-        exact c1
+      case inl a1 =>
+        split
+        case isTrue c1 =>
+          exact a1
+        case isFalse c1 =>
+          contradiction
+      case inr a1 =>
+        split
+        case isTrue c1 =>
+          exact c1
+        case isFalse c1 =>
+          apply h1
+          exact a1
 
     simp only [← phi_ih (Function.updateITE σ x x) (binders ∪ {x}) s1]
     apply replace_free_var_all_rec_aux_same_on_free
     simp only [Function.updateITE]
     intro v a1
-    simp at a1
+    simp only [Finset.union_singleton, Finset.mem_insert] at a1
+    rewrite [not_or] at a1
     obtain ⟨a1_left, a1_right⟩ := a1
-    simp only [if_neg a1_right]
+    split
+    case isTrue c1 =>
+      contradiction
+    case isFalse c1 =>
+      apply Eq.refl
+
+
+end FOL.NV.Sub.Var.All.Rec
 
 
 #lint
