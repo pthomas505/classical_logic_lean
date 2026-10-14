@@ -14,6 +14,7 @@ open Formula_
 /--
   `replace_var_all_rec σ F` := The simultaneous replacement of each occurrence of any variable `v` in the formula `F` by `σ v`.
 -/
+@[nolint defsWithUnderscore]
 def replace_var_all_rec
   (σ : VarName_ → VarName_) :
   Formula_ → Formula_
@@ -49,9 +50,9 @@ theorem substitution_theorem_replace_var_all_rec_inj
   any_goals
     simp only [holds]
   case pred_const_ X xs | pred_var_ X xs =>
-    simp
+    simp only [List.map_map]
   case eq_ x y =>
-    simp
+    simp only [Function.comp_apply]
   case not_ phi phi_ih =>
     congr! 1
     apply phi_ih
@@ -72,7 +73,7 @@ theorem substitution_theorem_replace_var_all_rec_inj
       apply Function.updateITE_comp_right_injective
       apply h1
 
-    simp only [← s1]
+    rewrite [← s1]
     apply phi_ih
   case def_ X xs =>
     induction E
@@ -80,9 +81,9 @@ theorem substitution_theorem_replace_var_all_rec_inj
       simp only [holds]
     case cons E_hd E_tl E_ih =>
       simp only [holds]
-      simp
-      split_ifs
-      case _ c1 =>
+      simp only [List.length_map, List.map_map]
+      split
+      case isTrue c1 =>
         obtain ⟨c1_left, c1_right⟩ := c1
         apply holds_coincide_var
         intro v a1
@@ -90,10 +91,9 @@ theorem substitution_theorem_replace_var_all_rec_inj
         apply Function.updateFromPairOfListsITE_mem_eq_len
         · simp only [<- List.mem_toFinset]
           exact Finset.mem_of_subset E_hd.h1 a1
-        · simp
+        · simp only [List.length_map]
           simp only [c1_right]
-
-      case _ c1 =>
+      case isFalse c1 =>
         apply E_ih
 
 
@@ -110,6 +110,9 @@ theorem substitution_is_valid_replace_var_all_rec_inj
     intro D I V E
     simp only [← substitution_theorem_replace_var_all_rec_inj D I V E F σ h1]
     apply h2
+
+
+end FOL.NV.Sub.Var.All.Rec.Inj
 
 
 #lint
