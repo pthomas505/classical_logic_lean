@@ -16,6 +16,7 @@ open Formula_
 /--
   The recursive simultaneous uniform substitution of all of the propositional variables in a formula.
 -/
+@[nolint defsWithUnderscore]
 def sub_prop_all_rec (τ : PredName_ → PredName_) : Formula_ → Formula_
   | pred_const_ P ts => pred_const_ P ts
   | pred_var_ P ts =>
@@ -34,16 +35,6 @@ def sub_prop_all_rec (τ : PredName_ → PredName_) : Formula_ → Formula_
   | exists_ x phi => exists_ x (sub_prop_all_rec τ phi)
   | def_ P ts => def_ P ts
 
-instance {α : Type} {xs : List α} : Decidable (xs = []) :=
-  by
-  cases xs
-  case nil =>
-    simp
-    exact instDecidableTrue
-  case cons hd tl =>
-    simp
-    exact instDecidableFalse
-
 
 lemma sub_prop_all_rec_pred_var_set_is_empty
   (F : Formula_)
@@ -57,7 +48,7 @@ lemma sub_prop_all_rec_pred_var_set_is_empty
   case pred_var_ X xs =>
     simp only [pred_var_set] at h1
 
-    simp at h1
+    simp only [Finset.singleton_ne_empty] at h1
   case eq_ x y =>
     simp only [sub_prop_all_rec]
   case true_ | false_ =>
@@ -75,13 +66,12 @@ lemma sub_prop_all_rec_pred_var_set_is_empty
     | iff_ phi psi phi_ih psi_ih =>
     simp only [pred_var_set] at h1
     simp only [Finset.union_eq_empty] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
 
-    cases h1
-    case intro h1_left h1_right =>
-      simp only [sub_prop_all_rec]
-      congr!
-      · exact phi_ih h1_left
-      · exact psi_ih h1_right
+    simp only [sub_prop_all_rec]
+    congr!
+    · exact phi_ih h1_left
+    · exact psi_ih h1_right
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
     simp only [pred_var_set] at h1
 
@@ -118,16 +108,24 @@ theorem substitution_theorem_sub_prop_all_rec
       simp only [sub_prop_all_rec]
       simp only [holds]
     case pred_var_ X xs =>
-        simp only [sub_prop_all_rec]
-        split_ifs
-        case pos c1 =>
-          simp only [holds]
-          simp
-          simp only [if_pos c1]
-        case neg c1 =>
-          simp only [holds]
-          simp
-          simp only [if_neg c1]
+      simp only [sub_prop_all_rec]
+      split
+      case isTrue c1 =>
+        simp only [holds]
+        split
+        case isTrue c2 =>
+          apply Iff.refl
+        case isFalse c2 =>
+          simp only [List.map_eq_nil_iff] at c2
+          contradiction
+      case isFalse c1 =>
+        simp only [holds]
+        split
+        case isTrue c2 =>
+          simp only [List.map_eq_nil_iff] at c2
+          contradiction
+        case isFalse c2 =>
+          apply Iff.refl
     case eq_ x y =>
       simp only [sub_prop_all_rec]
       simp only [holds]
@@ -168,16 +166,16 @@ theorem substitution_theorem_sub_prop_all_rec
     simp only [holds]
   case cons.def_ hd tl ih X xs =>
     simp only [holds] at ih
-    simp at ih
+    simp only [List.map_nil] at ih
 
     simp only [sub_prop_all_rec]
     simp only [holds]
-    split_ifs
-    case _ c1 =>
+    split
+    case isTrue c1 =>
       specialize ih (Function.updateFromPairOfListsITE V hd.args (List.map V xs)) hd.q
       simp only [sub_prop_all_rec_pred_var_set_is_empty hd.q τ hd.h2] at ih
       apply ih
-    case _ c1 =>
+    case isFalse c1 =>
       specialize ih V (def_ X xs)
       simp only [sub_prop_all_rec] at ih
       exact ih
@@ -195,6 +193,9 @@ theorem substitution_is_valid_sub_prop_all_rec
   intro D I V E
   simp only [substitution_theorem_sub_prop_all_rec D I V E τ F]
   apply h1
+
+
+end FOL.NV.Sub.Prop.All.Rec
 
 
 #lint
