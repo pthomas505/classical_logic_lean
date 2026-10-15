@@ -19,6 +19,7 @@ open Formula_
 /--
   The simultaneous replacement of a predicate variable in a formula.
 -/
+@[nolint defsWithUnderscore]
 def replace_pred_one_rec
   (P : PredName_)
   (zs : List VarName_)
@@ -52,6 +53,9 @@ def replace_pred_one_rec
   | forall_ x phi => forall_ x (replace_pred_one_rec P zs H phi)
   | exists_ x phi => exists_ x (replace_pred_one_rec P zs H phi)
   | def_ X xs => def_ X xs
+
+
+end FOL.NV.Sub.Pred.One.Rec
 
 
 #lint
