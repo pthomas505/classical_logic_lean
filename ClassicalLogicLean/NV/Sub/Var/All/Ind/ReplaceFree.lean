@@ -108,7 +108,8 @@ example
   (h1 : Rec.fast_replace_free_var_all_rec σ F = F') :
   is_replace_free_var_all_ind σ F F' :=
   by
-  subst h1
+  rewrite [← h1]
+  clear h1
   induction F generalizing σ
   all_goals
     simp only [Rec.fast_replace_free_var_all_rec]
@@ -161,20 +162,20 @@ example
   all_goals
     simp only [Rec.fast_replace_free_var_all_rec]
   case not_ σ' phi phi' ih_1 ih_2 =>
-    simp
-    exact ih_2
+    congr
   case
       imp_ σ' phi psi phi' psi' phi_ih_1 psi_ih_1 phi_ih_2 psi_ih_2
     | and_ σ' phi psi phi' psi' phi_ih_1 psi_ih_1 phi_ih_2 psi_ih_2
     | or_ σ' phi psi phi' psi' phi_ih_1 psi_ih_1 phi_ih_2 psi_ih_2
     | iff_ σ' phi psi phi' psi' phi_ih_1 psi_ih_1 phi_ih_2 psi_ih_2 =>
-    simp
-    tauto
+    congr
   case
       forall_ σ' x phi phi' ih_1 ih_2
     | exists_ σ' x phi phi' ih_1 ih_2 =>
-    simp
-    exact ih_2
+    congr
+
+
+end FOL.NV.Sub.Var.All.Ind
 
 
 #lint
