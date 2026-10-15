@@ -100,31 +100,32 @@ theorem substitution_theorem_admits_var_all_rec_aux
       simp only [holds]
     case pred_const_ X xs | pred_var_ X xs =>
       congr! 1
-      simp
+      simp only [List.map_map, List.map_inj_left, Function.comp_apply]
       intro v a1
       apply h2
       by_cases c1 : v ∈ binders
       · left
         exact c1
       · right
-        simp only [h3 v c1]
+        rewrite [h3 v c1]
         exact h1 v a1 c1
     case eq_ x y =>
       obtain ⟨h1_left, h1_right⟩ := h1
+
       congr! 1
       · apply h2
         by_cases c1 : x ∈ binders
         · left
           exact c1
         · right
-          simp only [h3 x c1]
+          rewrite [h3 x c1]
           exact h1_left c1
       · apply h2
         by_cases c1 : y ∈ binders
         · left
           exact c1
         · right
-          simp only [h3 y c1]
+          rewrite [h3 y c1]
           exact h1_right c1
     case not_ phi phi_ih =>
       congr! 1
@@ -145,31 +146,67 @@ theorem substitution_theorem_admits_var_all_rec_aux
       apply phi_ih (Function.updateITE V x d) (Function.updateITE V' x d) σ (Function.updateITE σ' x x) (binders ∪ {x}) h1
       · intro v a1
         simp only [Function.updateITE] at a1
-        simp at a1
+        simp only [Finset.union_singleton, Finset.mem_insert] at a1
+        rewrite [not_or] at a1
 
         simp only [Function.updateITE]
-        split_ifs
-        case _ c1 c2 =>
-          rfl
-        case _ c1 c2 =>
-          contradiction
-        case _ c1 c2 =>
-          subst c2
-          tauto
-        case _ c1 c2 =>
-          simp only [if_neg c1] at a1
-          apply h2
-          tauto
+        split
+        case isTrue c1 =>
+          split
+          case isTrue c2 =>
+            apply Eq.refl
+          case isFalse c2 =>
+            contradiction
+        case isFalse c1 =>
+          split
+          case isTrue c2 =>
+            cases a1
+            case inl a1 =>
+              cases a1
+              case inl a1 =>
+                contradiction
+              case inr a1 =>
+                specialize h2' v a1
+                rewrite [c2] at h2'
+                contradiction
+            case inr a1 =>
+              split at a1
+              case isTrue c3 =>
+                obtain ⟨a1_left, a1_right⟩ := a1
+                contradiction
+              case isFalse c3 =>
+                obtain ⟨a1_left, a1_right⟩ := a1
+                contradiction
+          case isFalse c2 =>
+            cases a1
+            case inl a1 =>
+              cases a1
+              case inl a1 =>
+                contradiction
+              case inr a1 =>
+                apply h2
+                left
+                exact a1
+            case inr a1 =>
+              split at a1
+              case isTrue c3 =>
+                obtain ⟨a1_left, a1_right⟩ := a1
+                contradiction
+              case isFalse c3 =>
+                obtain ⟨a1_left, a1_right⟩ := a1
+                apply h2
+                right
+                exact a1_right
       · intro v a1
-        simp at a1
+        simp only [Finset.union_singleton, Finset.mem_insert] at a1
 
         simp only [Function.updateITE]
-        split_ifs <;> tauto
+        split <;> tauto
       · intro v a1
-        simp at a1
+        simp only [Finset.union_singleton, Finset.mem_insert] at a1
 
         simp only [Function.updateITE]
-        split_ifs <;> tauto
+        split <;> tauto
 
   case cons.def_ hd tl ih X xs =>
     split_ifs
