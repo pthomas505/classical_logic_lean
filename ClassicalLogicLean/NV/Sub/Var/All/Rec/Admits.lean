@@ -15,6 +15,7 @@ open Formula_
 /--
   Helper function for `admits_var_all_rec`.
 -/
+@[nolint defsWithUnderscore]
 def admits_var_all_rec_aux
   (σ : VarName_ → VarName_)
   (binders : Finset VarName_) :
@@ -46,6 +47,7 @@ def admits_var_all_rec_aux
   | def_ _ xs =>
       ∀ (v : VarName_), v ∈ xs → v ∉ binders → σ v ∉ binders
 
+@[nolint defsWithUnderscore]
 instance
   (σ : VarName_ → VarName_)
   (binders : Finset VarName_)
@@ -61,12 +63,14 @@ instance
 /--
   `admits_var_all_rec σ F` := True if and only if there is no free occurrence of a variable in the formula `F` that becomes a bound occurrence in the formula `fast_replace_free_var_all_rec σ F`.
 -/
+@[nolint defsWithUnderscore]
 def admits_var_all_rec
   (σ : VarName_ → VarName_)
   (F : Formula_) :
   Prop :=
   admits_var_all_rec_aux σ ∅ F
 
+@[nolint defsWithUnderscore]
 instance
   (σ : VarName_ → VarName_)
   (F : Formula_) :
@@ -201,47 +205,70 @@ theorem substitution_theorem_admits_var_all_rec_aux
         simp only [Finset.union_singleton, Finset.mem_insert] at a1
 
         simp only [Function.updateITE]
-        split <;> tauto
+        split
+        case isTrue c1 =>
+          exact c1
+        case isFalse c1 =>
+          cases a1
+          case inl a1 =>
+            contradiction
+          case inr a1 =>
+            apply h2'
+            exact a1
       · intro v a1
         simp only [Finset.union_singleton, Finset.mem_insert] at a1
+        rewrite [not_or] at a1
+        obtain ⟨a1_left, a1_right⟩ := a1
 
         simp only [Function.updateITE]
-        split <;> tauto
+        split
+        case isTrue c1 =>
+          contradiction
+        case isFalse c1 =>
+          apply h3
+          exact a1_right
 
   case cons.def_ hd tl ih X xs =>
-    split_ifs
-    case _ c1 c2 =>
-      simp
-      have s1 : List.map V xs = List.map (V' ∘ σ') xs :=
-      by
-        simp only [List.map_eq_map_iff]
-        intro x a1
-        simp
-        apply h2
-        by_cases c3 : x ∈ binders
-        · left
-          exact c3
-        · right
-          simp only [h3 x c3]
-          exact h1 x a1 c3
+    split
+    case isTrue c1 =>
+      split
+      case isTrue c2 =>
+        simp only [List.map_map]
 
-      simp only [s1]
-      apply holds_coincide_var
-      intro v a1
-      apply Function.updateFromPairOfListsITE_mem_eq_len
-      · simp only [var_is_free_in_iff_mem_free_var_set] at a1
-        simp only [← List.mem_toFinset]
-        apply Finset.mem_of_subset hd.h1 a1
-      · simp
-        tauto
-    case _ c1 c2 =>
-      simp only [List.length_map] at c2
-      contradiction
-    case _ c1 c2 =>
-      simp at c2
-      contradiction
-    case _ c1 c2 =>
-      exact ih V V' σ σ' binders (def_ X xs) h1 h2 h2' h3
+        have s1 : List.map V xs = List.map (V' ∘ σ') xs :=
+        by
+          simp only [List.map_eq_map_iff]
+          intro x a1
+          simp only [Function.comp_apply]
+          apply h2
+          by_cases c3 : x ∈ binders
+          · left
+            exact c3
+          · right
+            rewrite [h3 x c3]
+            exact h1 x a1 c3
+
+        rewrite [s1]
+        apply holds_coincide_var
+        intro v a1
+        apply Function.updateFromPairOfListsITE_mem_eq_len
+        · simp only [var_is_free_in_iff_mem_free_var_set] at a1
+          simp only [← List.mem_toFinset]
+          apply Finset.mem_of_subset hd.h1 a1
+        · simp only [List.length_map]
+          obtain ⟨c1_left, c1_right⟩ := c1
+          rewrite [c1_right]
+          apply Eq.refl
+      case isFalse c2 =>
+        simp only [List.length_map] at c2
+        contradiction
+    case isFalse c1 =>
+      split
+      case isTrue c2 =>
+        simp only [List.length_map] at c2
+        contradiction
+      case isFalse c2 =>
+        exact ih V V' σ σ' binders (def_ X xs) h1 h2 h2' h3
 
 
 theorem substitution_theorem_admits_var_all_rec
@@ -256,9 +283,12 @@ theorem substitution_theorem_admits_var_all_rec
     holds D I V E (fast_replace_free_var_all_rec σ F) :=
   by
   apply substitution_theorem_admits_var_all_rec_aux D I (V ∘ σ) V E σ σ ∅ F h1
-  · simp
-  · simp
-  · simp
+  · intro v a1
+    exact Function.comp_apply
+  · intro v a1
+    simp only [Finset.notMem_empty] at a1
+  · intro v a1
+    apply Eq.refl
 
 
 theorem substitution_is_valid_admits_var_all_rec
@@ -276,7 +306,7 @@ theorem substitution_is_valid_admits_var_all_rec
   apply h2
 
 
-lemma admits_var_all_rec_aux_mem_free_var_set_and_not_mem_binders
+theorem admits_var_all_rec_aux_mem_free_var_set_and_not_mem_binders
   (binders : Finset VarName_)
   (σ : VarName_ → VarName_)
   (F : Formula_)
@@ -287,18 +317,36 @@ lemma admits_var_all_rec_aux_mem_free_var_set_and_not_mem_binders
   case
       pred_const_ X xs
     | pred_var_ X xs
-    | eq_ x y
     | def_ X xs =>
     simp only [admits_var_all_rec_aux] at h1
 
     simp only [free_var_set]
-    simp
+    simp only [List.mem_toFinset]
     exact h1
+  case eq_ x y =>
+    simp only [admits_var_all_rec_aux] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
+
+    simp only [free_var_set]
+    intro v a1 a2
+    simp only [Finset.mem_insert, Finset.mem_singleton] at a1
+    cases a1
+    case inl a1 =>
+      rewrite [a1] at a2
+      rewrite [a1]
+      apply h1_left
+      exact a2
+    case inr a1 =>
+      rewrite [a1] at a2
+      rewrite [a1]
+      apply h1_right
+      exact a2
   case
       true_
     | false_ =>
     simp only [free_var_set]
-    simp
+    intro v a1 a2
+    simp only [Finset.notMem_empty] at a1
   case not_ phi ih =>
     simp only [admits_var_all_rec_aux] at h1
 
@@ -311,10 +359,22 @@ lemma admits_var_all_rec_aux_mem_free_var_set_and_not_mem_binders
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
     simp only [admits_var_all_rec_aux] at h1
+    obtain ⟨h1_left, h1_right⟩ := h1
 
     simp only [free_var_set]
-    simp
-    tauto
+    simp only [Finset.mem_union]
+    intro v a1 a2
+    cases a1
+    case inl a1 =>
+      apply phi_ih
+      · exact h1_left
+      · exact a1
+      · exact a2
+    case inr a1 =>
+      apply psi_ih
+      · exact h1_right
+      · exact a1
+      · exact a2
   case
       forall_ x phi ih
     | exists_ x phi ih =>
@@ -322,15 +382,17 @@ lemma admits_var_all_rec_aux_mem_free_var_set_and_not_mem_binders
 
     simp only [free_var_set]
     intro v a1 a2
-    simp at a1
+    simp only [Finset.mem_sdiff, Finset.mem_singleton] at a1
     obtain ⟨a1_left, a1_right⟩ := a1
     specialize ih (binders ∪ {x}) h1 v
-    simp at ih
-    specialize ih a1_left a2 a1_right
-    tauto
+    simp only [Finset.union_singleton, Finset.mem_insert] at ih
+    simp only [not_or] at ih
+    specialize ih a1_left ⟨a1_right, a2⟩
+    obtain ⟨ih_left, ih_right⟩ := ih
+    exact ih_right
 
 
-lemma admits_var_all_rec_aux_del_binder
+theorem admits_var_all_rec_aux_del_binder
   (binders : Finset VarName_)
   (v : VarName_)
   (σ : VarName_ → VarName_)
@@ -343,42 +405,43 @@ lemma admits_var_all_rec_aux_del_binder
     | pred_var_ X xs
     | def_ X xs =>
     simp only [admits_var_all_rec_aux] at h1
-    simp at h1
+    simp only [Finset.singleton_union, Finset.mem_insert] at h1
+    simp only [not_or] at h1
 
     simp only [admits_var_all_rec_aux]
     intro x a1 a2
     simp only [Function.updateITE]
-    split_ifs
-    case pos c1 =>
-      rw [c1] at a2
+    split
+    case isTrue c1 =>
+      rewrite [c1] at a2
       exact a2
-    case neg c1 =>
-      specialize h1 x a1 c1 a2
-      tauto
+    case isFalse c1 =>
+      specialize h1 x a1 ⟨c1, a2⟩
+      obtain ⟨h1_left, h1_right⟩ := h1
+      exact h1_right
   case eq_ x y =>
     simp only [admits_var_all_rec_aux] at h1
-    simp at h1
+    simp only [Finset.singleton_union, Finset.mem_insert] at h1
+    simp only [not_or] at h1
     obtain ⟨h1_left, h1_right⟩ := h1
 
     simp only [admits_var_all_rec_aux]
     constructor
     · intro a1
       simp only [Function.updateITE]
-      split_ifs
-      case pos c1 =>
-        rw [c1] at a1
+      split
+      case isTrue c1 =>
+        rewrite [c1] at a1
         exact a1
-      case neg c1 =>
-        specialize h1_left c1 a1
+      case isFalse c1 =>
         tauto
     · intro a1
       simp only [Function.updateITE]
-      split_ifs
-      case pos c1 =>
-        rw [c1] at a1
+      split
+      case isTrue c1 =>
+        rewrite [c1] at a1
         exact a1
-      case neg c1 =>
-        specialize h1_right c1 a1
+      case isFalse c1 =>
         tauto
   case true_ | false_ =>
     simp only [admits_var_all_rec_aux]
@@ -401,11 +464,15 @@ lemma admits_var_all_rec_aux_del_binder
       forall_ x phi ih
     | exists_ x phi ih =>
     simp only [admits_var_all_rec_aux] at h1
-    simp at h1
+    simp only [Finset.singleton_union, Finset.union_singleton] at h1
 
     simp only [admits_var_all_rec_aux]
     apply ih
+    simp only [Finset.union_singleton, Finset.union_insert, Finset.singleton_union]
     exact h1
+
+
+end FOL.NV.Sub.Var.All.Rec
 
 
 #lint
