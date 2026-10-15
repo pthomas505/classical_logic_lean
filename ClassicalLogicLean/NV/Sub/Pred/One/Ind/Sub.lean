@@ -155,38 +155,29 @@ theorem substitution_theorem_is_sub_pred_one_ind
     simp only [holds]
     simp only [h3_const]
   case pred_not_occurs_in h1_X h1_ts h1_1 =>
-    simp at h1_1
     apply holds_coincide_pred_var
     · exact h3_const
     · intro X ds a1
       simp only [pred_var_occurs_in] at a1
       obtain ⟨a1_left, a1_right⟩ := a1
-      rw [← a1_left] at h1_1
+      rewrite [← a1_left] at h1_1
       apply h3_var
-      simp
-      intro a2
-      rw [a2] at h1_1
-      simp at h1_1
-      intro contra
-      apply h1_1
-      trans List.length ds
-      · simp only [eq_comm]
-        exact a1_right
-      · exact contra
+      rewrite [a1_right]
+      exact h1_1
   case pred_occurs_in h1_X h1_ts h1_1 h1_2 =>
     obtain s1 := Sub.Var.All.Rec.substitution_theorem_admits_var_all_rec D I V E (Function.updateFromPairOfListsITE id zs h1_ts) H h1_2
 
     obtain s2 := Function.updateFromPairOfListsITE_comp id V zs h1_ts
 
     simp only [s2] at s1
-    simp at s1
+    simp only [CompTriple.comp_eq] at s1
 
     specialize h2 h1_X (List.map V h1_ts)
     simp only [s1] at h2
 
     simp only [holds]
     apply h2
-    simp
+    simp only [List.length_map]
     exact h1_1
   case eq_ h1_x h1_y =>
     simp only [holds]
@@ -222,7 +213,7 @@ theorem substitution_theorem_is_sub_pred_one_ind
       intro v a2
       apply Function.updateFromPairOfListsITE_updateIte
       intro contra
-      rw [contra] at a2
+      rewrite [contra] at a2
       contradiction
 
     simp only [h2 Q ds a1] at s1
@@ -233,18 +224,20 @@ theorem substitution_theorem_is_sub_pred_one_ind
       simp only [holds]
     case cons hd tl =>
       simp only [holds]
-      split_ifs
-      case _ c1 =>
+      split
+      case isTrue c1 =>
         apply holds_coincide_pred_var
         · exact h3_const
         · simp only [pred_var_occurs_in_iff_mem_pred_var_set]
           simp only [hd.h2]
-          simp
-      case _ c1 =>
+          intro Q ds a1
+          simp only [Finset.notMem_empty] at a1
+      case isFalse c1 =>
         apply holds_coincide_pred_var
         · exact h3_const
         · simp only [pred_var_occurs_in]
-          simp
+          intro Q ds a1
+          contradiction
 
 
 theorem substitution_is_valid_is_sub_pred_one_ind
@@ -267,20 +260,24 @@ theorem substitution_is_valid_is_sub_pred_one_ind
         if (Q = P ∧ ds.length = zs.length)
         then holds D I (Function.updateFromPairOfListsITE V zs ds) E H
         else I.pred_var_ Q ds }
+
   obtain s1 := substitution_theorem_is_sub_pred_one_ind D I J V E F P zs H F' h1
-  simp only [Interpretation_.pred_var_] at s1
+
   have s2 : holds D I V E F' ↔ holds D J V E F :=
   by
     apply s1
     · intro Q ds a1
       obtain ⟨a1_left, a1_right⟩ := a1
-      simp
-      simp only [if_pos a1_right]
-    · simp
+      grind only
+    · grind only
     · intro Q ds a1
-      simp only [if_neg a1]
-  simp only [s2]
+      grind only
+
+  rewrite [s2]
   apply h2
+
+
+end FOL.NV.Sub.Pred.One.Ind
 
 
 #lint
