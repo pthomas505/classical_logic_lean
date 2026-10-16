@@ -18,6 +18,7 @@ open Formula_
 /--
   The simultaneous substitution of all of the predicate variables in a formula.
 -/
+@[nolint defsWithUnderscore]
 def replace_pred_all_rec
   (τ : PredName_ → ℕ → (List VarName_ × Formula_)) :
   Formula_ → Formula_
@@ -51,6 +52,9 @@ def replace_pred_all_rec
   | forall_ x phi => forall_ x (replace_pred_all_rec τ phi)
   | exists_ x phi => exists_ x (replace_pred_all_rec τ phi)
   | def_ X xs => def_ X xs
+
+
+end FOL.NV.Sub.Pred.All.Rec
 
 
 #lint
