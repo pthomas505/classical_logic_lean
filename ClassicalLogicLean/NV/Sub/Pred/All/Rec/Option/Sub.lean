@@ -125,7 +125,7 @@ def I'
 lemma substitution_theorem_sub_pred_all_rec_opt_aux
   (D : Type)
   (I : Interpretation_ D)
-  (V V' V'': Valuation_ D)
+  (V V' V'' : Valuation_ D)
   (E : Env_)
   (c : Char)
   (τ : PredName_ → ℕ → Option (List VarName_ × Formula_))
@@ -166,48 +166,53 @@ lemma substitution_theorem_sub_pred_all_rec_opt_aux
       split
       case isTrue c2 =>
         simp only [c1] at h2
-        simp? at h2
+        split at h2
+        case isTrue c3 =>
+          simp only [Finset.mem_sdiff, List.mem_toFinset] at h2
 
-        set zs := (Option.get (τ X (List.length xs)) (_ : Option.isSome (τ X (List.length xs)) = true)).1
+          set zs := (Option.get (τ X (List.length xs)) (_ : Option.isSome (τ X (List.length xs)) = true)).1
 
-        set H := (Option.get (τ X (List.length xs)) (_ : Option.isSome (τ X (List.length xs)) = true)).2
+          set H := (Option.get (τ X (List.length xs)) (_ : Option.isSome (τ X (List.length xs)) = true)).2
 
-        obtain s1 := Sub.Var.All.Rec.Fresh.substitution_theorem_sub_var_all_rec D I V E (Function.updateFromPairOfListsITE id zs (xs.map σ)) c H
-        simp only [Function.updateFromPairOfListsITE_comp] at s1
+          obtain s1 := Sub.Var.All.Rec.Fresh.substitution_theorem_sub_var_all_rec D I V E (Function.updateFromPairOfListsITE id zs (xs.map σ)) c H
+          simp only [Function.updateFromPairOfListsITE_comp] at s1
 
-        simp at s1
-        simp only [s1]
-        clear s1
+          simp only [CompTriple.comp_eq, List.map_map] at s1
+          rewrite [s1]
+          clear s1
 
-        apply holds_coincide_var
-        intro x a1
-        by_cases c3 : x ∈ zs
-        · apply Function.updateFromPairOfListsITE_map_mem_ext
-          · simp
-            exact h1
-          · simp only [← c2]
-          · exact c3
-        · simp only [Function.updateFromPairOfListsITE_not_mem V'' x zs (List.map V' xs) c3]
-          simp only [Function.updateFromPairOfListsITE_not_mem V x zs (List.map (V ∘ σ ) xs) c3]
-          apply h2
-          · simp only [var_is_free_in_iff_mem_free_var_set] at a1
-            exact a1
-          · exact c3
+          apply holds_coincide_var
+          intro x a1
+          by_cases c4 : x ∈ zs
+          · apply Function.updateFromPairOfListsITE_map_mem_ext
+            · simp only [Function.comp_apply]
+              exact h1
+            · simp only [← c2]
+            · exact c4
+          · simp only [Function.updateFromPairOfListsITE_not_mem V'' x zs (List.map V' xs) c4]
+            simp only [Function.updateFromPairOfListsITE_not_mem V x zs (List.map (V ∘ σ ) xs) c4]
+            apply h2
+            simp only [var_is_free_in_iff_mem_free_var_set] at a1
+            exact ⟨a1, c4⟩
+        case isFalse c3 =>
+          exfalso
+          apply c3
+          exact True.intro
       case isFalse c2 =>
         simp only [holds]
-        simp
+        simp only [List.map_map]
         congr! 1
         simp only [List.map_eq_map_iff]
         intro x a1
-        simp
+        simp only [Function.comp_apply]
         exact h1 x a1
     case isFalse c1 =>
       simp only [holds]
-      simp
+      simp only [List.map_map]
       congr! 1
       simp only [List.map_eq_map_iff]
       intro x a1
-      simp
+      simp only [Function.comp_apply]
       exact h1 x a1
   case eq_ x y =>
     simp only [var_is_free_in] at h1
@@ -218,14 +223,18 @@ lemma substitution_theorem_sub_pred_all_rec_opt_aux
     have s1 : V' x = V (σ x) :=
     by
       apply h1
-      simp
-    simp only [s1]
+      left
+      apply Eq.refl
+    rewrite [s1]
 
     have s2 : V' y = V (σ y) :=
     by
       apply h1
-      simp
-    simp only [s2]
+      right
+      apply Eq.refl
+    rewrite [s2]
+
+    apply Iff.refl
   case true_ | false_ =>
     simp only [sub_pred_all_rec_opt_aux]
     simp only [holds]
@@ -257,9 +266,8 @@ lemma substitution_theorem_sub_pred_all_rec_opt_aux
         exact a1
       · intro x a1
         apply h2
-        simp only [Finset.mem_biUnion, Finset.mem_union] at a1
-        apply Exists.elim a1
-        intro a a2
+        simp only [Finset.mem_biUnion] at a1
+        obtain ⟨a, a1_left, a1_right⟩ := a1
 
         simp only [Finset.mem_biUnion, Finset.mem_union]
         apply Exists.intro a
@@ -271,9 +279,8 @@ lemma substitution_theorem_sub_pred_all_rec_opt_aux
         exact a1
       · intro x a1
         apply h2
-        simp only [Finset.mem_biUnion, Finset.mem_union] at a1
-        apply Exists.elim a1
-        intro a a2
+        simp only [Finset.mem_biUnion] at a1
+        obtain ⟨a, a1_left, a1_right⟩ := a1
 
         simp only [Finset.mem_biUnion, Finset.mem_union]
         apply Exists.intro a
@@ -293,65 +300,74 @@ lemma substitution_theorem_sub_pred_all_rec_opt_aux
 
     apply ih
     · intro v a1
-      split_ifs
-      case _ c1 =>
+      split
+      case isTrue c1 =>
         simp only [Function.updateITE]
-        split_ifs
-        case _ c2 c3 =>
-          rfl
-        case _ c2 c3 =>
-          contradiction
-        case _ c2 c3 =>
-          obtain s1 := fresh_not_mem x c ((Finset.image (Function.updateITE σ x x) (free_var_set phi)) ∪ (Finset.biUnion (pred_var_set phi) (pred_var_free_var_set τ)))
-          simp only [← c3] at s1
-          simp only [Finset.mem_union] at s1
+        split
+        case isTrue c2 =>
+          split
+          case isTrue c3 =>
+            apply Eq.refl
+          case isFalse c3 =>
+            contradiction
+        case isFalse c2 =>
+          split
+          case isTrue c3 =>
+            obtain s1 := fresh_not_mem x c ((Finset.image (Function.updateITE σ x x) (free_var_set phi)) ∪ (Finset.biUnion (pred_var_set phi) (pred_var_free_var_set τ)))
+            simp only [← c3] at s1
+            simp only [Finset.mem_union] at s1
 
-          simp only [var_is_free_in_iff_mem_free_var_set] at a1
+            simp only [var_is_free_in_iff_mem_free_var_set] at a1
 
-          obtain s2 := Finset.mem_image_of_mem (Function.updateITE σ x x) a1
-          simp only [Function.updateITE] at s2
-          simp only [if_neg c2] at s2
+            obtain s2 := Finset.mem_image_of_mem (Function.updateITE σ x x) a1
+            simp only [Function.updateITE] at s2
+            simp only [if_neg c2] at s2
 
-          exfalso
-          apply s1
-          left
-          exact s2
-        case _ c2 c3 =>
-          apply h1
-          tauto
-      case _ c1 =>
+            exfalso
+            apply s1
+            left
+            exact s2
+          case isFalse c3 =>
+            apply h1
+            tauto
+      case isFalse c1 =>
         simp only [Function.updateITE]
-        by_cases c2 : v = x
-        · simp only [if_pos c2]
-          simp
-        · simp only [if_neg c2]
-          split_ifs
-          case _ c3 =>
+        split
+        case isTrue c2 =>
+          split
+          case isTrue c3 =>
+            apply Eq.refl
+          case isFalse c3 =>
+            contradiction
+        case isFalse c2 =>
+          split
+          case isTrue c3 =>
             obtain s1 := Sub.Var.All.Rec.Fresh.sub_var_all_rec_free_var_set_eq_free_var_set_image (Function.updateITE σ x x) c phi
-            simp only [s1] at c1
-
-            simp only [← c3] at c1
-            simp only [Finset.mem_union] at c1
 
             simp only [var_is_free_in_iff_mem_free_var_set] at a1
 
             obtain s2 := Finset.mem_image_of_mem (Function.updateITE σ (σ v) (σ v)) a1
             simp only [Function.updateITE] at s2
-            simp only [ite_self] at s2
 
-            exfalso
-            apply c1
-            left
-            exact s2
-          case _ c3 =>
+            split at s2
+            case isTrue c4 =>
+              rewrite [c4] at c2
+              contradiction
+            case isFalse c4 =>
+              simp only [← c3] at c1
+              simp only [Finset.mem_union] at c1
+              rewrite [not_or] at c1
+              obtain ⟨c1_left, c1_right⟩ := c1
+              contradiction
+          case isFalse c3 =>
             apply h1
             tauto
     · intro v a1
-      split_ifs
-      case _ c1 =>
+      split
+      case isTrue c1 =>
         simp only [Function.updateITE]
-        split_ifs
-        case _ c2 =>
+        split
+        case isTrue c2 =>
           obtain s1 := Sub.Var.All.Rec.Fresh.sub_var_all_rec_free_var_set_eq_free_var_set_image (Function.updateITE σ x x) c phi
           simp only [← s1] at c2
 
@@ -359,25 +375,28 @@ lemma substitution_theorem_sub_pred_all_rec_opt_aux
           simp only [← c2] at s2
           simp only [Finset.mem_union] at s2
 
-          push_neg at s2
+          rewrite [not_or] at s2
           obtain ⟨s2_left, s2_right⟩ := s2
           contradiction
-        case _ c2 =>
+        case isFalse c2 =>
           exact h2 v a1
-      case _ c1 =>
+      case isFalse c1 =>
         simp only [Finset.mem_union] at c1
-        push_neg at c1
+        rewrite [not_or] at c1
         obtain ⟨c1_left, c1_right⟩ := c1
         have s1 : ¬ v = x :=
         by
           intro contra
           apply c1_right
-          subst contra
+          rewrite [← contra]
           exact a1
 
         simp only [Function.updateITE]
-        simp only [if_neg s1]
-        exact h2 v a1
+        split
+        case isTrue c2 =>
+          contradiction
+        case isFalse c2 =>
+          exact h2 v a1
   case def_ X xs =>
     simp only [sub_pred_all_rec_opt_aux]
 
@@ -396,47 +415,51 @@ lemma substitution_theorem_sub_pred_all_rec_opt_aux
         exact h1 x a1
       simp only [s1]
 
-      split_ifs
-      case _ c1 c2 =>
-        have s2 : holds D I (Function.updateFromPairOfListsITE V' E_hd.args (List.map (V ∘ σ) xs)) E_tl E_hd.q ↔ holds D I (Function.updateFromPairOfListsITE V E_hd.args (List.map (V ∘ σ) xs)) E_tl E_hd.q :=
-        by
-          apply holds_coincide_var
-          intro x a1
-          apply Function.updateFromPairOfListsITE_map_mem_ext
-          · simp
-          · simp at c1
-            tauto
-          · simp only [var_is_free_in_iff_mem_free_var_set] at a1
-            simp only [← List.mem_toFinset]
-            apply Finset.mem_of_subset E_hd.h1 a1
+      split
+      case isTrue c1 =>
+        split
+        case isTrue c2 =>
+          have s2 : holds D I (Function.updateFromPairOfListsITE V' E_hd.args (List.map (V ∘ σ) xs)) E_tl E_hd.q ↔ holds D I (Function.updateFromPairOfListsITE V E_hd.args (List.map (V ∘ σ) xs)) E_tl E_hd.q :=
+          by
+            apply holds_coincide_var
+            intro x a1
+            apply Function.updateFromPairOfListsITE_map_mem_ext
+            · simp only [Function.comp_apply]
+              intro y a2
+              exact True.intro
+            · tauto
+            · simp only [var_is_free_in_iff_mem_free_var_set] at a1
+              simp only [← List.mem_toFinset]
+              apply Finset.mem_of_subset E_hd.h1 a1
 
-        simp
-        simp only [← s2]
+          simp only [List.map_map]
+          simp only [← s2]
 
-        simp only [sub_pred_all_rec_opt_aux] at E_ih
-        apply holds_coincide_pred_var
-        · simp only [I']
-          simp only [Interpretation_.using_pred]
-        · intro P ds a1
-          simp only [pred_var_occurs_in_iff_mem_pred_var_set] at a1
-          simp only [E_hd.h2] at a1
-          simp at a1
-      case _ c1 c2 =>
-        simp only [List.length_map] at c2
-        contradiction
-      case _ c1 c2 =>
-        simp only [List.length_map] at c2
-        contradiction
-      case _ c1 c2 =>
+          apply holds_coincide_pred_var
+          · simp only [I']
+            simp only [Interpretation_.using_pred]
+          · intro P ds a1
+            simp only [pred_var_occurs_in_iff_mem_pred_var_set] at a1
+            simp only [E_hd.h2] at a1
+            simp at a1
+        case isFalse c2 =>
+          simp only [List.length_map] at c2
+          contradiction
+      case isFalse c1 =>
         obtain s2 := E_ih V V' σ
         simp only [var_is_free_in] at s2
         specialize s2 h1 h2
         simp only [← s2]
-        apply holds_coincide_pred_var
-        · simp only [I']
-          simp only [Interpretation_.using_pred]
-        · intro P ds a1
-          simp only [pred_var_occurs_in] at a1
+        split
+        case isTrue c2 =>
+          simp only [List.length_map] at c2
+          contradiction
+        case isFalse c2 =>
+          apply holds_coincide_pred_var
+          · simp only [I']
+            simp only [Interpretation_.using_pred]
+          · intro P ds a1
+            simp only [pred_var_occurs_in] at a1
 
 
 theorem substitution_theorem_sub_pred_all_rec_opt
@@ -450,8 +473,10 @@ theorem substitution_theorem_sub_pred_all_rec_opt
   holds D (I' D I V E τ) V E F ↔ holds D I V E (sub_pred_all_rec_opt c τ F) :=
   by
   apply substitution_theorem_sub_pred_all_rec_opt_aux
-  · simp
-  · simp
+  · intro x a1
+    simp only [id_eq]
+  · intro x a1
+    apply Eq.refl
 
 
 theorem substitution_is_valid_sub_pred_all_rec_opt
@@ -467,3 +492,6 @@ theorem substitution_is_valid_sub_pred_all_rec_opt
   intro D I V E
   simp only [← substitution_theorem_sub_pred_all_rec_opt]
   apply h1
+
+
+end FOL.NV.Sub.Pred.All.Rec.Option.Fresh
