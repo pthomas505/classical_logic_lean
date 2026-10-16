@@ -50,3 +50,6 @@ def replace_pred_all_rec_opt
   | forall_ x phi => forall_ x (replace_pred_all_rec_opt c τ phi)
   | exists_ x phi => exists_ x (replace_pred_all_rec_opt c τ phi)
   | def_ X xs => def_ X xs
+
+
+end FOL.NV.Sub.Pred.All.Rec.Option
