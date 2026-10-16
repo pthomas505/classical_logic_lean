@@ -100,14 +100,13 @@ theorem substitution_theorem_admits_pred_all_rec_aux
     simp only [holds]
   case pred_var_ X xs =>
     simp only [admits_pred_all_rec_aux] at h1
-    simp at h1
     obtain ⟨h1_left, ⟨h1_right_left, h1_right_right⟩⟩ := h1
 
     obtain s1 :=
     Sub.Var.All.Rec.substitution_theorem_admits_var_all_rec D I V E (Function.updateFromPairOfListsITE id (τ X xs.length).fst xs)
       (τ X xs.length).snd h1_left
     simp only [Function.updateFromPairOfListsITE_comp] at s1
-    simp at s1
+    simp only [CompTriple.comp_eq] at s1
 
     have s2 :
       holds D I (Function.updateFromPairOfListsITE V (τ X xs.length).fst (List.map V xs)) E (τ X xs.length).snd ↔
@@ -117,12 +116,13 @@ theorem substitution_theorem_admits_pred_all_rec_aux
       intro v a1
       by_cases c1 : v ∈ (τ X xs.length).fst
       · apply Function.updateFromPairOfListsITE_mem_eq_len V V' v (τ X xs.length).fst (List.map V xs) c1
-        simp
-        symm
-        exact h1_right_right
+        simp only [List.length_map]
+        rewrite [← h1_right_right]
+        apply Eq.refl
       · by_cases c2 : v ∈ binders
-        · specialize h1_right_left v c2 a1
-          contradiction
+        · exfalso
+          apply h1_right_left v c2
+          exact ⟨a1, c1⟩
         · apply Function.updateFromPairOfListsITE_mem'
           exact h2 v c2
 
@@ -130,9 +130,12 @@ theorem substitution_theorem_admits_pred_all_rec_aux
 
     simp only [holds]
     simp only [replace_pred_all_rec]
-    simp
-    simp only [if_pos h1_right_right]
-    exact s1
+    simp only [List.length_map]
+    split
+    case isTrue c1 =>
+      exact s1
+    case isFalse c1 =>
+      contradiction
   case eq_ x y =>
     simp only [replace_pred_all_rec]
     simp only [holds]
@@ -170,12 +173,17 @@ theorem substitution_theorem_admits_pred_all_rec_aux
 
     apply phi_ih (Function.updateITE V x d) (binders ∪ {x}) h1
     intro v a1
-    simp at a1
+    simp only [Finset.union_singleton, Finset.mem_insert] at a1
+    rewrite [not_or] at a1
     obtain ⟨a1_left, a1_right⟩ := a1
 
     simp only [Function.updateITE]
-    simp only [if_neg a1_right]
-    exact h2 v a1_left
+    split
+    case isTrue c1 =>
+      contradiction
+    case isFalse c1 =>
+      apply h2
+      exact a1_right
   case def_ X xs =>
     cases E
     case nil =>
@@ -184,18 +192,20 @@ theorem substitution_theorem_admits_pred_all_rec_aux
     case cons hd tl =>
       simp only [replace_pred_all_rec]
       simp only [holds]
-      split_ifs
-      case _ c1 =>
+      split
+      case isTrue c1 =>
         apply holds_coincide_pred_var
-        · simp
+        · simp only
         · simp only [pred_var_occurs_in_iff_mem_pred_var_set]
           simp only [hd.h2]
-          simp
-      case _ c1 =>
+          intro P ds a1
+          simp only [Finset.notMem_empty] at a1
+      case isFalse c1 =>
         apply holds_coincide_pred_var
-        · simp
+        · simp only
         · simp only [pred_var_occurs_in]
-          simp
+          intro P ds a1
+          contradiction
 
 
 theorem substitution_theorem_admits_pred_all_rec
@@ -222,8 +232,8 @@ theorem substitution_theorem_admits_pred_all_rec
   apply substitution_theorem_admits_pred_all_rec_aux D I V V E τ ∅ F
   · simp only [admits_pred_all_rec] at h1
     exact h1
-  · intro X _
-    rfl
+  · intro X a1
+    apply Eq.refl
 
 
 theorem substitution_is_valid_admits_pred_all_rec
@@ -240,6 +250,9 @@ theorem substitution_is_valid_admits_pred_all_rec
   obtain s1 := substitution_theorem_admits_pred_all_rec D I V E τ F h1
   simp only [← s1]
   apply h2
+
+
+end FOL.NV.Sub.Pred.All.Rec
 
 
 --#lint
