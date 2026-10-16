@@ -186,7 +186,7 @@ theorem eval_prime_prime
   any_goals
     simp only [Formula_.is_prime] at h1
   all_goals
-    rfl
+    apply Eq.refl
 
 
 example
@@ -209,7 +209,7 @@ example
     | def_ X xs =>
     congr! 1
     apply h1
-    simp
+    simp only [Finset.mem_singleton]
   case not_ phi phi_ih =>
     congr! 1
     exact phi_ih h1
@@ -218,7 +218,7 @@ example
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-      simp at h1
+      simp only [Finset.mem_union] at h1
 
       have s1 : eval_prime V phi ↔ eval_prime V' phi :=
       by
@@ -234,8 +234,9 @@ example
         apply h1
         tauto
 
-      rw [s1]
-      rw [s2]
+      rewrite [s1]
+      rewrite [s2]
+      apply Iff.refl
 
 
 theorem eval_prime_replace_prime_iff_eval_prime_eval_prime
@@ -258,14 +259,16 @@ theorem eval_prime_replace_prime_iff_eval_prime_eval_prime
     | def_ X xs =>
     simp only [decide_eq_true_eq]
   case not_ phi phi_ih =>
-    rw [phi_ih]
+    rewrite [phi_ih]
+    apply Iff.refl
   case
       imp_ phi psi phi_ih psi_ih
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    rw [phi_ih]
-    rw [psi_ih]
+    rewrite [phi_ih]
+    rewrite [psi_ih]
+    apply Iff.refl
 
 
 example
@@ -294,10 +297,12 @@ example
   congr! 1
   funext Q'
   simp only [Function.updateITE]
-  split_ifs
-  · simp
+  split
+  case isTrue c1 =>
+    simp only [decide_eq_decide]
     exact h1
-  · rfl
+  case isFalse c1 =>
+    apply Eq.refl
 
 
 theorem T_13_5
@@ -347,7 +352,7 @@ theorem T_14_10
     exact h1_1
   case assume_ h1_phi h1_1 =>
     apply is_prop_deduct_v1.assume_
-    simp
+    simp only [Set.mem_union]
     left
     exact h1_1
   case mp_ h1_phi h1_psi _ _ h1_ih_1 h1_ih_2 =>
@@ -374,7 +379,7 @@ theorem C_14_11
   by
   intro Δ
   obtain s1 := T_14_10 ∅ F h1 Δ
-  simp at s1
+  simp only [Set.empty_union] at s1
   exact s1
 
 alias proof_imp_deduct := C_14_11
@@ -395,10 +400,10 @@ theorem T_14_3
     · apply is_prop_deduct_v1.axiom_
       exact h1_1
   case assume_ h1_phi h1_1 =>
-    simp at h1_1
+    simp only [Set.union_singleton, Set.mem_insert_iff] at h1_1
     cases h1_1
     case inl h1_1 =>
-      rw [h1_1]
+      rewrite [h1_1]
       apply proof_imp_deduct
       apply prop_id
     case inr h1_1 =>
@@ -432,7 +437,7 @@ theorem T_13_6
     · apply is_prop_deduct_v1.axiom_
       apply is_prop_axiom_v1.prop_1_
     · apply is_prop_deduct_v1.assume_
-      simp
+      simp only [Set.union_singleton, insert_empty_eq, Set.mem_singleton_iff]
 
 
 theorem T_14_5
@@ -449,9 +454,9 @@ theorem T_14_5
       · apply proof_imp_deduct
         apply T_13_6
       · apply is_prop_deduct_v1.assume_
-        simp
+        simp only [Set.union_singleton, insert_empty_eq, Set.mem_singleton_iff]
   · apply is_prop_deduct_v1.assume_
-    simp
+    simp only [Set.union_singleton, insert_empty_eq, Set.mem_singleton_iff]
 
 
 theorem T_14_6
@@ -481,12 +486,16 @@ theorem T_14_7
       apply T_14_6
     · apply is_prop_deduct_v1.mp_ P
       · apply is_prop_deduct_v1.assume_
-        simp
+        simp only [Set.union_singleton, insert_empty_eq, Set.mem_insert_iff, Set.mem_singleton_iff]
+        right
+        exact True.intro
       · apply is_prop_deduct_v1.mp_ P.not_.not_
         · apply proof_imp_deduct
           apply T_14_5
         · apply is_prop_deduct_v1.assume_
-          simp
+          simp only [Set.union_singleton, insert_empty_eq, Set.mem_insert_iff, Set.mem_singleton_iff]
+          left
+          exact True.intro
 
 
 theorem T_14_8
@@ -501,9 +510,13 @@ theorem T_14_8
   · apply deduction_theorem
     apply is_prop_deduct_v1.mp_ Q
     · apply is_prop_deduct_v1.assume_
-      simp
+      simp only [Set.union_singleton, insert_empty_eq, Set.mem_insert_iff, Set.mem_singleton_iff]
+      left
+      exact True.intro
     · apply is_prop_deduct_v1.assume_
-      simp
+      simp only [Set.union_singleton, insert_empty_eq, Set.mem_insert_iff, Set.mem_singleton_iff]
+      right
+      exact True.intro
 
 
 theorem T_14_9
@@ -525,11 +538,17 @@ theorem T_14_9
           · apply proof_imp_deduct
             apply T_14_7
           · apply is_prop_deduct_v1.assume_
-            simp
+            simp only [Set.union_singleton, insert_empty_eq, Set.mem_insert_iff, Set.mem_singleton_iff]
+            right
+            exact True.intro
         · apply is_prop_deduct_v1.assume_
-          simp
+          simp only [Set.union_singleton, insert_empty_eq, Set.mem_insert_iff, Set.mem_singleton_iff]
+          left
+          exact True.intro
     · apply is_prop_deduct_v1.assume_
-      simp
+      simp only [Set.union_singleton, insert_empty_eq, Set.mem_insert_iff, Set.mem_singleton_iff]
+      left
+      exact True.intro
 
 
 -- https://us.metamath.org/mpeuni/mmtheorems.html#dtl:1.2
@@ -700,7 +719,9 @@ theorem deduction_theorem_converse
   · apply T_14_10
     exact h1
   · apply is_prop_deduct_v1.assume_
-    simp
+    simp only [Set.union_singleton, Set.mem_insert_iff]
+    left
+    exact True.intro
 
 
 theorem T_14_12
@@ -928,7 +949,7 @@ example
       simp only [eval_prime]
       tauto
   case assume_ h1_phi h1_1 =>
-    simp at h1_1
+    simp only [Set.mem_empty_iff_false] at h1_1
   case mp_ h1_phi h1_psi _ _ h1_ih_1 h1_ih_2 =>
     simp only [is_tauto] at h1_ih_1
     simp only [eval_prime] at h1_ih_1
@@ -948,14 +969,14 @@ theorem mem_prime_set_is_prime
   all_goals
     simp only [Formula_.prime_set] at h1
   case pred_const_ X xs | pred_var_ X xs =>
-    simp at h1
-    rw [h1]
+    simp only [Finset.mem_singleton] at h1
+    rewrite [h1]
     simp only [Formula_.is_prime]
   case true_ | false_ =>
-    simp at h1
+    simp only [Finset.notMem_empty] at h1
   case eq_ x y =>
-    simp at h1
-    rw [h1]
+    simp only [Finset.mem_singleton] at h1
+    rewrite [h1]
     simp only [Formula_.is_prime]
   case not_ phi phi_ih =>
     exact phi_ih h1
@@ -964,15 +985,15 @@ theorem mem_prime_set_is_prime
     | and_ phi psi phi_ih psi_ih
     | or_ phi psi phi_ih psi_ih
     | iff_ phi psi phi_ih psi_ih =>
-    simp at h1
+    simp only [Finset.mem_union] at h1
     tauto
   case forall_ x phi phi_ih | exists_ x phi phi_ih =>
-    simp at h1
-    rw [h1]
+    simp only [Finset.mem_singleton] at h1
+    rewrite [h1]
     simp only [Formula_.is_prime]
   case def_ =>
-    simp at h1
-    rw [h1]
+    simp only [Finset.mem_singleton] at h1
+    rewrite [h1]
     simp only [Formula_.is_prime]
 
 
@@ -980,7 +1001,7 @@ theorem L_15_7
   (Δ : Set Formula_)
   (V : PropValuation_)
   (F : Formula_)
-  (h1 : F.prime_set.toSet ⊆ Δ) :
+  (h1 : (F.prime_set : Set Formula_) ⊆ Δ) :
   is_prop_deduct_v1 (Δ.image (eval_prime_ff_to_not V)) (eval_prime_ff_to_not V F) :=
   by
   induction F
@@ -1005,10 +1026,12 @@ theorem L_15_7
   case false_ =>
     simp only [eval_prime_ff_to_not]
     simp only [eval_prime]
-    simp
-
-    obtain s1 := is_prop_axiom_v1.def_false_
-    sorry
+    split
+    case isTrue c1 =>
+      contradiction
+    case isFalse c1 =>
+      obtain s1 := is_prop_axiom_v1.def_false_
+      sorry
   case not_ phi phi_ih =>
     simp only [Formula_.prime_set] at h1
     specialize phi_ih h1
@@ -1017,22 +1040,27 @@ theorem L_15_7
 
     simp only [eval_prime_ff_to_not]
     simp only [eval_prime]
-    simp
-    split_ifs
-    case _ c1 =>
-      simp only [if_pos c1] at phi_ih
-
-      apply is_prop_deduct_v1.mp_ phi
-      · apply proof_imp_deduct
-        apply T_14_6
-      · exact phi_ih
-    case _ c1 =>
-      simp only [if_neg c1] at phi_ih
-
-      exact phi_ih
+    split
+    case isTrue c1 =>
+      split at phi_ih
+      case isTrue c2 =>
+        contradiction
+      case isFalse c2 =>
+        exact phi_ih
+    case isFalse c1 =>
+      split at phi_ih
+      case isTrue c2 =>
+        apply is_prop_deduct_v1.mp_ phi
+        · apply proof_imp_deduct
+          apply T_14_6
+        · exact phi_ih
+      case isFalse c2 =>
+        exfalso
+        apply c1
+        exact c2
   case imp_ phi psi phi_ih psi_ih =>
     simp only [Formula_.prime_set] at h1
-    simp at h1
+    simp only [Finset.coe_union, Set.union_subset_iff] at h1
     obtain ⟨h1_left, h1_right⟩ := h1
 
     specialize phi_ih h1_left
@@ -1044,59 +1072,65 @@ theorem L_15_7
     simp only [eval_prime_ff_to_not]
     simp only [eval_prime]
 
-    by_cases c1 : eval_prime V phi
-    case pos =>
-      simp only [if_pos c1] at phi_ih
-      by_cases c2 : eval_prime V psi
-      case pos =>
-        simp only [if_pos c2] at psi_ih
+    split at phi_ih
+    case isTrue c1 =>
+      split at psi_ih
+      case isTrue c2 =>
         have s1 : eval_prime V phi → eval_prime V psi :=
         by
           tauto
-        simp only [if_pos s1]
 
-        apply is_prop_deduct_v1.mp_ psi
-        · apply is_prop_deduct_v1.axiom_
-          apply is_prop_axiom_v1.prop_1_
-        · exact psi_ih
-      case neg =>
-        simp only [if_neg c2] at psi_ih
+        split
+        case isTrue c3 =>
+          apply is_prop_deduct_v1.mp_ psi
+          · apply is_prop_deduct_v1.axiom_
+            apply is_prop_axiom_v1.prop_1_
+          · exact psi_ih
+        case isFalse c3 =>
+          contradiction
+      case isFalse c2 =>
         have s1 : ¬ (eval_prime V phi → eval_prime V psi) :=
         by
           tauto
-        simp only [if_neg s1]
 
-        apply is_prop_deduct_v1.mp_ psi.not_
-        · apply is_prop_deduct_v1.mp_ phi
-          · apply proof_imp_deduct
-            apply T_14_8
-          · exact phi_ih
-        · exact psi_ih
-    case neg =>
-      simp only [if_neg c1] at phi_ih
-      by_cases c2 : eval_prime V psi
-      case pos =>
-        simp only [if_pos c2] at psi_ih
+        split
+        case isTrue c3 =>
+          contradiction
+        case isFalse c3 =>
+          apply is_prop_deduct_v1.mp_ psi.not_
+          · apply is_prop_deduct_v1.mp_ phi
+            · apply proof_imp_deduct
+              apply T_14_8
+            · exact phi_ih
+          · exact psi_ih
+    case isFalse c1 =>
+      split at psi_ih
+      case isTrue c2 =>
         have s1 : eval_prime V phi → eval_prime V psi :=
         by
           tauto
-        simp only [if_pos s1]
 
-        apply is_prop_deduct_v1.mp_ phi.not_
-        · apply proof_imp_deduct
-          apply T_13_6
-        · exact phi_ih
-      case neg =>
-        simp only [if_neg c2] at psi_ih
+        split
+        case isTrue c3 =>
+          apply is_prop_deduct_v1.mp_ phi.not_
+          · apply proof_imp_deduct
+            apply T_13_6
+          · exact phi_ih
+        case isFalse c3 =>
+          contradiction
+      case isFalse c2 =>
         have s1 : (eval_prime V phi → eval_prime V psi) :=
         by
           tauto
-        simp only [if_pos s1]
 
-        apply is_prop_deduct_v1.mp_ phi.not_
-        · apply proof_imp_deduct
-          apply T_13_6
-        · exact phi_ih
+        split
+        case isTrue c3 =>
+          apply is_prop_deduct_v1.mp_ phi.not_
+          · apply proof_imp_deduct
+            apply T_13_6
+          · exact phi_ih
+        case isFalse c3 =>
+          contradiction
   case forall_ x phi phi_ih =>
     apply Exists.intro (forall_ x phi)
     tauto
@@ -1136,7 +1170,7 @@ theorem eval_prime_ff_to_not_of_function_updateITE_true
     unfold Function.updateITE
     simp only [eval_prime_ff_to_not]
     simp only [eval_prime]
-    split_ifs <;> tauto
+    split <;> tauto
   case true_ | false_ | not_ | imp_ | and_ | or_ | iff_ =>
     simp only [Formula_.is_prime] at h1
 
@@ -1153,7 +1187,7 @@ theorem eval_prime_ff_to_not_of_function_updateITE_false
     unfold Function.updateITE
     simp only [eval_prime_ff_to_not]
     simp only [eval_prime]
-    split_ifs <;> tauto
+    split <;> tauto
   case true_ | false_ | not_ | imp_ | and_ | or_ | iff_ =>
     simp only [Formula_.is_prime] at h1
 
@@ -1174,16 +1208,20 @@ theorem image_of_eval_prime_ff_to_not_of_function_updateITE
   cases b
   · simp only [eval_prime_ff_to_not_of_function_updateITE_false U' U V h1]
     simp only [Function.updateITE]
-    simp
-    intro a2
-    rw [← a2] at h2
-    contradiction
+    split
+    case isTrue c1 =>
+      rewrite [c1] at a1
+      contradiction
+    case isFalse c1 =>
+      apply Eq.refl
   · simp only [eval_prime_ff_to_not_of_function_updateITE_true U' U V h1]
     simp only [Function.updateITE]
-    simp
-    intro a2
-    rw [← a2] at h2
-    contradiction
+    split
+    case isTrue c1 =>
+      rewrite [c1] at a1
+      contradiction
+    case isFalse c1 =>
+      apply Eq.refl
 
 
 theorem prop_complete_aux_aux
@@ -1201,14 +1239,20 @@ theorem prop_complete_aux_aux
     simp only [image_of_eval_prime_ff_to_not_of_function_updateITE U Δ V true h1_Δ h2] at h3
     simp only [eval_prime_ff_to_not_of_function_updateITE_true U U V h1_U] at h3
     simp only [Function.updateITE] at h3
-    simp only [if_true] at h3
-    exact h3
+    split at h3
+    case isTrue c1 =>
+      exact h3
+    case isFalse c1 =>
+      contradiction
   · specialize h3 (Function.updateITE V U false)
     simp only [image_of_eval_prime_ff_to_not_of_function_updateITE U Δ V false h1_Δ h2] at h3
     simp only [eval_prime_ff_to_not_of_function_updateITE_false U U V h1_U] at h3
     simp only [Function.updateITE] at h3
-    simp only [if_true] at h3
-    exact h3
+    split at h3
+    case isTrue c1 =>
+      exact h3
+    case isFalse c1 =>
+      contradiction
 
 
 theorem prop_complete_aux
@@ -1220,7 +1264,8 @@ theorem prop_complete_aux
   by
   induction Δ_U using Finset.induction_on
   case empty =>
-    simp at h2
+    simp only [Finset.image_empty, Finset.coe_empty] at h2
+    simp only [forall_const] at h2
     exact h2
   case insert U Δ_U Δ_U_1 Δ_U_2 =>
     apply Δ_U_2
@@ -1229,10 +1274,10 @@ theorem prop_complete_aux
       exact h1_right
     · simp only [Finset.insert_subset_iff] at h1
 
-      simp at h2
+      simp only [Finset.image_insert, Finset.coe_insert, Finset.coe_image] at h2
 
       obtain ⟨h1_left, h1_right⟩ := h1
-      simp
+      simp only [Finset.coe_image]
       apply prop_complete_aux_aux P U Δ_U
       · intro U' a1
         apply mem_prime_set_is_prime P U'
@@ -1241,7 +1286,7 @@ theorem prop_complete_aux
       · apply mem_prime_set_is_prime P U
         exact h1_left
       · exact Δ_U_1
-      · simp
+      · simp only [Set.union_singleton]
         exact h2
 
 
@@ -1257,7 +1302,7 @@ theorem prop_complete
 
   simp only [is_prop_proof_v1]
   apply prop_complete_aux P P.prime_set
-  · rfl
+  · apply Set.Subset.refl
   · intro V
     obtain s1 := L_15_7 P.prime_set V (eval_prime_ff_to_not V P)
     simp only [eval_prime_ff_to_not] at s1
@@ -1266,7 +1311,7 @@ theorem prop_complete
     simp only [Finset.coe_image]
     simp only [eval_prime_ff_to_not]
     apply s1
-    exact fun ⦃a⦄ a => a
+    apply Set.Subset.refl
 
 
 macro "SC" : tactic => `(tactic|(
