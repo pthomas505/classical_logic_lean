@@ -143,63 +143,65 @@ lemma substitution_theorem_sub_pred_all_rec_opt_aux
     simp only [holds]
     simp only [I']
     simp only [Interpretation_.using_pred]
-    simp
+    simp only [List.map_map]
     congr! 1
     simp only [List.map_eq_map_iff]
     intro x a1
-    simp
+    simp only [Function.comp_apply]
     exact h1 x a1
   case pred_var_ X xs =>
     simp only [var_is_free_in] at h1
 
     simp only [pred_var_set] at h2
-    simp at h2
+    simp only [Finset.singleton_biUnion] at h2
     simp only [pred_var_free_var_set] at h2
 
     simp only [sub_pred_all_rec_opt_aux]
     simp only [holds]
     simp only [I']
     simp only [Interpretation_.using_pred]
-    simp
-    split_ifs
-    case _ c1 c2 =>
-      simp only [c1] at h2
-      simp at h2
+    simp only [List.length_map]
+    split
+    case isTrue c1 =>
+      split
+      case isTrue c2 =>
+        simp only [c1] at h2
+        simp? at h2
 
-      set zs := (Option.get (τ X (List.length xs)) (_ : Option.isSome (τ X (List.length xs)) = true)).1
+        set zs := (Option.get (τ X (List.length xs)) (_ : Option.isSome (τ X (List.length xs)) = true)).1
 
-      set H := (Option.get (τ X (List.length xs)) (_ : Option.isSome (τ X (List.length xs)) = true)).2
+        set H := (Option.get (τ X (List.length xs)) (_ : Option.isSome (τ X (List.length xs)) = true)).2
 
-      obtain s1 := Sub.Var.All.Rec.Fresh.substitution_theorem_sub_var_all_rec D I V E (Function.updateFromPairOfListsITE id zs (xs.map σ)) c H
-      simp only [Function.updateFromPairOfListsITE_comp] at s1
+        obtain s1 := Sub.Var.All.Rec.Fresh.substitution_theorem_sub_var_all_rec D I V E (Function.updateFromPairOfListsITE id zs (xs.map σ)) c H
+        simp only [Function.updateFromPairOfListsITE_comp] at s1
 
-      simp at s1
-      simp only [s1]
-      clear s1
+        simp at s1
+        simp only [s1]
+        clear s1
 
-      apply holds_coincide_var
-      intro x a1
-      by_cases c3 : x ∈ zs
-      · apply Function.updateFromPairOfListsITE_map_mem_ext
-        · simp
-          exact h1
-        · simp only [← c2]
-        · exact c3
-      · simp only [Function.updateFromPairOfListsITE_not_mem V'' x zs (List.map V' xs) c3]
-        simp only [Function.updateFromPairOfListsITE_not_mem V x zs (List.map (V ∘ σ ) xs) c3]
-        apply h2
-        · simp only [var_is_free_in_iff_mem_free_var_set] at a1
-          exact a1
-        · exact c3
-    case _ c1 c2 =>
-      simp only [holds]
-      simp
-      congr! 1
-      simp only [List.map_eq_map_iff]
-      intro x a1
-      simp
-      exact h1 x a1
-    case _ c1 =>
+        apply holds_coincide_var
+        intro x a1
+        by_cases c3 : x ∈ zs
+        · apply Function.updateFromPairOfListsITE_map_mem_ext
+          · simp
+            exact h1
+          · simp only [← c2]
+          · exact c3
+        · simp only [Function.updateFromPairOfListsITE_not_mem V'' x zs (List.map V' xs) c3]
+          simp only [Function.updateFromPairOfListsITE_not_mem V x zs (List.map (V ∘ σ ) xs) c3]
+          apply h2
+          · simp only [var_is_free_in_iff_mem_free_var_set] at a1
+            exact a1
+          · exact c3
+      case isFalse c2 =>
+        simp only [holds]
+        simp
+        congr! 1
+        simp only [List.map_eq_map_iff]
+        intro x a1
+        simp
+        exact h1 x a1
+    case isFalse c1 =>
       simp only [holds]
       simp
       congr! 1
