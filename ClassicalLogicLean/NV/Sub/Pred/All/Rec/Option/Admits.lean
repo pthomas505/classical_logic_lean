@@ -83,44 +83,53 @@ theorem substitution_theorem_admits_pred_all_rec_opt_aux
     simp only [replace_pred_all_rec_opt]
     simp only [holds]
   case pred_var_ X xs =>
-    simp only [admits_pred_all_rec_opt_aux] at h1
-    simp at h1
-
     simp only [replace_pred_all_rec_opt]
     simp only [holds]
-    simp
-    split_ifs
-    case _ c1 c2 =>
-      let opt := τ X xs.length
-      let val := Option.get opt c1
-      let zs := val.fst
-      let H := val.snd
-      obtain s1 := Sub.Var.All.Rec.Fresh.substitution_theorem_sub_var_all_rec D I V E (Function.updateFromPairOfListsITE id zs xs) c H
-      simp only [Function.updateFromPairOfListsITE_comp] at s1
-      simp at s1
-      simp only [s1]
+    simp only [List.length_map]
 
-      apply holds_coincide_var
-      intro v a1
-      by_cases c3 : v ∈ zs
-      · apply Function.updateFromPairOfListsITE_mem_eq_len V' V v zs (List.map V xs) c3
-        simp
-        simp only [← c2]
-      · simp only [Function.updateFromPairOfListsITE_not_mem V v zs (List.map V xs) c3]
-        simp only [Function.updateFromPairOfListsITE_not_mem V' v zs (List.map V xs) c3]
-        apply h2
-        intro contra
-        simp only [var_is_free_in_iff_mem_free_var_set] at a1
-        simp only [Finset.eq_empty_iff_forall_not_mem] at h1
-        simp only [c1] at h1
-        simp only [← c2] at h1
-        simp at h1
-        specialize h1 v contra a1
+    simp only [admits_pred_all_rec_opt_aux] at h1
+    split at h1
+    case isTrue c1 =>
+      split at h1
+      case isTrue c2 =>
+        simp only [Finset.eq_empty_iff_forall_notMem] at h1
+        simp only [Finset.mem_inter, Finset.mem_sdiff, List.mem_toFinset] at h1
+
+        split
+        case isTrue c3 =>
+          obtain s1 := Sub.Var.All.Rec.Fresh.substitution_theorem_sub_var_all_rec D I V E (Function.updateFromPairOfListsITE id (Option.get (τ X xs.length) c1).fst xs) c (Option.get (τ X xs.length) c1).snd
+          simp only [Function.updateFromPairOfListsITE_comp] at s1
+          simp only [CompTriple.comp_eq] at s1
+          rewrite [s1]
+
+          apply holds_coincide_var
+          intro v a1
+          by_cases c4 : v ∈ (Option.get (τ X xs.length) c1).fst
+          · apply Function.updateFromPairOfListsITE_mem_eq_len V' V v (Option.get (τ X xs.length) c1).fst (List.map V xs) c4
+            simp only [List.length_map]
+            simp only [← c2]
+          · simp only [Function.updateFromPairOfListsITE_not_mem V v ((Option.get (τ X xs.length) c1).fst) (List.map V xs) c4]
+            simp only [Function.updateFromPairOfListsITE_not_mem V' v (Option.get (τ X xs.length) c1).fst (List.map V xs) c4]
+            apply h2
+            intro contra
+            simp only [var_is_free_in_iff_mem_free_var_set] at a1
+            exfalso
+            apply h1 v
+            tauto
+        case isFalse c3 =>
+          contradiction
+      case isFalse c2 =>
+        split
+        case isTrue c3 =>
+          simp only [holds]
+        case isFalse c3 =>
+          contradiction
+    case isFalse c1 =>
+      split
+      case isTrue c2 =>
         contradiction
-    case _ c1 c2 =>
-      simp only [holds]
-    case _ c1 =>
-      simp only [holds]
+      case isFalse c2 =>
+        simp only [holds]
   case eq_ x y =>
     simp only [replace_pred_all_rec_opt]
     simp only [holds]
@@ -157,11 +166,15 @@ theorem substitution_theorem_admits_pred_all_rec_opt_aux
     intro d
     apply phi_ih (Function.updateITE V x d) (binders ∪ {x}) h1
     intro v a1
-    simp only [Function.updateITE]
-    simp at a1
+    simp only [Finset.union_singleton, Finset.mem_insert] at a1
+    rewrite [not_or] at a1
     obtain ⟨a1_left, a1_right⟩ := a1
-    simp only [if_neg a1_right]
-    exact h2 v a1_left
+    simp only [Function.updateITE]
+    split
+    case isTrue c1 =>
+      contradiction
+    case isFalse c1 =>
+      exact h2 v a1_right
   case def_ X xs =>
     cases E
     case nil =>
@@ -170,15 +183,20 @@ theorem substitution_theorem_admits_pred_all_rec_opt_aux
     case cons hd tl =>
       simp only [replace_pred_all_rec_opt]
       simp only [holds]
-      split_ifs
-      case _ c1 =>
+      split
+      case isTrue c1 =>
         apply holds_coincide_pred_var
-        · simp
+        · simp only
         · simp only [pred_var_occurs_in_iff_mem_pred_var_set]
           simp only [hd.h2]
-          simp
-      case _ c1 =>
+          intro P ds a1
+          simp only [Finset.notMem_empty] at a1
+      case isFalse c1 =>
         apply holds_coincide_pred_var
-        · simp
+        · simp only
         · simp only [pred_var_occurs_in]
-          simp
+          intro P ds a1
+          contradiction
+
+
+end FOL.NV.Sub.Pred.All.Rec.Option
