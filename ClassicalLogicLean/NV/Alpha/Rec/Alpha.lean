@@ -14,6 +14,7 @@ open Formula_
 /--
   Helper function for `are_alpha_equiv_var_list_rec`.
 -/
+@[nolint defsWithUnderscore]
 def are_alpha_equiv_var_rec :
   List (VarName_ × VarName_) → VarName_ → VarName_ → Prop
   | [], x, y => x = y
@@ -22,6 +23,7 @@ def are_alpha_equiv_var_rec :
       (x = hd.fst ∧ y = hd.snd) ∨
         ((¬ x = hd.fst ∧ ¬ y = hd.snd) ∧ are_alpha_equiv_var_rec tl x y)
 
+@[nolint defsWithUnderscore]
 instance
   (binders : List (VarName_ × VarName_))
   (x y : VarName_) :
@@ -41,6 +43,7 @@ instance
 /--
   Helper function for `are_alpha_equiv_rec_aux`.
 -/
+@[nolint defsWithUnderscore]
 def are_alpha_equiv_var_list_rec
   (binders : List (VarName_ × VarName_)) :
   List VarName_ → List VarName_ → Prop
@@ -52,6 +55,7 @@ def are_alpha_equiv_var_list_rec
 
   | _, _ => False
 
+@[nolint defsWithUnderscore]
 instance
   (binders : List (VarName_ × VarName_))
   (xs ys : List VarName_) :
@@ -82,6 +86,7 @@ example
 /--
   Helper function for `are_alpha_equiv_rec`.
 -/
+@[nolint defsWithUnderscore]
 def are_alpha_equiv_rec_aux
   (binders : List (VarName_ × VarName_)) :
   Formula_ → Formula_ → Prop
@@ -123,6 +128,7 @@ def are_alpha_equiv_rec_aux
 
   | _, _ => False
 
+@[nolint defsWithUnderscore]
 instance
   (binders : List (VarName_ × VarName_))
   (F F' : Formula_) :
@@ -139,9 +145,11 @@ instance
 /--
   `are_alpha_equiv_rec F F'` := True if and only if `F` and `F'` are alpha equivalent.
 -/
+@[nolint defsWithUnderscore]
 def are_alpha_equiv_rec (F F' : Formula_) : Prop :=
   are_alpha_equiv_rec_aux [] F F'
 
+@[nolint defsWithUnderscore]
 instance
   (F F' : Formula_) :
   Decidable (are_alpha_equiv_rec F F') :=
@@ -182,21 +190,28 @@ theorem aux_1
   induction h1
   case nil h1_V =>
     simp only [are_alpha_equiv_var_rec] at h2
-    rw [h2]
+    rewrite [h2]
+    apply Eq.refl
   case cons h1_l h1_x h1_y h1_V h1_V' h1_d _ h1_ih =>
     simp only [are_alpha_equiv_var_rec] at h2
 
     simp only [Function.updateITE]
     cases h2
-    case inl c1 =>
-      obtain ⟨c1_left, c1_right⟩ := c1
-      split_ifs
-      rfl
-    case inr c1 =>
-      obtain ⟨⟨c1_left_left, c1_left_right⟩, c1_right⟩ := c1
-      split_ifs
-      apply h1_ih
-      exact c1_right
+    case inl h2 =>
+      obtain ⟨h2_left, h2_right⟩ := h2
+      split
+      case isTrue c1 =>
+        apply Eq.refl
+      case isFalse c1 =>
+        contradiction
+    case inr h2 =>
+      obtain ⟨⟨h2_left_left, h2_left_right⟩, h2_right⟩ := h2
+      split
+      case isTrue c1 =>
+        contradiction
+      case isFalse c1 =>
+        apply h1_ih
+        exact h2_right
 
 
 theorem aux_2
@@ -212,7 +227,7 @@ theorem aux_2
   case nil =>
     cases ys
     case nil =>
-      simp
+      simp only [List.map_nil]
     case cons ys_hd ys_tl =>
       simp only [are_alpha_equiv_var_list_rec] at h2
   case cons xs_hd xs_tl xs_ih =>
@@ -223,8 +238,8 @@ theorem aux_2
       simp only [are_alpha_equiv_var_list_rec] at h2
       obtain ⟨h2_left, h2_right⟩ := h2
 
-      simp
-      constructor
+      simp only [List.map_cons]
+      congr 1
       · apply aux_1 D binders
         · exact h1
         · exact h2_left
@@ -242,7 +257,7 @@ lemma are_alpha_equiv_var_list_rec_length
   case nil =>
     cases ys
     case nil =>
-      rfl
+      apply Eq.refl
     case cons ys_hd ys_tl =>
       simp only [are_alpha_equiv_var_list_rec] at h1
   case cons xs_hd xs_tl xs_ih =>
@@ -251,9 +266,10 @@ lemma are_alpha_equiv_var_list_rec_length
       simp only [are_alpha_equiv_var_list_rec] at h1
     case cons ys_hd ys_tl =>
       simp only [are_alpha_equiv_var_list_rec] at h1
-
-      simp
       obtain ⟨h1_left, h1_right⟩ := h1
+
+      simp only [List.length_cons]
+      simp only [Nat.add_right_cancel_iff]
       apply xs_ih
       exact h1_right
 
@@ -282,7 +298,7 @@ lemma holds_iff_are_alpha_equiv_rec_holds_aux
     obtain ⟨h2_left, h2_right⟩ := h2
 
     simp only [holds]
-    rw [h2_left]
+    rewrite [h2_left]
     congr! 1
     apply aux_2 D binders
     · exact h1
@@ -343,30 +359,36 @@ lemma holds_iff_are_alpha_equiv_rec_holds_aux
       simp only [holds]
     case cons hd tl ih =>
       simp only [holds]
-      split_ifs
-      case _ c1 c2 =>
-        obtain ⟨h2_left, h2_right⟩ := h2
-        apply holds_coincide_var
-        intro v a1
-        rw [aux_2 D binders xs ys V V' h1 h2_right]
-        apply Function.updateFromPairOfListsITE_mem_eq_len
-        · simp only [var_is_free_in_iff_mem_free_var_set] at a1
-          simp only [← List.mem_toFinset]
-          exact Finset.mem_of_subset hd.h1 a1
-        · simp
-          tauto
-      case _ c1 c2 =>
-        obtain ⟨h2_left, h2_right⟩ := h2
-        simp only [are_alpha_equiv_var_list_rec_length binders xs ys h2_right] at c1
-        rw [h2_left] at c1
-        contradiction
-      case _ c1 c2 =>
-        obtain ⟨h2_left, h2_right⟩ := h2
-        simp only [← are_alpha_equiv_var_list_rec_length binders xs ys h2_right] at c2
-        rw [h2_left] at c1
-        contradiction
-      case _ c1 c2 =>
-        apply ih
+      split
+      case isTrue c1 =>
+        split
+        case isTrue c2 =>
+          obtain ⟨h2_left, h2_right⟩ := h2
+          apply holds_coincide_var
+          intro v a1
+          rewrite [aux_2 D binders xs ys V V' h1 h2_right]
+          apply Function.updateFromPairOfListsITE_mem_eq_len
+          · simp only [var_is_free_in_iff_mem_free_var_set] at a1
+            simp only [← List.mem_toFinset]
+            exact Finset.mem_of_subset hd.h1 a1
+          · obtain ⟨c2_left, c2_right⟩ := c2
+            simp only [List.length_map]
+            rewrite [c2_right]
+            apply Eq.refl
+        case isFalse c2 =>
+          obtain ⟨h2_left, h2_right⟩ := h2
+          simp only [are_alpha_equiv_var_list_rec_length binders xs ys h2_right] at c1
+          rewrite [h2_left] at c1
+          contradiction
+      case isFalse c1 =>
+        split
+        case isTrue c2 =>
+          obtain ⟨h2_left, h2_right⟩ := h2
+          simp only [← are_alpha_equiv_var_list_rec_length binders xs ys h2_right] at c2
+          rewrite [h2_left] at c1
+          contradiction
+        case isFalse c2 =>
+          apply ih
 
 
 theorem holds_iff_are_alpha_equiv_rec_holds
@@ -381,8 +403,8 @@ theorem holds_iff_are_alpha_equiv_rec_holds
   simp only [are_alpha_equiv_rec] at h1
 
   apply holds_iff_are_alpha_equiv_rec_holds_aux D I V V E F F' []
-  apply alpha_equiv_var_valuation.nil
-  exact h1
+  · apply alpha_equiv_var_valuation.nil
+  · exact h1
 
 
 #lint
