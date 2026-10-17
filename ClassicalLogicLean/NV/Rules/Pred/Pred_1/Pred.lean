@@ -238,7 +238,7 @@ theorem T_14_10_pred_v1
     exact h1_1
   case assume_ h1_phi h1_1 =>
     apply is_deduct_v1.assume_
-    simp
+    simp only [Set.mem_union]
     left
     exact h1_1
   case mp_ h1_phi h1_psi _ _ h1_ih_1 h1_ih_2 =>
@@ -254,7 +254,7 @@ theorem C_14_11_pred_v1
   by
   intro Δ
   obtain s1 := T_14_10_pred_v1 ∅ F h1 Δ
-  simp at s1
+  simp only [Set.empty_union] at s1
   exact s1
 
 alias proof_imp_deduct_pred_v1 := C_14_11_pred_v1
@@ -275,10 +275,10 @@ theorem T_14_3_pred_v1
     · apply is_deduct_v1.axiom_
       exact h1_1
   case assume_ h1_phi h1_1 =>
-    simp at h1_1
+    simp only [Set.union_singleton, Set.mem_insert_iff] at h1_1
     cases h1_1
     case inl h1_1 =>
-      rw [h1_1]
+      rewrite [h1_1]
       apply proof_imp_deduct_pred_v1
       apply is_prop_proof_v1_imp_is_proof_v1
       apply prop_id
@@ -594,7 +594,7 @@ theorem T_17_1
   apply is_deduct_v1.mp_ (forall_ v P)
   · apply is_deduct_v1.axiom_
     apply is_axiom_v1.pred_2_ v t P (fast_replace_free_var_one_rec v t P) h2
-    rfl
+    apply Eq.refl
   · exact h1
 
 alias spec := T_17_1
@@ -638,7 +638,7 @@ theorem T_17_3
     · simp only [fast_admits_var_one_rec]
       simp only [fast_admits_var_one_rec_aux]
       exact h1
-    · rfl
+    · apply Eq.refl
 
 
 -- Existential Introduction
@@ -678,11 +678,11 @@ theorem T_17_6
   is_proof_v1 ((forall_ v P).imp_ (exists_ v P)) :=
   by
   apply deduction_theorem_pred_v1
-  simp
+  simp only [Set.union_singleton, insert_empty_eq]
   apply exists_intro_id
   apply spec_id v
   apply is_deduct_v1.assume_
-  simp
+  simp only [Set.mem_singleton_iff]
 
 
 theorem T_17_7
@@ -726,22 +726,22 @@ theorem univ_intro
   (h3 : ∀ (H : Formula_), H ∈ Δ → ¬ var_is_free_in t H) :
   is_deduct_v1 Δ (forall_ v P) :=
   by
-  rw [← fast_replace_free_var_one_rec_inverse P v t h1]
+  rewrite [← fast_replace_free_var_one_rec_inverse P v t h1]
   apply is_deduct_v1.mp_ (forall_ t (fast_replace_free_var_one_rec v t P))
   · apply proof_imp_deduct_pred_v1
     apply deduction_theorem_pred_v1
-    simp
+    simp only [Set.union_singleton, insert_empty_eq]
     apply generalization
     · apply spec
       · apply is_deduct_v1.assume_
-        simp
+        simp only [Set.mem_singleton_iff]
       · apply fast_replace_free_var_one_rec_fast_admits_var_one_rec
         exact h1
-    · simp
+    · simp only [Set.mem_singleton_iff, forall_eq]
       simp only [var_is_free_in]
-      simp
-      intro a1 contra
-      exact not_var_is_free_in_fast_replace_free_var_one_rec P v t a1 contra
+      intro a1
+      obtain ⟨a1_left, a1_right⟩ := a1
+      exact not_var_is_free_in_fast_replace_free_var_one_rec P v t a1_left a1_right
   · exact generalization (fast_replace_free_var_one_rec v t P) t Δ h2 h3
 
 
@@ -786,7 +786,8 @@ theorem is_proof_v2_imp_is_proof_v1
   case gen_ h1_v h1_phi h1_1 h1_ih =>
     apply generalization
     · exact h1_ih
-    · simp
+    · intro H a1
+      simp only [Set.mem_empty_iff_false] at a1
   case mp_ h1_phi h1_psi h1_1 h1_2 h1_ih_1 h1_ih_2 =>
     exact is_deduct_v1.mp_ h1_phi h1_psi h1_ih_1 h1_ih_2
   case def_false_ =>
@@ -850,7 +851,7 @@ theorem is_proof_v1_imp_is_proof_v2
     case def_exists_ h1_1_v h1_1_phi =>
       apply is_proof_v2.def_exists_
   case assume_ h1_phi h1_1 =>
-    simp at h1_1
+    simp only [Set.mem_empty_iff_false] at h1_1
   case mp_ h1_phi h1_psi h1_1 h1_2 h1_ih_1 h1_ih_2 =>
     exact is_proof_v2.mp_ h1_phi h1_psi h1_ih_1 h1_ih_2
 
@@ -861,19 +862,23 @@ theorem T_17_10
   is_proof_v1 ((forall_ u (forall_ v P)).imp_ (forall_ v (forall_ u P))) :=
   by
   apply deduction_theorem_pred_v1
-  simp
+  simp only [Set.union_singleton, insert_empty_eq]
   apply generalization
   · apply generalization
     · apply spec_id v P
       apply spec_id u (forall_ v P)
       apply is_deduct_v1.assume_
-      simp
-    · simp
+      simp only [Set.mem_singleton_iff]
+    · simp only [Set.mem_singleton_iff, forall_eq]
       simp only [var_is_free_in]
-      simp
-  · simp
+      intro a1
+      obtain ⟨a1_left, a1_right⟩ := a1
+      contradiction
+  · simp only [Set.mem_singleton_iff, forall_eq]
     simp only [var_is_free_in]
-    simp
+    intro a1
+    obtain ⟨a1_left, ⟨a1_right_left, a1_right_right⟩⟩ := a1
+    contradiction
 
 
 theorem T_17_11
@@ -883,7 +888,7 @@ theorem T_17_11
   is_proof_v1 ((forall_ v (P.imp_ Q)).imp_ ((exists_ v P).imp_ Q)) :=
   by
   apply deduction_theorem_pred_v1
-  simp
+  simp only [Set.union_singleton, insert_empty_eq]
   simp only [def_exists_]
   apply is_deduct_v1.mp_ (Q.not_.imp_ (forall_ v Q.not_))
   · apply is_deduct_v1.mp_ ((forall_ v Q.not_).imp_ (forall_ v P.not_))
@@ -899,10 +904,12 @@ theorem T_17_11
             apply T_14_7
           · apply spec_id v (P.imp_ Q)
             apply is_deduct_v1.assume_
-            simp
-        · simp
+            simp only [Set.mem_singleton_iff]
+        · simp only [Set.mem_singleton_iff, forall_eq]
           simp only [var_is_free_in]
-          simp
+          intro a1
+          obtain ⟨a1_left, a1_right⟩ := a1
+          contradiction
   · apply is_deduct_v1.axiom_
     apply is_axiom_v1.pred_3_
     simp only [var_is_free_in]
@@ -944,7 +951,7 @@ theorem exists_elim
   (h4 : ¬ var_occurs_in t Q)
   (h5 : ∀ (H : Formula_), H ∈ Δ → ¬ var_is_free_in t H) : is_deduct_v1 Δ Q :=
   by
-  refine' rule_C (fast_replace_free_var_one_rec v t P) Q t Δ _ h2 h5 _
+  apply rule_C (fast_replace_free_var_one_rec v t P) Q t Δ _ h2 h5 _
   · simp only [def_exists_] at h1
     simp only [def_exists_]
     apply is_deduct_v1.mp_ (forall_ v P.not_).not_
@@ -955,16 +962,18 @@ theorem exists_elim
         apply univ_intro P.not_ v t _ h3
         · apply spec_id t
           apply is_deduct_v1.assume_
-          simp
+          simp only [Set.union_singleton, Set.mem_insert_iff]
+          left
+          exact True.intro
         · intro H a1
-          simp at a1
+          simp only [Set.union_singleton, Set.mem_insert_iff] at a1
           cases a1
-          case _ c1 =>
-            rw [c1]
+          case inl a1 =>
+            rewrite [a1]
             simp only [var_is_free_in]
-            simp
-          case _ c1 =>
-            exact h5 H c1
+            tauto
+          case inr a1 =>
+            exact h5 H a1
     · exact h1
   · intro contra
     apply h4
@@ -978,10 +987,10 @@ theorem T_17_14
   is_proof_v1 ((exists_ v (P.and_ Q)).imp_ ((exists_ v P).and_ (exists_ v Q))) :=
   by
   apply deduction_theorem_pred_v1
-  simp
+  simp only [Set.union_singleton, insert_empty_eq]
   apply rule_C (P.and_ Q) ((exists_ v P).and_ (exists_ v Q)) v
   · apply is_deduct_v1.assume_
-    simp
+    simp only [Set.mem_singleton_iff]
   · apply is_deduct_v1.mp_ (exists_ v Q)
     · apply is_deduct_v1.mp_ (exists_ v P)
       · simp only [def_and_]
@@ -995,7 +1004,9 @@ theorem T_17_14
             apply is_prop_deduct_v1_imp_is_deduct_v1
             SC
           · apply is_deduct_v1.assume_
-            simp
+            simp only [Set.union_singleton, Set.mem_insert_iff, Set.mem_singleton_iff]
+            left
+            exact True.intro
     · apply exists_intro Q v v
       · apply fast_admits_var_one_rec_self
       · simp only [fast_replace_free_var_one_rec_self]
@@ -1004,16 +1015,18 @@ theorem T_17_14
           apply is_prop_deduct_v1_imp_is_deduct_v1
           SC
         · apply is_deduct_v1.assume_
-          simp
+          simp only [Set.union_singleton, Set.mem_insert_iff, Set.mem_singleton_iff]
+          left
+          exact True.intro
   · simp only [def_and_]
     simp only [def_exists_]
-    simp
+    simp only [Set.mem_singleton_iff, forall_eq]
     simp only [var_is_free_in]
-    simp
+    tauto
   · simp only [def_and_]
     simp only [def_exists_]
     simp only [var_is_free_in]
-    simp
+    tauto
 
 
 theorem T_18_1_left
@@ -1024,7 +1037,7 @@ theorem T_18_1_left
   simp only [def_iff_]
   apply deduction_theorem_pred_v1
   apply deduction_theorem_pred_v1
-  simp
+  simp only [Set.union_singleton, insert_empty_eq]
   apply generalization
   · apply is_deduct_v1.mp_ P
     · apply is_deduct_v1.mp_ ((P.imp_ Q).and_ (Q.imp_ P))
@@ -1033,13 +1046,25 @@ theorem T_18_1_left
         SC
       · apply spec_id v
         apply is_deduct_v1.assume_
-        simp
+        simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
+        right
+        exact True.intro
     · apply spec_id v
       apply is_deduct_v1.assume_
-      simp
-  · simp
-    simp only [var_is_free_in]
-    simp
+      simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
+      left
+      exact True.intro
+  · simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
+    intro H a1
+    cases a1
+    case inl a1 =>
+      rewrite [a1]
+      simp only [var_is_free_in]
+      tauto
+    case inr a1 =>
+      rewrite [a1]
+      simp only [var_is_free_in]
+      tauto
 
 
 theorem T_18_1_right
@@ -1050,7 +1075,7 @@ theorem T_18_1_right
   simp only [def_iff_]
   apply deduction_theorem_pred_v1
   apply deduction_theorem_pred_v1
-  simp
+  simp only [Set.union_singleton, insert_empty_eq]
   apply generalization
   · apply is_deduct_v1.mp_ Q
     · apply is_deduct_v1.mp_ ((P.imp_ Q).and_ (Q.imp_ P))
@@ -1059,13 +1084,25 @@ theorem T_18_1_right
         SC
       · apply spec_id v
         apply is_deduct_v1.assume_
-        simp
+        simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
+        right
+        exact True.intro
     · apply spec_id v
       apply is_deduct_v1.assume_
-      simp
-  · simp
-    simp only [var_is_free_in]
-    simp
+      simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
+      left
+      exact True.intro
+  · simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
+    intro H a1
+    cases a1
+    case inl a1 =>
+      rewrite [a1]
+      simp only [var_is_free_in]
+      tauto
+    case inr a1 =>
+      rewrite [a1]
+      simp only [var_is_free_in]
+      tauto
 
 
 theorem T_18_1
@@ -1096,14 +1133,15 @@ theorem Forall_spec_id
   case cons xs_hd xs_tl xs_ih =>
     simp only [Forall_]
     apply deduction_theorem_pred_v1
-    simp
+    simp only [List.foldr_cons, Set.union_singleton, insert_empty_eq]
     apply is_deduct_v1.mp_ (Forall_ xs_tl P)
     · apply proof_imp_deduct_pred_v1
       exact xs_ih
     · apply spec_id xs_hd
       apply is_deduct_v1.assume_
-      simp
-      rfl
+      simp only [Set.mem_singleton_iff]
+      unfold Forall_
+      apply Eq.refl
 
 
 theorem Forall_spec_id'
@@ -1115,14 +1153,14 @@ theorem Forall_spec_id'
   by
   induction xs
   case nil =>
-    simp only [Forall_] at h1
-    simp at h1
+    unfold Forall_ at h1
+    simp only [List.foldr_nil] at h1
     exact h1
   case cons xs_hd xs_tl xs_ih =>
-    simp only [Forall_] at h1
-    simp at h1
+    unfold Forall_ at h1
+    simp only [List.foldr_cons] at h1
     apply xs_ih
-    simp only [Forall_]
+    unfold Forall_
     apply spec_id xs_hd
     exact h1
 
@@ -1133,12 +1171,13 @@ theorem Forall_var_is_bound_in
   (x : VarName_) :
   var_is_bound_in x (Forall_ xs P) ↔ x ∈ xs ∨ var_is_bound_in x P :=
   by
-  simp only [Formula_.Forall_]
+  unfold Forall_
   induction xs
   case nil =>
-    simp
+    simp only [List.foldr_nil, List.not_mem_nil]
+    tauto
   case cons xs_hd xs_tl xs_ih =>
-    simp
+    simp only [List.foldr_cons, List.mem_cons]
     simp only [var_is_bound_in]
     simp only [xs_ih]
     tauto
@@ -1153,9 +1192,10 @@ theorem Forall_var_is_free_in
   simp only [Formula_.Forall_]
   induction xs
   case nil =>
-    simp
+    simp only [List.foldr_nil, List.not_mem_nil]
+    tauto
   case cons xs_hd xs_tl xs_ih =>
-    simp
+    simp only [List.foldr_cons, List.mem_cons]
     simp only [var_is_free_in]
     simp only [xs_ih]
     tauto
@@ -1172,14 +1212,14 @@ theorem T_18_2
   by
   induction h1
   case same_ h1_P h1_P' h1_1 =>
-    subst h1_1
+    rewrite [h1_1]
     simp only [def_iff_]
     simp only [def_and_]
     apply is_prop_deduct_v1_imp_is_deduct_v1
     SC
   case diff_ h1_P h1_P' h1_1 h1_2 =>
-    rw [h1_1]
-    rw [h1_2]
+    rewrite [h1_1]
+    rewrite [h1_2]
     apply Forall_spec_id
   case not_ h1_P h1_P' h1_1 h1_ih =>
     simp only [var_is_bound_in] at h2
@@ -1210,13 +1250,12 @@ theorem T_18_2
       · left
         exact a1_right
   case forall_ h1_u h1_v h1_P_U h1_P_V h1_ih_1 h1_ih_2 h1_ih_3 =>
-    rw [h1_ih_1]
+    rewrite [h1_ih_1]
 
     simp only [var_is_bound_in] at h2
-    simp at h2
 
     apply deduction_theorem_pred_v1
-    simp
+    simp only [Set.union_singleton, insert_empty_eq]
     apply is_deduct_v1.mp_ (forall_ h1_v (h1_P_U.iff_ h1_P_V))
     · apply proof_imp_deduct_pred_v1
       apply T_18_1
@@ -1225,29 +1264,22 @@ theorem T_18_2
         · apply proof_imp_deduct_pred_v1
           apply h1_ih_3
           intro v a1
-          obtain ⟨a1_left, a1_right⟩ := a1
-          apply h2 v a1_left
-          right
-          apply a1_right
+          apply h2
+          tauto
         · apply is_deduct_v1.assume_
-          simp
+          simp only [Set.mem_singleton_iff]
       · intro H a1
-        simp at a1
-        rw [a1]
+        simp only [Set.mem_singleton_iff] at a1
+        rewrite [a1]
         simp only [Forall_var_is_free_in]
         simp only [def_iff_]
         simp only [def_and_]
         simp only [var_is_free_in]
-        simp
-        contrapose
-        simp
-        intro a2
+        intro contra
+        obtain ⟨contra_left, contra_right⟩ := contra
+        apply contra_left
         apply h2
-        simp_all
-        · tauto
-        · left
-          symm
-          exact h1_ih_1
+        tauto
   all_goals
     sorry
 
@@ -1262,20 +1294,21 @@ theorem C_18_3
   apply is_deduct_v1.mp_ (Forall_ ((U.free_var_set ∪ V.free_var_set) ∩ P_U.bound_var_set).toList (U.iff_ V))
   · apply T_18_2 U V P_U P_V ((U.free_var_set ∪ V.free_var_set) ∩ P_U.bound_var_set).toList h1
     intro v a1
-    simp
+    simp only [Finset.mem_toList, Finset.mem_inter, Finset.mem_union]
     simp only [var_is_free_in_iff_mem_free_var_set] at a1
     simp only [var_is_bound_in_iff_mem_bound_var_set] at a1
     exact a1
   · simp only [Formula_.Forall_]
     induction ((U.free_var_set ∪ V.free_var_set) ∩ P_U.bound_var_set).toList
-    case _ =>
-      simp
+    case nil =>
+      simp only [List.foldr_nil]
       exact h2
-    case _ hd tl ih =>
-      simp
+    case cons hd tl ih =>
+      simp only [List.foldr_cons]
       apply generalization
       · exact ih
-      · simp
+      · intro H a1
+        simp only [Set.mem_empty_iff_false] at a1
 
 
 -- The replacement theorem
@@ -1312,25 +1345,25 @@ theorem T_18_5
     apply is_repl_of_formula_in_formula.imp_
     · apply is_repl_of_formula_in_formula.imp_
       · apply is_repl_of_formula_in_formula.same_
-        rfl
+        apply Eq.refl
       · apply is_repl_of_formula_in_formula.not_
         apply is_repl_of_formula_in_formula.not_
         apply is_repl_of_formula_in_formula.forall_
-        · rfl
+        · apply Eq.refl
         · apply is_repl_of_formula_in_formula.diff_
-          · rfl
-          · rfl
+          · apply Eq.refl
+          · apply Eq.refl
     · apply is_repl_of_formula_in_formula.not_
       apply is_repl_of_formula_in_formula.imp_
       · apply is_repl_of_formula_in_formula.not_
         apply is_repl_of_formula_in_formula.not_
         apply is_repl_of_formula_in_formula.forall_
-        · rfl
+        · apply Eq.refl
         · apply is_repl_of_formula_in_formula.diff_
-          · rfl
-          · rfl
+          · apply Eq.refl
+          · apply Eq.refl
       · apply is_repl_of_formula_in_formula.same_
-        rfl
+        apply Eq.refl
   · simp only [def_iff_]
     simp only [def_and_]
     apply is_prop_deduct_v1_imp_is_deduct_v1
@@ -1357,35 +1390,31 @@ theorem T_18_6
       apply is_prop_deduct_v1_imp_is_deduct_v1
       SC
     · apply deduction_theorem_pred_v1
-      simp
+      simp only [Set.union_singleton, insert_empty_eq]
       apply generalization
-      · rw [h1_right_right_right_right_left]
+      · rewrite [h1_right_right_right_right_left]
         apply spec
         · apply is_deduct_v1.assume_
-          simp
+          simp only [Set.mem_singleton_iff]
         · exact h1_right_right_left
       · intro H a1
-        simp at a1
-        subst a1
+        simp only [Set.mem_singleton_iff] at a1
+        rewrite [a1]
         simp only [var_is_free_in]
-        simp
-        intro _
-        exact h1_left
+        tauto
   · apply deduction_theorem_pred_v1
-    simp
+    simp only [Set.union_singleton, insert_empty_eq]
     apply generalization
-    · rw [h1_right_right_right_right_right]
+    · rewrite [h1_right_right_right_right_right]
       apply spec
       · apply is_deduct_v1.assume_
-        simp
+        simp only [Set.mem_singleton_iff]
       · exact h1_right_right_right_left
     · intro H a1
-      simp at a1
-      rw [a1]
+      simp only [Set.mem_singleton_iff] at a1
+      rewrite [a1]
       simp only [var_is_free_in]
-      simp
-      intro _
-      exact h1_right_left
+      tauto
 
 
 -- Change of bound variable
@@ -1501,28 +1530,30 @@ theorem T_19_4
   is_proof_v1 ((exists_ u (forall_ v P)).imp_ (forall_ v (exists_ u P))) :=
   by
   apply deduction_theorem_pred_v1
-  simp
+  simp only [Set.union_singleton, insert_empty_eq]
   apply generalization
   · apply rule_C (forall_ v P) (exists_ u P) u {exists_ u (forall_ v P)}
     · apply is_deduct_v1.assume_
-      simp
+      simp only [Set.mem_singleton_iff]
     · apply exists_intro P u u
       · apply fast_admits_var_one_rec_self
       · simp only [fast_replace_free_var_one_rec_self]
         apply spec_id v
         apply is_deduct_v1.assume_
-        simp
-    · simp
+        simp only [Set.union_singleton, Set.mem_insert_iff, Set.mem_singleton_iff]
+        left
+        exact True.intro
+    · simp only [Set.mem_singleton_iff, forall_eq]
       simp only [def_exists_]
       simp only [var_is_free_in]
-      simp
+      tauto
     · simp only [def_exists_]
       simp only [var_is_free_in]
-      simp
-  · simp
+      tauto
+  · simp only [Set.mem_singleton_iff, forall_eq]
     simp only [def_exists_]
     simp only [var_is_free_in]
-    simp
+    tauto
 
 
 theorem T_19_5
@@ -1548,10 +1579,12 @@ theorem T_19_6_left
   by
   apply deduction_theorem_pred_v1
   apply deduction_theorem_pred_v1
-  simp
+  simp only [Set.union_singleton, insert_empty_eq]
   apply rule_C P (exists_ v Q) v {exists_ v P, forall_ v (P.iff_ Q)}
   · apply is_deduct_v1.assume_
-    simp
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
+    left
+    exact True.intro
   · apply exists_intro Q v v
     · apply fast_admits_var_one_rec_self
     · simp only [fast_replace_free_var_one_rec_self]
@@ -1563,9 +1596,14 @@ theorem T_19_6_left
           SC
         · apply spec_id v
           apply is_deduct_v1.assume_
-          simp
+          simp only [Set.union_singleton, Set.mem_insert_iff, Set.mem_singleton_iff]
+          right
+          right
+          exact True.intro
       · apply is_deduct_v1.assume_
-        simp
+        simp only [Set.union_singleton, Set.mem_insert_iff, Set.mem_singleton_iff]
+        left
+        exact True.intro
   · simp only [def_exists_]
     simp
     simp only [var_is_free_in]
