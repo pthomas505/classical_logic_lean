@@ -1605,12 +1605,20 @@ theorem T_19_6_left
         left
         exact True.intro
   · simp only [def_exists_]
-    simp
-    simp only [var_is_free_in]
-    simp
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
+    intro H a1
+    cases a1
+    case inl a1 =>
+      rewrite [a1]
+      simp only [var_is_free_in]
+      tauto
+    case inr a1 =>
+      rewrite [a1]
+      simp only [var_is_free_in]
+      tauto
   · simp only [def_exists_]
     simp only [var_is_free_in]
-    simp
+    tauto
 
 
 theorem T_19_6_right
@@ -1619,7 +1627,7 @@ theorem T_19_6_right
   is_proof_v1 ((forall_ v (P.iff_ Q)).imp_ ((exists_ v Q).imp_ (exists_ v P))) :=
   by
   apply deduction_theorem_pred_v1
-  simp
+  simp only [Set.union_singleton, insert_empty_eq]
   apply is_deduct_v1.mp_ (forall_ v (Q.iff_ P))
   · apply proof_imp_deduct_pred_v1
     apply T_19_6_left Q P v
@@ -1631,10 +1639,10 @@ theorem T_19_6_right
         SC
       · apply spec_id v
         apply is_deduct_v1.assume_
-        simp
-    · simp
+        simp only [Set.mem_singleton_iff]
+    · simp only [Set.mem_singleton_iff, forall_eq]
       simp only [var_is_free_in]
-      simp
+      tauto
 
 
 theorem T_19_6
@@ -1662,13 +1670,13 @@ theorem T_19_TS_21_left
   apply C_18_4 (forall_ v P) P ((forall_ v (P.imp_ Q)).imp_ ((forall_ v P).imp_ (forall_ v Q)))
   · apply is_repl_of_formula_in_formula.imp_
     · apply is_repl_of_formula_in_formula.same_
-      rfl
+      apply Eq.refl
     · apply is_repl_of_formula_in_formula.imp_
       · apply is_repl_of_formula_in_formula.diff_
-        · rfl
-        · rfl
+        · apply Eq.refl
+        · apply Eq.refl
       · apply is_repl_of_formula_in_formula.same_
-        rfl
+        apply Eq.refl
   · exact T_19_1 P v h1
   · apply is_deduct_v1.axiom_
     apply is_axiom_v1.pred_1_
@@ -1681,21 +1689,24 @@ theorem T_19_TS_21_right
   is_proof_v1 ((P.imp_ (forall_ v Q)).imp_ (forall_ v (P.imp_ Q))) :=
   by
   apply deduction_theorem_pred_v1
-  simp
+  simp only [Set.union_singleton, insert_empty_eq]
   apply generalization
   · apply deduction_theorem_pred_v1
     apply spec_id v
     apply is_deduct_v1.mp_ P
     · apply is_deduct_v1.assume_
-      simp
+      simp only [Set.union_singleton, Set.mem_insert_iff, Set.mem_singleton_iff]
+      right
+      exact True.intro
     · apply is_deduct_v1.assume_
-      simp
+      simp only [Set.union_singleton, Set.mem_insert_iff, Set.mem_singleton_iff]
+      left
+      exact True.intro
   · intro H a1
-    simp at a1
-    subst a1
+    simp only [Set.mem_singleton_iff] at a1
+    rewrite [a1]
     simp only [var_is_free_in]
-    simp
-    exact h1
+    tauto
 
 
 theorem T_19_TS_21
@@ -1736,9 +1747,9 @@ theorem T_21_1
         apply is_deduct_v1.axiom_
         exact is_axiom_v1.eq_1_ y
     · intro H a1
-      simp at a1
+      simp only [Set.mem_empty_iff_false] at a1
   · intro H a1
-    simp at a1
+    simp only [Set.mem_empty_iff_false] at a1
 
 
 theorem T_21_2
@@ -1764,11 +1775,11 @@ theorem T_21_2
           apply is_deduct_v1.axiom_
           exact is_axiom_v1.eq_1_ z
       · intro H a1
-        simp at a1
+        simp only [Set.mem_empty_iff_false] at a1
     · intro H a1
-      simp at a1
+      simp only [Set.mem_empty_iff_false] at a1
   · intro H a1
-    simp at a1
+    simp only [Set.mem_empty_iff_false] at a1
 
 
 theorem T_21_8
@@ -1801,14 +1812,14 @@ theorem T_21_8
           exact is_axiom_v1.eq_2_pred_const_ name n args_u args_v
       · clear h2
         clear h3
-        simp only [And_]
+        unfold And_
         induction n
-        case _ =>
-          simp
+        case zero =>
+          simp only [List.ofFn_zero, List.foldr_nil]
           apply is_prop_deduct_v1_imp_is_deduct_v1
           SC
-        case _ n ih =>
-          simp
+        case succ n ih =>
+          simp only [List.ofFn_succ, List.foldr_cons]
           apply is_deduct_v1.mp_ ((eq_ r s).imp_ (List.foldr and_ true_ (List.ofFn fun (i : Fin n) => eq_ (args_u i.succ) (args_v i.succ))))
           · apply is_deduct_v1.mp_ ((eq_ r s).imp_ (eq_ (args_u 0) (args_v 0)))
             · simp only [def_and_]
@@ -1816,18 +1827,18 @@ theorem T_21_8
               SC
             · specialize h1_1 0
               cases h1_1
-              case _ c1 =>
+              case inl h1_1 =>
                 apply is_deduct_v1.mp_ (eq_ (args_u 0) (args_v 0))
                 · apply is_prop_deduct_v1_imp_is_deduct_v1
                   SC
-                · simp only [c1]
+                · simp only [h1_1]
                   apply spec_id (args_v 0)
                   apply is_deduct_v1.axiom_
                   apply is_axiom_v1.eq_1_
-              case _ c1 =>
-                obtain ⟨c1_left, c1_right⟩ := c1
-                subst c1_left
-                subst c1_right
+              case inr h1_1 =>
+                obtain ⟨h1_1_left, h1_1_right⟩ := h1_1
+                rewrite [h1_1_left]
+                rewrite [h1_1_right]
                 apply is_prop_deduct_v1_imp_is_deduct_v1
                 SC
           · apply ih
@@ -1846,11 +1857,13 @@ theorem T_21_8
   case imp_ P_u Q_u P_v Q_v h1_1 h1_2 h1_ih_1
     h1_ih_2 =>
     simp only [var_is_bound_in] at h2
-    simp at h2
+    rewrite [not_or] at h2
     obtain ⟨h2_left, h2_right⟩ := h2
+
     simp only [var_is_bound_in] at h3
-    simp at h3
+    rewrite [not_or] at h3
     obtain ⟨h3_left, h3_right⟩ := h3
+
     specialize h1_ih_1 h2_left h3_left
     specialize h1_ih_2 h2_right h3_right
     apply is_deduct_v1.mp_ ((eq_ r s).imp_ (Q_u.iff_ Q_v))
@@ -1863,14 +1876,15 @@ theorem T_21_8
     · exact h1_ih_2
   case forall_ x P_u P_v h1_1 h1_ih =>
     simp only [var_is_bound_in] at h2
-    simp at h2
+    rewrite [not_or] at h2
     obtain ⟨h2_left, h2_right⟩ := h2
 
     simp only [var_is_bound_in] at h3
-    simp at h3
+    rewrite [not_or] at h3
     obtain ⟨h3_left, h3_right⟩ := h3
+
     apply deduction_theorem_pred_v1
-    simp
+    simp only [Set.union_singleton, insert_empty_eq]
     apply is_deduct_v1.mp_ (forall_ x (P_u.iff_ P_v))
     · apply proof_imp_deduct_pred_v1
       apply T_18_1
@@ -1879,18 +1893,16 @@ theorem T_21_8
         apply is_deduct_v1.mp_ (forall_ x ((eq_ r s).imp_ (P_u.iff_ P_v)))
         · apply T_19_TS_21_left
           · simp only [var_is_free_in]
-            simp
+            rewrite [not_or]
             constructor
-            · simp only [ne_comm]
-              exact h2_left
-            · simp only [ne_comm]
-              exact h3_left
+            · tauto
+            · tauto
         · apply generalization
           · exact h1_ih h2_right h3_right
           · intro H a1
-            simp at a1
+            simp only [Set.mem_empty_iff_false] at a1
       · apply is_deduct_v1.assume_
-        simp
+        simp only [Set.mem_singleton_iff]
   all_goals
     sorry
 
