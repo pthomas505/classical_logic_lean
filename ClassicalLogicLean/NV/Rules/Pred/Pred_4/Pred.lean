@@ -214,7 +214,7 @@ lemma is_deduct_v4_struct_1_list
   by
   induction Γ
   case nil =>
-    simp
+    simp only [List.nil_append]
     exact h1
   case cons hd tl ih =>
     apply is_deduct_v4.struct_1_
@@ -231,19 +231,21 @@ lemma is_deduct_v4_struct_3_singleton_list
   by
   induction Γ generalizing Δ_1 Δ_2
   case nil =>
-    simp at h1
-    simp
+    simp only [List.append_nil, List.append_assoc, List.cons_append, List.nil_append] at h1
+    simp only [List.append_nil, List.append_assoc, List.cons_append, List.nil_append]
     exact h1
   case cons Γ_1_hd Γ_1_tl Γ_1_ih =>
     specialize Γ_1_ih (Δ_1 ++ [Γ_1_hd])
-    simp at Γ_1_ih
+    simp only [List.append_assoc, List.cons_append, List.nil_append] at Γ_1_ih
 
-    simp at h1
+    simp only [List.append_assoc, List.cons_append, List.nil_append] at h1
 
-    simp
+    simp only [List.append_assoc, List.cons_append, List.nil_append]
     apply Γ_1_ih
+
     obtain s1 := is_deduct_v4.struct_3_ Δ_1 (Γ_1_tl ++ Δ_2) H Γ_1_hd
-    simp at s1
+    simp only [List.append_assoc, List.cons_append, List.nil_append] at s1
+
     apply s1
     exact h1
 
@@ -257,21 +259,20 @@ lemma is_deduct_v4_struct_3_list_list
   by
   induction Γ_1 generalizing Γ_2 Δ_1 Δ_2
   case nil =>
-    simp at h1
-    simp
+    simp only [List.append_nil, List.append_assoc] at h1
+    simp only [List.append_nil, List.append_assoc]
     exact h1
   case cons hd tl ih =>
     obtain s1 := is_deduct_v4_struct_3_singleton_list Δ_1 (tl ++ Δ_2) Γ_2 hd F
-    simp at s1
-    simp
+    simp only [List.append_assoc, List.cons_append] at s1
+    simp only [List.append_assoc, List.cons_append]
     apply s1
-    clear s1
 
     specialize ih (Δ_1 ++ [hd]) Δ_2 Γ_2
-    simp at ih
+    simp only [List.append_assoc, List.cons_append, List.nil_append] at ih
     apply ih
 
-    simp at h1
+    simp only [List.append_assoc, List.cons_append] at h1
     exact h1
 
 
@@ -286,7 +287,7 @@ lemma is_deduct_v4_struct_3_list_list_mid
 
   obtain s2 := is_deduct_v4_struct_3_list_list Δ_1 Δ_3 (Γ_1 ++ Δ_2) Γ_2 F
 
-  simp at *
+  simp only [List.append_assoc] at *
   apply s1
   apply s2
   exact h1
@@ -299,11 +300,13 @@ lemma is_deduct_v4_struct_rotate_to_first
   (h1 : is_deduct_v4 (Δ_1 ++ [H] ++ Δ_2) F) :
   is_deduct_v4 (H :: Δ_1 ++ Δ_2) F :=
   by
+  simp only [List.append_assoc, List.cons_append, List.nil_append] at h1
+
   obtain s1 := is_deduct_v4_struct_3_list_list [] Δ_2 Δ_1 [H]
-  simp at s1
-  simp
+  simp only [List.nil_append, List.append_assoc, List.cons_append] at s1
+
+  simp only [List.cons_append]
   apply s1
-  simp at h1
   exact h1
 
 
@@ -314,11 +317,13 @@ lemma is_deduct_v4_struct_rotate_to_last
   (h1 : is_deduct_v4 (Δ_1 ++ [H] ++ Δ_2) F) :
   is_deduct_v4 (Δ_1 ++ Δ_2 ++ [H]) F :=
   by
+  simp only [List.append_assoc, List.cons_append, List.nil_append] at h1
+
   obtain s1 := is_deduct_v4_struct_3_list_list Δ_1 [] [H] Δ_2
-  simp at s1
-  simp
+  simp only [List.append_assoc, List.cons_append, List.nil_append, List.append_nil] at s1
+  simp only [List.append_assoc]
   apply s1
-  simp at h1
+
   exact h1
 
 
@@ -333,14 +338,14 @@ lemma is_deduct_v4_assume_mem
   by
   induction Δ
   case nil =>
-    simp at h1
+    simp only [List.not_mem_nil] at h1
   case cons hd tl ih =>
-    simp at h1
+    simp only [List.mem_cons] at h1
     cases h1
     case inl h1 =>
-      rw [h1]
+      rewrite [h1]
       obtain s1 := is_deduct_v4_struct_rotate_to_first tl [] hd hd
-      simp at s1
+      simp only [List.append_nil] at s1
       apply s1
       apply is_deduct_v4_struct_1_list [hd] hd tl
       apply is_deduct_v4.assume_ hd
@@ -383,12 +388,12 @@ lemma is_prop_deduct_v1_imp_is_deduct_v4
   induction h1
   case axiom_ phi ih =>
     obtain s1 := is_deduct_v4_struct_1_list [] phi Δ.toList
-    simp at s1
+    simp only [List.append_nil] at s1
     apply s1
     exact is_prop_axiom_v1_imp_is_deduct_v4 phi ih
   case assume_ phi ih =>
     apply is_deduct_v4_assume_mem
-    simp
+    simp only [Finset.mem_toList]
     exact ih
   case mp_ phi psi ih_1 ih_2 ih_3 ih_4 =>
     apply is_deduct_v4.mp_ Δ.toList phi
@@ -403,32 +408,38 @@ example
   (F : Formula_)
   (Δ : List Formula_)
   (h1 : is_deduct_v4 Δ F) :
-  is_deduct_v3 Δ.toFinset.toSet F :=
+  is_deduct_v3 (Δ.toFinset : Set Formula_) F :=
   by
   induction h1
   case struct_1_ h1_Δ h1_H h1_phi h1_ih_1 h1_ih_2 =>
-    have s1 : (h1_H :: h1_Δ).toFinset.toSet = {h1_H} ∪ h1_Δ.toFinset.toSet :=
+    have s1 : ((h1_H :: h1_Δ).toFinset : Set Formula_) = {h1_H} ∪ (h1_Δ.toFinset : Set Formula_) :=
     by
-      simp
-    rw [s1]
+      simp only [List.toFinset_cons, Finset.coe_insert, List.coe_toFinset, Set.singleton_union]
+    rewrite [s1]
 
-    apply is_deduct_v3_weaken h1_phi h1_Δ.toFinset.toSet {h1_H}
+    apply is_deduct_v3_weaken h1_phi (h1_Δ.toFinset : Set Formula_) {h1_H}
     exact h1_ih_2
   case struct_2_ h1_Δ h1_H h1_phi h1_ih_1 h1_ih_2 =>
-    simp at h1_ih_2
-    simp
+    simp only [List.toFinset_cons, Finset.coe_insert, List.coe_toFinset] at h1_ih_2
+
+    simp only [List.toFinset_cons, Finset.coe_insert, List.coe_toFinset]
+    obtain s1 := Set.insert_idem h1_H ({a | a ∈ h1_Δ} : Set Formula_)
+    rewrite [← s1]
     exact h1_ih_2
   case struct_3_ h1_Δ_1 h1_Δ_2 h1_H_1 h1_H_2 h1_phi h1_ih_1 h1_ih_2 =>
-    simp at h1_ih_2
-    simp
+    simp only [List.append_assoc, List.cons_append, List.nil_append, List.toFinset_append, List.toFinset_cons, Finset.union_insert, Finset.coe_insert, Finset.coe_union, List.coe_toFinset] at h1_ih_2
+
+    simp only [List.append_assoc, List.cons_append, List.nil_append, List.toFinset_append, List.toFinset_cons, Finset.union_insert, Finset.coe_insert, Finset.coe_union, List.coe_toFinset]
+
     have s1 : insert h1_H_2 (insert h1_H_1 ({a | a ∈ h1_Δ_1} ∪ {a | a ∈ h1_Δ_2})) = insert h1_H_1 (insert h1_H_2 ({a | a ∈ h1_Δ_1} ∪ {a | a ∈ h1_Δ_2})) :=
     by
       simp only [Set.insert_comm]
-    rw [s1]
+
+    rewrite [s1]
     exact h1_ih_2
   case assume_ h1_phi =>
     apply is_deduct_v3.assume_
-    simp
+    simp only [List.toFinset_cons, List.toFinset_nil, insert_empty_eq, Finset.coe_singleton, Set.mem_singleton_iff]
   case prop_0_ =>
     apply is_deduct_v3.axiom_
     apply is_axiom_v3.prop_true_
@@ -446,17 +457,18 @@ example
     · exact h1_ih_3
     · exact h1_ih_4
   case dt_ h1_Δ h1_H h1_phi h1_ih_1 h1_ih_2 =>
-    simp at h1_ih_2
+    simp only [List.toFinset_cons, Finset.coe_insert, List.coe_toFinset] at h1_ih_2
+
     apply is_deduct_v1_imp_is_deduct_v3
     apply deduction_theorem_pred_v1
     apply is_deduct_v3_imp_is_deduct_v1
-    simp
+    simp only [List.coe_toFinset, Set.union_singleton]
     exact h1_ih_2
   case pred_1_ h1_v h1_phi h1_psi =>
     apply is_deduct_v3.axiom_
     apply is_axiom_v3.pred_1_
   case pred_2_ h1_v h1_t h1_phi =>
-    simp
+    simp only [List.toFinset_nil, Finset.coe_empty]
     induction h1_phi
     case
         pred_const_ X xs
@@ -468,13 +480,28 @@ example
       · apply
         FOL.NV.Sub.Var.One.Rec.not_var_is_bound_in_imp_fast_admits_var_one_rec
         unfold var_is_bound_in
-        simp
+        intro contra
+        exact contra
       · simp only [FOL.NV.Sub.Var.One.Rec.fast_replace_free_var_one_rec]
         unfold Function.updateITE
-        simp
+        congr 1
+        simp only [id_eq, List.map_inj_left]
         intro a a1
-        refine if_ctx_congr ?_ (congrFun rfl) (congrFun rfl)
-        exact eq_comm
+        split
+        case isTrue c1 =>
+          split
+          case isTrue c2 =>
+            apply Eq.refl
+          case isFalse c2 =>
+            rewrite [c1] at c2
+            contradiction
+        case isFalse c1 =>
+          split
+          case isTrue c2 =>
+            rewrite [c2] at c1
+            contradiction
+          case isFalse c2 =>
+            apply Eq.refl
     case eq_ x y =>
       simp only [FOL.NV.Sub.Var.All.Rec.Fresh.sub_var_all_rec]
       apply is_deduct_v3.axiom_
@@ -482,15 +509,27 @@ example
       · apply
         FOL.NV.Sub.Var.One.Rec.not_var_is_bound_in_imp_fast_admits_var_one_rec
         unfold var_is_bound_in
-        simp
+        intro contra
+        exact contra
       · simp only [FOL.NV.Sub.Var.One.Rec.fast_replace_free_var_one_rec]
         unfold Function.updateITE
-        simp
-        constructor
-        · refine if_ctx_congr ?_ (congrFun rfl) (congrFun rfl)
-          exact eq_comm
-        · refine if_ctx_congr ?_ (congrFun rfl) (congrFun rfl)
-          exact eq_comm
+        congr 1
+        all_goals
+          split
+          case isTrue c1 =>
+            split
+            case isTrue c2 =>
+              apply Eq.refl
+            case isFalse c2 =>
+              rewrite [c1] at c2
+              contradiction
+          case isFalse c1 =>
+            split
+            case isTrue c2 =>
+              rewrite [c2] at c1
+              contradiction
+            case isFalse c2 =>
+              simp only [id_eq]
     case forall_ x phi ih =>
       sorry
     all_goals
@@ -504,7 +543,8 @@ example
     apply generalization
     · apply is_deduct_v3_imp_is_deduct_v1
       exact h1_ih_2
-    · simp
+    · intro H a1
+      simp only [List.toFinset_nil, Finset.coe_empty, Set.mem_empty_iff_false] at a1
   case eq_1_ h1_v =>
     apply is_deduct_v1_imp_is_deduct_v3
     apply spec_id h1_v
