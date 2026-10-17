@@ -305,16 +305,16 @@ lemma holds_iff_are_alpha_equiv_rec_holds_aux
     · exact h2_right
 
   case eq_.eq_ x x' y y' =>
-    cases h2
-    case intro h2_left h2_right =>
-      simp only [holds]
-      congr! 1
-      · apply aux_1 D binders
-        · exact h1
-        · exact h2_left
-      · apply aux_1 D binders
-        · exact h1
-        · exact h2_right
+    obtain ⟨h2_left, h2_right⟩ := h2
+
+    simp only [holds]
+    congr! 1
+    · apply aux_1 D binders
+      · exact h1
+      · exact h2_left
+    · apply aux_1 D binders
+      · exact h1
+      · exact h2_right
 
   case true_.true_ | false_.false_ =>
     simp only [holds]
@@ -330,6 +330,7 @@ lemma holds_iff_are_alpha_equiv_rec_holds_aux
   | or_.or_ phi psi phi_ih psi_ih phi' psi'
   | iff_.iff_ phi psi phi_ih psi_ih phi' psi' =>
     obtain ⟨h2_left, h2_right⟩ := h2
+
     simp only [holds]
     congr! 1
     · exact phi_ih V V' phi' binders h1 h2_left
@@ -364,6 +365,7 @@ lemma holds_iff_are_alpha_equiv_rec_holds_aux
         split
         case isTrue c2 =>
           obtain ⟨h2_left, h2_right⟩ := h2
+
           apply holds_coincide_var
           intro v a1
           rewrite [aux_2 D binders xs ys V V' h1 h2_right]
@@ -384,6 +386,7 @@ lemma holds_iff_are_alpha_equiv_rec_holds_aux
         split
         case isTrue c2 =>
           obtain ⟨h2_left, h2_right⟩ := h2
+
           simp only [← are_alpha_equiv_var_list_rec_length binders xs ys h2_right] at c2
           rewrite [h2_left] at c1
           contradiction
