@@ -170,10 +170,10 @@ lemma is_axiom_v1_imp_is_axiom_v3
   case eq_2_pred_const_ name n xs ys =>
     obtain s1 := list_of_fn_fin_zip_with_eq_list_zip_with_list_of_fn eq_ n xs ys
     unfold Fin.zipWith at s1
-    rw [s1]
+    rewrite [s1]
 
     apply is_axiom_v3.eq_2_pred_const_
-    simp
+    simp only [List.length_ofFn]
   case eq_2_eq_ x_0 x_1 y_0 y_1 =>
     apply is_axiom_v3.eq_2_eq_
   case gen_ v phi ih_1 ih_2 =>
@@ -236,9 +236,9 @@ lemma is_axiom_v3_imp_is_axiom_v1
     apply is_axiom_v1.eq_1_
   case eq_2_pred_const_ name xs ys ih =>
     obtain ⟨n, fn_xs, fn_ys, c1, c2, c3⟩ := exists_list_of_fn_fin_zip_with_eq_len_eq_list_zip_with_and_list_of_fn_eq_list eq_ xs ys ih
-    rw [← c1]
-    rw [← c2]
-    rw [← c3]
+    rewrite [← c1]
+    rewrite [← c2]
+    rewrite [← c3]
 
     apply is_axiom_v1.eq_2_pred_const_
   case eq_2_eq_ x_0 x_1 y_0 y_1 =>
@@ -291,7 +291,7 @@ lemma is_deduct_v3_weaken
     exact ih
   case assume_ phi ih =>
     apply is_deduct_v3.assume_
-    simp
+    simp only [Set.mem_union]
     right
     exact ih
   case mp_ phi psi ih_1 ih_2 ih_3 ih_4 =>
