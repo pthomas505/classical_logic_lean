@@ -13,6 +13,8 @@ set_option linter.style.longLine false
 structure VarName_ extends String
   deriving Inhabited, DecidableEq
 
+compile_inductive% VarName_
+
 instance : ToString VarName_ :=
   { toString := fun x => x.toString }
 
@@ -26,6 +28,8 @@ instance : Repr VarName_ :=
 structure PredName_ extends String
   deriving Inhabited, DecidableEq
 
+compile_inductive% PredName_
+
 instance : ToString PredName_ :=
   { toString := fun X => X.toString }
 
@@ -38,6 +42,8 @@ instance : Repr PredName_ :=
 -/
 structure DefName_ extends String
   deriving Inhabited, DecidableEq
+
+compile_inductive% DefName_
 
 instance : ToString DefName_ :=
   { toString := fun X => X.toString }
