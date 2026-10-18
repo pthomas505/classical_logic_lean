@@ -247,7 +247,7 @@ theorem aux_2
         exact h2_right
 
 
-lemma are_alpha_equiv_var_list_rec_length
+theorem are_alpha_equiv_var_list_rec_length
   (binders : List (VarName_ × VarName_))
   (xs ys : List VarName_)
   (h1 : are_alpha_equiv_var_list_rec binders xs ys) :
@@ -274,7 +274,7 @@ lemma are_alpha_equiv_var_list_rec_length
       exact h1_right
 
 
-lemma holds_iff_are_alpha_equiv_rec_holds_aux
+theorem holds_iff_are_alpha_equiv_rec_holds_aux
   (D : Type)
   (I : Interpretation_ D)
   (V V' : Valuation_ D)

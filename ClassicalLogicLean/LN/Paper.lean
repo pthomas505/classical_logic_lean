@@ -173,7 +173,7 @@ def Formula.lc_at
 --------------------------------------------------
 
 
-lemma lc_at_zero_iff_is_free
+theorem lc_at_zero_iff_is_free
   (v : Var) :
   Var.lc_at 0 v ↔ v.isFree :=
   by
@@ -190,7 +190,7 @@ lemma lc_at_zero_iff_is_free
 --------------------------------------------------
 
 
-lemma free_var_list_to_string_list
+theorem free_var_list_to_string_list
   (vs : List Var)
   (h1 : ∀ (v : Var), v ∈ vs → Var.lc_at 0 v) :
   ∃ (xs : List String), vs = List.map free_ xs :=
@@ -221,7 +221,7 @@ lemma free_var_list_to_string_list
 
 -- 1.
 
-lemma VarOpenFreeVarSet
+theorem VarOpenFreeVarSet
   (j : ℕ)
   (z : String)
   (v : Var) :
@@ -251,7 +251,7 @@ lemma VarOpenFreeVarSet
         apply Finset.empty_subset
 
 
-lemma FormulaOpenFreeVarSet
+theorem FormulaOpenFreeVarSet
   (j : ℕ)
   (z : String)
   (F : Formula) :
@@ -293,7 +293,7 @@ lemma FormulaOpenFreeVarSet
 
 -- 1. for list
 
-lemma VarOpenListFreeVarSet
+theorem VarOpenListFreeVarSet
   (j : ℕ)
   (zs : List String)
   (v : Var) :
@@ -330,7 +330,7 @@ lemma VarOpenListFreeVarSet
         apply Finset.empty_subset
 
 
-lemma FormulaOpenListFreeVarSet
+theorem FormulaOpenListFreeVarSet
   (j : ℕ)
   (zs : List String)
   (F : Formula) :
@@ -373,7 +373,7 @@ lemma FormulaOpenListFreeVarSet
 
 -- 2.
 
-lemma VarOpenFreeVarSet'
+theorem VarOpenFreeVarSet'
   (j : ℕ)
   (z : String)
   (v : Var) :
@@ -400,7 +400,7 @@ lemma VarOpenFreeVarSet'
         apply Set.Subset.refl
 
 
-lemma FormulaOpenFreeVarSet'
+theorem FormulaOpenFreeVarSet'
   (j : ℕ)
   (z : String)
   (F : Formula) :
@@ -439,7 +439,7 @@ lemma FormulaOpenFreeVarSet'
 
 -- 3.
 
-lemma VarCloseFreeVarSet
+theorem VarCloseFreeVarSet
   (j : ℕ)
   (z : String)
   (v : Var) :
@@ -472,7 +472,7 @@ lemma VarCloseFreeVarSet
       apply Set.Subset.refl
 
 
-lemma FormulaCloseFreeVarSet
+theorem FormulaCloseFreeVarSet
   (j : ℕ)
   (z : String)
   (F : Formula) :
@@ -516,7 +516,7 @@ lemma FormulaCloseFreeVarSet
 
 -- 4.
 
-lemma VarSubstFreeVarSet
+theorem VarSubstFreeVarSet
   (z : String)
   (t : Var)
   (v : Var) :
@@ -548,7 +548,7 @@ lemma VarSubstFreeVarSet
     apply Finset.empty_subset
 
 
-lemma FormulaSubstFreeVarSet
+theorem FormulaSubstFreeVarSet
   (z : String)
   (t : Var)
   (F : Formula) :
@@ -590,7 +590,7 @@ lemma FormulaSubstFreeVarSet
 --------------------------------------------------
 
 
-lemma VarSubstFreeVarSet'
+theorem VarSubstFreeVarSet'
   (z : String)
   (t : Var)
   (v : Var) :
@@ -616,7 +616,7 @@ lemma VarSubstFreeVarSet'
     simp only [Finset.empty_sdiff, Finset.empty_subset]
 
 
-lemma FormulaSubstFreeVarSet'
+theorem FormulaSubstFreeVarSet'
   (z : String)
   (t : Var)
   (F : Formula) :
@@ -668,7 +668,7 @@ def str_fun_to_var_fun
   | bound_ i => bound_ i
 
 
-lemma SubOpenVar
+theorem SubOpenVar
   (v : Var)
   (σ : String → String)
   (j : ℕ)
@@ -720,7 +720,7 @@ lemma SubOpenVar
           apply Eq.refl
 
 /-
-lemma SubCloseVar
+theorem SubCloseVar
   (v : Var)
   (σ : String → String)
   (y : String)
@@ -750,7 +750,7 @@ lemma SubCloseVar
     simp only [Var.sub_Var]
 
 
-lemma SubOpenFormula
+theorem SubOpenFormula
   (F : Formula)
   (σ : String → String)
   (k : ℕ)
@@ -785,7 +785,7 @@ lemma SubOpenFormula
     apply phi_ih
 
 
-lemma SubCloseFormula
+theorem SubCloseFormula
   (F : Formula)
   (σ : String → String)
   (x : String)
@@ -970,7 +970,7 @@ theorem ShiftVarOpenList
               simp only [Nat.add_eq]
 
 
-lemma HoldsOpenList
+theorem HoldsOpenList
   (D : Type)
   (I : Interpretation D)
   (V : VarAssignment D)
@@ -1071,7 +1071,7 @@ theorem ShiftListVarOpenList
         grind
 
 
-lemma lc_at_iff_lc
+theorem lc_at_iff_lc
   (F : Formula) :
   lc_at 0 F ↔ lc F :=
   by
@@ -1144,7 +1144,7 @@ theorem HoldsCoincideVar
         exact a1
 
 
-lemma HoldsShift
+theorem HoldsShift
   (D : Type)
   (I : Interpretation D)
   (V : VarAssignment D)
@@ -1184,7 +1184,7 @@ lemma HoldsShift
       grind only
 
 
-lemma HoldsForall
+theorem HoldsForall
   (D : Type)
   (I : Interpretation D)
   (V : VarAssignment D)
@@ -1263,7 +1263,7 @@ theorem extracted_1
           simp only [shift]
 
 
-lemma HoldsClose
+theorem HoldsClose
   (D : Type)
   (I : Interpretation D)
   (V : VarAssignment D)
@@ -1351,7 +1351,7 @@ lemma HoldsClose
     apply extracted_1
 
 
-lemma Formula.OpenListLC
+theorem Formula.OpenListLC
   (F : Formula)
   (j : ℕ)
   (zs : List String)
@@ -1414,7 +1414,7 @@ lemma Formula.OpenListLC
     exact h1
 
 
-lemma lc_at_instantiate
+theorem lc_at_instantiate
   (F : Formula)
   (j : ℕ)
   (zs : List String) :

@@ -147,7 +147,7 @@ def is_proof_v1 (F : Formula_) : Prop :=
 -------------------------------------------------------------------------------
 
 
-lemma is_prop_axiom_v1_imp_is_axiom_v1
+theorem is_prop_axiom_v1_imp_is_axiom_v1
   (F : Formula_)
   (h1 : is_prop_axiom_v1 F) :
   is_axiom_v1 F :=
@@ -171,7 +171,7 @@ lemma is_prop_axiom_v1_imp_is_axiom_v1
     apply is_axiom_v1.def_iff_
 
 
-lemma is_prop_deduct_v1_imp_is_deduct_v1
+theorem is_prop_deduct_v1_imp_is_deduct_v1
   (Δ : Set Formula_)
   (F : Formula_)
   (h1 : is_prop_deduct_v1 Δ F) :
@@ -191,7 +191,7 @@ lemma is_prop_deduct_v1_imp_is_deduct_v1
     · exact ih_4
 
 
-lemma is_prop_proof_v1_imp_is_proof_v1
+theorem is_prop_proof_v1_imp_is_proof_v1
   (F : Formula_)
   (h1 : is_prop_proof_v1 F) :
   is_proof_v1 F :=

@@ -49,7 +49,7 @@ def sub_var_all_rec
   | def_ X xs => def_ X (xs.map σ)
 
 
-lemma sub_var_all_rec_free_var_set_eq_free_var_set_image
+theorem sub_var_all_rec_free_var_set_eq_free_var_set_image
   (σ : VarName_ → VarName_)
   (c : Char)
   (F : Formula_) :
@@ -317,7 +317,7 @@ theorem substitution_is_valid_sub_var_all_rec
 
 -------------------------------------------------------------------------------
 
-lemma sub_var_all_rec_id
+theorem sub_var_all_rec_id
   (c : Char)
   (F : Formula_) :
   sub_var_all_rec id c F = F :=

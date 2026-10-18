@@ -277,7 +277,7 @@ theorem holds_coincide_pred_var
       simp only [pred_var_occurs_in] at a1
 
 
-lemma holds_coincide_env
+theorem holds_coincide_env
   (D : Type)
   (I : Interpretation_ D)
   (V : Valuation_ D)

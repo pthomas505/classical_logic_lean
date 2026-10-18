@@ -144,7 +144,7 @@ def is_proof_v3 (F : Formula_) : Prop :=
   is_deduct_v3 ∅ F
 
 
-lemma is_axiom_v1_imp_is_axiom_v3
+theorem is_axiom_v1_imp_is_axiom_v3
   (F : Formula_)
   (h1 : is_axiom_v1 F) :
   is_axiom_v3 F :=
@@ -191,7 +191,7 @@ lemma is_axiom_v1_imp_is_axiom_v3
     apply is_axiom_v3.def_exists_
 
 
-lemma is_deduct_v1_imp_is_deduct_v3
+theorem is_deduct_v1_imp_is_deduct_v3
   (Δ : Set Formula_)
   (F : Formula_)
   (h1 : is_deduct_v1 Δ F) :
@@ -211,7 +211,7 @@ lemma is_deduct_v1_imp_is_deduct_v3
     · exact h1_ih_4
 
 
-lemma is_axiom_v3_imp_is_axiom_v1
+theorem is_axiom_v3_imp_is_axiom_v1
   (F : Formula_)
   (h1 : is_axiom_v3 F) :
   is_axiom_v1 F :=
@@ -258,7 +258,7 @@ lemma is_axiom_v3_imp_is_axiom_v1
     apply is_axiom_v1.def_exists_
 
 
-lemma is_deduct_v3_imp_is_deduct_v1
+theorem is_deduct_v3_imp_is_deduct_v1
   (Δ : Set Formula_)
   (F : Formula_)
   (h1 : is_deduct_v3 Δ F) :
@@ -278,7 +278,7 @@ lemma is_deduct_v3_imp_is_deduct_v1
     · exact h1_ih_4
 
 
-lemma is_deduct_v3_weaken
+theorem is_deduct_v3_weaken
   (F : Formula_)
   (Δ : Set Formula_)
   (Γ : Set Formula_)

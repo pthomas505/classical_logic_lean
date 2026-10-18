@@ -36,7 +36,7 @@ def sub_prop_all_rec (τ : PredName_ → PredName_) : Formula_ → Formula_
   | def_ P ts => def_ P ts
 
 
-lemma sub_prop_all_rec_pred_var_set_is_empty
+theorem sub_prop_all_rec_pred_var_set_is_empty
   (F : Formula_)
   (τ : PredName_ → PredName_)
   (h1 : F.pred_var_set = ∅) :

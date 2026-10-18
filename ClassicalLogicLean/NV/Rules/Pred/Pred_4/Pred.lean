@@ -205,7 +205,7 @@ inductive is_deduct_v4 : List Formula_ → Formula_ → Prop
 -------------------------------------------------------------------------------
 
 
-lemma is_deduct_v4_struct_1_list
+theorem is_deduct_v4_struct_1_list
   (Δ : List Formula_)
   (F : Formula_)
   (Γ : List Formula_)
@@ -221,7 +221,7 @@ lemma is_deduct_v4_struct_1_list
     exact ih
 
 
-lemma is_deduct_v4_struct_3_singleton_list
+theorem is_deduct_v4_struct_3_singleton_list
   (Δ_1 Δ_2 : List Formula_)
   (Γ : List Formula_)
   (H : Formula_)
@@ -250,7 +250,7 @@ lemma is_deduct_v4_struct_3_singleton_list
     exact h1
 
 
-lemma is_deduct_v4_struct_3_list_list
+theorem is_deduct_v4_struct_3_list_list
   (Δ_1 Δ_2 : List Formula_)
   (Γ_1 Γ_2 : List Formula_)
   (F : Formula_)
@@ -276,7 +276,7 @@ lemma is_deduct_v4_struct_3_list_list
     exact h1
 
 
-lemma is_deduct_v4_struct_3_list_list_mid
+theorem is_deduct_v4_struct_3_list_list_mid
   (Δ_1 Δ_2 Δ_3 : List Formula_)
   (Γ_1 Γ_2 : List Formula_)
   (F : Formula_)
@@ -293,7 +293,7 @@ lemma is_deduct_v4_struct_3_list_list_mid
   exact h1
 
 
-lemma is_deduct_v4_struct_rotate_to_first
+theorem is_deduct_v4_struct_rotate_to_first
   (Δ_1 Δ_2 : List Formula_)
   (F : Formula_)
   (H : Formula_)
@@ -310,7 +310,7 @@ lemma is_deduct_v4_struct_rotate_to_first
   exact h1
 
 
-lemma is_deduct_v4_struct_rotate_to_last
+theorem is_deduct_v4_struct_rotate_to_last
   (Δ_1 Δ_2 : List Formula_)
   (F : Formula_)
   (H : Formula_)
@@ -330,7 +330,7 @@ lemma is_deduct_v4_struct_rotate_to_last
 -------------------------------------------------------------------------------
 
 
-lemma is_deduct_v4_assume_mem
+theorem is_deduct_v4_assume_mem
   (F : Formula_)
   (Δ : List Formula_)
   (h1 : F ∈ Δ) :
@@ -355,7 +355,7 @@ lemma is_deduct_v4_assume_mem
       exact h1
 
 
-lemma is_prop_axiom_v1_imp_is_deduct_v4
+theorem is_prop_axiom_v1_imp_is_deduct_v4
   (F : Formula_)
   (h1 : is_prop_axiom_v1 F) :
   is_deduct_v4 [] F :=
@@ -379,7 +379,7 @@ lemma is_prop_axiom_v1_imp_is_deduct_v4
     apply is_deduct_v4.def_iff_
 
 
-lemma is_prop_deduct_v1_imp_is_deduct_v4
+theorem is_prop_deduct_v1_imp_is_deduct_v4
   (Δ : Finset Formula_)
   (F : Formula_)
   (h1 : is_prop_deduct_v1 Δ F) :

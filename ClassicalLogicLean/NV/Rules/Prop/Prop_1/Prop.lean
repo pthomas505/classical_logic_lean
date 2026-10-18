@@ -554,7 +554,7 @@ theorem T_14_9
 -- https://us.metamath.org/mpeuni/mmtheorems.html#dtl:1.2
 
 
-lemma mp2
+theorem mp2
   (phi psi chi : Formula_)
   (h1 : is_prop_proof_v1 phi)
   (h2 : is_prop_proof_v1 psi)
@@ -568,7 +568,7 @@ lemma mp2
   · exact h2
 
 
-lemma mp2b
+theorem mp2b
   (phi psi chi : Formula_)
   (h1 : is_prop_proof_v1 phi)
   (h2 : is_prop_proof_v1 (phi.imp_ psi))
@@ -582,7 +582,7 @@ lemma mp2b
     · exact h1
 
 
-lemma a1i
+theorem a1i
   (phi psi : Formula_)
   (h1 : is_prop_proof_v1 phi) :
   is_prop_proof_v1 (psi.imp_ phi) :=
@@ -593,7 +593,7 @@ lemma a1i
   · exact h1
 
 
-lemma _2a1i
+theorem _2a1i
   (phi psi chi : Formula_)
   (h1 : is_prop_proof_v1 phi) :
   is_prop_proof_v1 (psi.imp_ (chi.imp_ phi)) :=
@@ -603,7 +603,7 @@ lemma _2a1i
   exact h1
 
 
-lemma mp1i
+theorem mp1i
   (phi psi chi : Formula_)
   (h1 : is_prop_proof_v1 phi)
   (h2 : is_prop_proof_v1 (phi.imp_ psi)) :
@@ -615,7 +615,7 @@ lemma mp1i
   · exact h1
 
 
-lemma a2i
+theorem a2i
   (phi psi chi : Formula_)
   (h1 : is_prop_proof_v1 (phi.imp_ (psi.imp_ chi))) :
   is_prop_proof_v1 ((phi.imp_ psi).imp_ (phi.imp_ chi)) :=
@@ -626,7 +626,7 @@ lemma a2i
   · exact h1
 
 
-lemma mpd
+theorem mpd
   (phi psi chi : Formula_)
   (h1 : is_prop_proof_v1 (phi.imp_ psi))
   (h2 : is_prop_proof_v1 (phi.imp_ (psi.imp_ chi))) :
@@ -638,7 +638,7 @@ lemma mpd
   · exact h1
 
 
-lemma imim2i
+theorem imim2i
   (phi psi chi : Formula_)
   (h1 : is_prop_proof_v1 (phi.imp_ psi)) :
   is_prop_proof_v1 ((chi.imp_ phi).imp_ (chi.imp_ psi)) :=
@@ -648,7 +648,7 @@ lemma imim2i
   exact h1
 
 
-lemma syl
+theorem syl
   (phi psi chi : Formula_)
   (h1 : is_prop_proof_v1 (phi.imp_ psi))
   (h2 : is_prop_proof_v1 (psi.imp_ chi)) :
@@ -660,7 +660,7 @@ lemma syl
     exact h2
 
 
-lemma sylcom
+theorem sylcom
   (phi psi chi theta : Formula_)
   (h1 : is_prop_proof_v1 (phi.imp_ (psi.imp_ chi)))
   (h2 : is_prop_proof_v1 (psi.imp_ (chi.imp_ theta))) :
@@ -672,7 +672,7 @@ lemma sylcom
     exact h2
 
 
-lemma syl6
+theorem syl6
   (phi psi chi theta : Formula_)
   (h1 : is_prop_proof_v1 (phi.imp_ (psi.imp_ chi)))
   (h2 : is_prop_proof_v1 (chi.imp_ theta)) :
@@ -684,7 +684,7 @@ lemma syl6
     exact h2
 
 
-lemma expi
+theorem expi
   (phi psi chi : Formula_)
   (h1 : is_prop_proof_v1 ((not_ (phi.imp_ (not_ psi))).imp_ chi)) :
   is_prop_proof_v1 (phi.imp_ (psi.imp_ chi)) :=
@@ -693,13 +693,13 @@ lemma expi
   · sorry
   · apply h1
 
-lemma impbi
+theorem impbi
   (phi psi : Formula_) :
   is_prop_proof_v1 ((phi.imp_ psi).imp_ ((psi.imp_ phi).imp_ (phi.iff_ psi))) :=
   by
   sorry
 
-lemma idd
+theorem idd
   (phi psi : Formula_) :
   is_prop_proof_v1 (phi.imp_ (psi.imp_ psi)) :=
   by

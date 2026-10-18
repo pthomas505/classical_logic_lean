@@ -311,7 +311,7 @@ inductive is_repl_of_var_in_list
     is_repl_of_var_in_list u v (hd_u :: tl_u) (hd_v :: tl_v)
 
 
-lemma is_repl_of_var_in_list_fun_imp_is_repl_of_var_in_list
+theorem is_repl_of_var_in_list_fun_imp_is_repl_of_var_in_list
   (u v : VarName_)
   (us vs : List VarName_)
   (h1 : is_repl_of_var_in_list_fun u v us vs) :
@@ -346,7 +346,7 @@ lemma is_repl_of_var_in_list_fun_imp_is_repl_of_var_in_list
           exact h1_right
 
 
-lemma is_repl_of_var_in_list_imp_is_repl_of_var_in_list_fun
+theorem is_repl_of_var_in_list_imp_is_repl_of_var_in_list_fun
   (u v : VarName_)
   (us vs : List VarName_)
   (h1 : is_repl_of_var_in_list u v us vs) :

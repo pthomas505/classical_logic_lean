@@ -46,7 +46,7 @@ def str_fun_to_var_fun
   | bound_ i => bound_ i
 
 
-lemma SubOpenVar
+theorem SubOpenVar
   (v : Var)
   (σ : String → String)
   (k : ℕ)
@@ -81,7 +81,7 @@ lemma SubOpenVar
         apply Eq.refl
 
 
-lemma SubCloseVar
+theorem SubCloseVar
   (v : Var)
   (σ : String → String)
   (y : String)
@@ -125,7 +125,7 @@ lemma SubCloseVar
     simp only [Var.sub_Var]
 
 
-lemma SubOpenFormula
+theorem SubOpenFormula
   (F : Formula)
   (σ : String → String)
   (k : ℕ)
@@ -163,7 +163,7 @@ lemma SubOpenFormula
     apply phi_ih
 
 
-lemma SubCloseFormula
+theorem SubCloseFormula
   (F : Formula)
   (σ : String → String)
   (x : String)

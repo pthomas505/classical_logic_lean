@@ -342,7 +342,7 @@ def Interpretation.usingPred
 --------------------------------------------------
 
 
-lemma CloseVarOpenVarComp
+theorem CloseVarOpenVarComp
   (v : Var)
   (y : String)
   (k : ℕ)
@@ -379,7 +379,7 @@ lemma CloseVarOpenVarComp
       simp only [closeVar]
 
 
-lemma OpenVarCloseVarComp
+theorem OpenVarCloseVarComp
   (v : Var)
   (k : ℕ)
   (y : String)
@@ -415,7 +415,7 @@ lemma OpenVarCloseVarComp
       apply Eq.refl
 
 
-lemma CloseFormulaOpenFormulaComp
+theorem CloseFormulaOpenFormulaComp
   (F : Formula)
   (y : String)
   (k : ℕ)
@@ -476,7 +476,7 @@ lemma CloseFormulaOpenFormulaComp
     exact h1
 
 
-lemma OpenFormulaCloseFormulaComp
+theorem OpenFormulaCloseFormulaComp
   (F : Formula)
   (k : ℕ)
   (y : String)
@@ -538,7 +538,7 @@ lemma OpenFormulaCloseFormulaComp
 --------------------------------------------------
 
 
-lemma OpenVarLeftInvOn
+theorem OpenVarLeftInvOn
   (k : ℕ)
   (y : String) :
   Set.LeftInvOn (closeVar (free_ y) k) (openVar k (free_ y)) {v : Var | ¬ (free_ y) = v} :=
@@ -550,7 +550,7 @@ lemma OpenVarLeftInvOn
   exact a1
 
 
-lemma CloseVarLeftInvOn
+theorem CloseVarLeftInvOn
   (y : String)
   (k : ℕ) :
   Set.LeftInvOn (openVar k (free_ y)) (closeVar (free_ y) k) {v : Var | Var.lc_at k v} :=
@@ -562,7 +562,7 @@ lemma CloseVarLeftInvOn
   exact a1
 
 
-lemma OpenVarInjOn
+theorem OpenVarInjOn
   (k : ℕ)
   (y : String) :
   Set.InjOn (openVar k (free_ y)) {v : Var | ¬ (free_ y) = v} :=
@@ -571,7 +571,7 @@ lemma OpenVarInjOn
   apply OpenVarLeftInvOn
 
 
-lemma CloseVarInjOn
+theorem CloseVarInjOn
   (y : String)
   (k : ℕ) :
   Set.InjOn (closeVar (free_ y) k) {v : Var | Var.lc_at k v} :=
@@ -580,7 +580,7 @@ lemma CloseVarInjOn
   apply CloseVarLeftInvOn
 
 
-lemma OpenFormulaLeftInvOn
+theorem OpenFormulaLeftInvOn
   (k : ℕ)
   (y : String) :
   Set.LeftInvOn (closeFormulaAux (free_ y) k) (openFormulaAux k (free_ y)) {F : Formula | ¬ occursIn (free_ y) F} :=
@@ -592,7 +592,7 @@ lemma OpenFormulaLeftInvOn
   exact a1
 
 
-lemma CloseFormulaLeftInvOn
+theorem CloseFormulaLeftInvOn
   (y : String)
   (k : ℕ) :
   Set.LeftInvOn (openFormulaAux k (free_ y)) (closeFormulaAux (free_ y) k) {F : Formula | Formula.lc_at k F} :=
@@ -604,7 +604,7 @@ lemma CloseFormulaLeftInvOn
   exact a1
 
 
-lemma OpenFormulaInjOn
+theorem OpenFormulaInjOn
   (k : ℕ)
   (y : String) :
   Set.InjOn (openFormulaAux k (free_ y)) {F : Formula | ¬ occursIn (free_ y) F} :=
@@ -613,7 +613,7 @@ lemma OpenFormulaInjOn
   apply OpenFormulaLeftInvOn
 
 
-lemma CloseFormulaInjOn
+theorem CloseFormulaInjOn
   (y : String)
   (k : ℕ) :
   Set.InjOn (closeFormulaAux (free_ y) k) {F : Formula | Formula.lc_at k F} :=
@@ -642,7 +642,7 @@ example
 --------------------------------------------------
 
 
-lemma OpenVarFreeStringSet
+theorem OpenVarFreeStringSet
   (v : Var)
   (k : ℕ)
   (y : String) :
@@ -668,7 +668,7 @@ lemma OpenVarFreeStringSet
       exact True.intro
 
 
-lemma CloseVarFreeStringSet
+theorem CloseVarFreeStringSet
   (v : Var)
   (y : String)
   (k : ℕ) :
@@ -700,7 +700,7 @@ lemma CloseVarFreeStringSet
 --------------------------------------------------
 
 
-lemma OpenVarFreeVarSet
+theorem OpenVarFreeVarSet
   (v : Var)
   (k : ℕ)
   (y : String) :
@@ -726,7 +726,7 @@ lemma OpenVarFreeVarSet
       exact True.intro
 
 
-lemma CloseVarFreeVarSet
+theorem CloseVarFreeVarSet
   (v : Var)
   (y : String)
   (k : ℕ) :
@@ -754,7 +754,7 @@ lemma CloseVarFreeVarSet
     simp only [Finset.empty_sdiff, subset_refl]
 
 
-lemma OpenFormulaFreeVarSet
+theorem OpenFormulaFreeVarSet
   (F : Formula)
   (k : ℕ)
   (y : String) :
@@ -801,7 +801,7 @@ lemma OpenFormulaFreeVarSet
     apply phi_ih
 
 
-lemma CloseFormulaFreeVarSet
+theorem CloseFormulaFreeVarSet
   (F : Formula)
   (y : String)
   (k : ℕ) :
@@ -852,7 +852,7 @@ lemma CloseFormulaFreeVarSet
 --------------------------------------------------
 
 
-lemma shift_openVar
+theorem shift_openVar
   (D : Type)
   (V : VarAssignment D)
   (k : ℕ)
@@ -907,7 +907,7 @@ lemma shift_openVar
           apply Eq.refl
 
 
-lemma Holds_openFormulaAux
+theorem Holds_openFormulaAux
   (D : Type)
   (I : Interpretation D)
   (V : VarAssignment D)
@@ -946,7 +946,7 @@ lemma Holds_openFormulaAux
 --------------------------------------------------
 
 
-lemma shift_openVarList
+theorem shift_openVarList
   (D : Type)
   (V : VarAssignment D)
   (k : ℕ)
@@ -1025,7 +1025,7 @@ lemma shift_openVarList
             simp only [List.length_map]
 
 
-lemma Holds_openFormulaListAux
+theorem Holds_openFormulaListAux
   (D : Type)
   (I : Interpretation D)
   (V : VarAssignment D)
@@ -1064,7 +1064,7 @@ lemma Holds_openFormulaListAux
 --------------------------------------------------
 
 
-lemma Formula.lc_at_instantiate_id
+theorem Formula.lc_at_instantiate_id
   (F : Formula)
   (k : ℕ)
   (zs : List String)
@@ -1127,7 +1127,7 @@ lemma Formula.lc_at_instantiate_id
     exact h1
 
 
-lemma lc_at_instantiate
+theorem lc_at_instantiate
   (F : Formula)
   (k : ℕ)
   (zs : List String) :
@@ -1236,7 +1236,7 @@ theorem Var.instantiate_free
     simp only [isFree] at h1
 
 
-lemma Var.instantiate_append
+theorem Var.instantiate_append
   (k : ℕ)
   (zs zs' : List Var)
   (v : Var)
@@ -1274,7 +1274,7 @@ lemma Var.instantiate_append
         grind only
 
 
-lemma Formula.instantiate_append
+theorem Formula.instantiate_append
   (k : ℕ)
   (zs zs' : List Var)
   (F : Formula)
@@ -1305,7 +1305,7 @@ lemma Formula.instantiate_append
     apply Nat.add_right_comm
 
 
-lemma lc_at_imp_lc_instantiate
+theorem lc_at_imp_lc_instantiate
   (F : Formula)
   (zs : List String)
   (h1 : lc_at zs.length F) :
@@ -1373,7 +1373,7 @@ lemma lc_at_imp_lc_instantiate
       simp only [isFree]
 
 
-lemma lc_at_imp_lc
+theorem lc_at_imp_lc
   (F : Formula)
   (h1 : lc_at 0 F) :
   lc F :=
@@ -1412,7 +1412,7 @@ lemma lc_at_imp_lc
     exact h1
 
 
-lemma lc_imp_lc_at
+theorem lc_imp_lc_at
   (F : Formula)
   (h1 : lc F) :
   lc_at 0 F :=
@@ -1444,7 +1444,7 @@ lemma lc_imp_lc_at
     exact ih_2
 
 
-lemma lc_at_iff_lc
+theorem lc_at_iff_lc
   (F : Formula) :
   lc_at 0 F ↔ lc F :=
   by
@@ -1460,7 +1460,7 @@ lemma lc_at_iff_lc
 --------------------------------------------------
 
 
-lemma free_var_list_to_string_list
+theorem free_var_list_to_string_list
   (vs : List Var)
   (h1 : ∀ (v : Var), v ∈ vs → Var.lc_at 0 v) :
   ∃ xs, vs = List.map free_ xs :=
@@ -1550,7 +1550,7 @@ theorem shift_instantiate
             grind
 
 
-lemma Holds_instantiate
+theorem Holds_instantiate
   (D : Type)
   (I : Interpretation D)
   (V : VarAssignment D)
@@ -1672,7 +1672,7 @@ theorem shift_list_instantiate
 --------------------------------------------------
 
 
-lemma shift_extract1
+theorem shift_extract1
   (D : Type)
   (V : VarAssignment D)
   (k : ℕ)
@@ -1732,7 +1732,7 @@ lemma shift_extract1
           apply Eq.refl
 
 
-lemma Holds_abstract_instantiate
+theorem Holds_abstract_instantiate
   (D : Type)
   (I : Interpretation D)
   (V : VarAssignment D)

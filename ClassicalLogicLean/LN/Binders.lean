@@ -401,7 +401,7 @@ theorem isBoundIn_iff_mem_boundVarSet'
 --------------------------------------------------
 
 
-lemma IsFreeIffExistsString
+theorem IsFreeIffExistsString
   (v : Var) :
   v.isFree ↔ ∃ (x : String), v = free_ x :=
   by

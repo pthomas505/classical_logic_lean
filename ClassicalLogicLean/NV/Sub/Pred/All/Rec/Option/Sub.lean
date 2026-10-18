@@ -122,7 +122,7 @@ def I'
   else I.pred_var_ X ds) )
 
 
-lemma substitution_theorem_sub_pred_all_rec_opt_aux
+theorem substitution_theorem_sub_pred_all_rec_opt_aux
   (D : Type)
   (I : Interpretation_ D)
   (V V' V'' : Valuation_ D)

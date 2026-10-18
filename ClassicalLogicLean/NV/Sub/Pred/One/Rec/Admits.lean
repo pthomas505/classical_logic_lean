@@ -68,7 +68,7 @@ def admits_pred_one_rec
   admits_pred_one_rec_aux P zs H ∅ F
 
 
-lemma replace_pred_one_rec_pred_var_set_is_empty
+theorem replace_pred_one_rec_pred_var_set_is_empty
   (P : PredName_)
   (zs : List VarName_)
   (H : Formula_)

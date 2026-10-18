@@ -162,7 +162,7 @@ inductive are_alpha_equiv_ind_v2 : Formula_ → Formula_ → Prop
 
 -------------------------------------------------------------------------------
 
-lemma are_alpha_equiv_ind_v1_replace_var_one_rec_fast_replace_free_var_one_rec
+theorem are_alpha_equiv_ind_v1_replace_var_one_rec_fast_replace_free_var_one_rec
   (F : Formula_)
   (v t : VarName_)
   (h1 : t ∉ F.var_set) :
@@ -220,7 +220,7 @@ lemma are_alpha_equiv_ind_v1_replace_var_one_rec_fast_replace_free_var_one_rec
       exact phi_ih
 
 
-lemma are_alpha_equiv_ind_v2_fast_replace_free_var_one_rec_replace_var_one_rec
+theorem are_alpha_equiv_ind_v2_fast_replace_free_var_one_rec_replace_var_one_rec
   (F : Formula_)
   (v t : VarName_)
   (h1 : t ∉ F.var_set) :
@@ -282,7 +282,7 @@ lemma are_alpha_equiv_ind_v2_fast_replace_free_var_one_rec_replace_var_one_rec
       exact phi_ih
 
 
-lemma are_alpha_equiv_ind_v1_imp_are_alpha_equiv_ind_v2
+theorem are_alpha_equiv_ind_v1_imp_are_alpha_equiv_ind_v2
   (F F' : Formula_)
   (h1 : are_alpha_equiv_ind_v1 F F') :
   are_alpha_equiv_ind_v2 F F' :=
@@ -335,7 +335,7 @@ lemma are_alpha_equiv_ind_v1_imp_are_alpha_equiv_ind_v2
     · exact ih_4
 
 
-lemma are_alpha_equiv_ind_v2_imp_are_alpha_equiv_ind_v1
+theorem are_alpha_equiv_ind_v2_imp_are_alpha_equiv_ind_v1
   (F F' : Formula_)
   (h1 : are_alpha_equiv_ind_v2 F F') :
   are_alpha_equiv_ind_v1 F F' :=
@@ -388,7 +388,7 @@ lemma are_alpha_equiv_ind_v2_imp_are_alpha_equiv_ind_v1
     · exact ih_4
 
 
-lemma are_alpha_equiv_ind_v1_iff_are_alpha_equiv_ind_v2
+theorem are_alpha_equiv_ind_v1_iff_are_alpha_equiv_ind_v2
   (F F' : Formula_) :
   are_alpha_equiv_ind_v1 F F' ↔ are_alpha_equiv_ind_v2 F F' :=
   by

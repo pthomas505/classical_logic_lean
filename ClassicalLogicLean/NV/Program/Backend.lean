@@ -990,7 +990,7 @@ theorem soundness
     · apply Eq.refl
 
 
-lemma not_IsDeduct_false :
+theorem not_IsDeduct_false :
   ¬ IsDeduct [] false_ :=
   by
   intro contra
