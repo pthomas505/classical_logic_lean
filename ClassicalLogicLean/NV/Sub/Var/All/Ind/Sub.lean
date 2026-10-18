@@ -288,14 +288,13 @@ theorem substitution_theorem_is_sub_var_all_ind_aux
 
           simp only [s1]
           apply Function.updateFromPairOfListsITE_mem_eq_len
-          simp only [var_is_free_in_iff_mem_free_var_set] at a1
-          obtain s2 := hd.h1 a1
-          simp only [List.mem_toFinset] at s2
-          exact s2
-
-          simp only [List.length_map] at c2
-          simp only [List.length_map]
-          tauto
+          · simp only [var_is_free_in_iff_mem_free_var_set] at a1
+            obtain s2 := hd.h1 a1
+            simp only [List.mem_toFinset] at s2
+            exact s2
+          · simp only [List.length_map] at c2
+            simp only [List.length_map]
+            tauto
         case isFalse c2 =>
           simp only [List.length_map] at c2
           contradiction
