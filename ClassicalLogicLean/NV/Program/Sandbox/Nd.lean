@@ -200,4 +200,7 @@ inductive IsDeduct : Finset Formula_ → Formula_ → Prop
     IsDeduct Δ psi
 
 
+end FOL.NV
+
+
 #lint

@@ -2,8 +2,6 @@ import MathlibExtraLean.Except
 import ClassicalLogicLean.NV.Sub.Var.All.Rec.Sub
 import ClassicalLogicLean.NV.Sub.Pred.All.Rec.Option.Sub
 
-import Batteries
-
 
 set_option linter.style.docString false
 set_option linter.style.emptyLine false
@@ -347,13 +345,13 @@ instance : ToString CheckedProof :=
   { toString := fun (x : CheckedProof) => x.toString }
 
 
-abbrev GlobalContext : Type := Batteries.HashMap String CheckedProof
+abbrev GlobalContext : Type := Std.HashMap String CheckedProof
 
 def GlobalContext.find
   (context : GlobalContext)
   (label : String) :
   Except String CheckedProof :=
-  let opt : Option CheckedProof := context.find? label
+  let opt : Option CheckedProof := context.get? label
   opt.toExcept s! "{label} not found in global context."
 
 
@@ -363,7 +361,7 @@ def LocalContext.get
   (context : LocalContext)
   (index : ℕ) :
   Except String CheckedStep :=
-  let opt : Option CheckedStep := context.get? index
+  let opt : Option CheckedStep := context[index]?
   opt.toExcept s! "{index} not found in local context."
 
 
@@ -524,10 +522,10 @@ def checkRule
         prop := by {
           apply IsDeduct.mp_ Δ phi psi
           · obtain s1 := found_1.assertion.prop
-            simp only [h1] at s1
+            rewrite [h1] at s1
             exact s1
           · obtain s2 := found_2.assertion.prop
-            simp only [h2] at s2
+            rewrite [h2] at s2
             exact s2
         }
       }
@@ -551,7 +549,7 @@ def checkRule
       prop := by {
         apply IsDeduct.dt_ Δ H phi
         obtain s1 := found.assertion.prop
-        simp only [h] at s1
+        rewrite [h] at s1
         exact s1
       }
     }
@@ -606,7 +604,7 @@ def checkRule
       prop := by {
         apply IsDeduct.gen_ v phi
         obtain s1 := found.assertion.prop
-        simp only [h] at s1
+        rewrite [h] at s1
         exact s1
       }
     }
@@ -713,7 +711,7 @@ def checkRule
       prop := by {
         apply IsDeduct.sub_
         obtain s1 := found.assertion.prop
-        simp only [h] at s1
+        rewrite [h] at s1
         exact s1
       }
     }
@@ -804,36 +802,35 @@ theorem soundness
     intro D I V E a1
     apply ih_2
     intro H' a2
-    simp at a1
-    cases a1
-    case _ a1_left a1_right =>
-      exact a1_right H' a2
+    simp only [List.mem_cons] at a1
+    apply a1
+    right
+    exact a2
   case struct_2_ Δ' H _ _ ih_2 =>
     intro D I V E a1
     apply ih_2
     intro H' a2
-    simp at a1
-    cases a1
-    case _ a1_left a1_right =>
-      simp at a2
-      cases a2
-      case _ a2 =>
-        simp only [a2]
-        exact a1_left
-      case _ a2 =>
-        exact a1_right H' a2
+    simp only [List.mem_cons] at a1
+    apply a1
+    simp only [List.mem_cons] at a2
+    cases a2
+    case inl a2 =>
+      left
+      exact a2
+    case inr a2 =>
+      exact a2
   case struct_3_ Δ_1 Δ_2 H_1 H_2 _ _ ih_2 =>
     intro D I V E a1
+    simp only [List.append_assoc, List.cons_append, List.nil_append, List.mem_append, List.mem_cons] at a1
     apply ih_2
     intro H' a2
-    simp at a1
+    simp only [List.append_assoc, List.cons_append, List.nil_append, List.mem_append, List.mem_cons] at a2
     apply a1
-    simp at a2
     tauto
   case assume_ phi =>
     intro D I V E a1
-    simp at a1
-    exact a1
+    apply a1
+    simp only [List.mem_singleton]
   case prop_0_ =>
     intro D I V E _
     simp only [holds]
@@ -862,10 +859,15 @@ theorem soundness
     simp only [holds]
     intro a2
     apply ih_2
-    simp
-    constructor
-    · exact a2
-    · exact a1
+    simp only [List.mem_cons]
+    intro H' a3
+    cases a3
+    case inl a3 =>
+      rewrite [a3]
+      exact a2
+    case inr a3 =>
+      apply a1
+      exact a3
   case pred_1_ v phi psi =>
     intro D I V E _
     simp only [holds]
@@ -880,7 +882,7 @@ theorem soundness
     intro a2
     simp only [s1]
     simp only [Function.updateITE_comp_left]
-    simp
+    simp only [CompTriple.comp_eq]
     exact a2 (V t)
   case pred_3_ v phi ih =>
     intro D I V E _
@@ -892,12 +894,12 @@ theorem soundness
       apply holds_coincide_var
       intro v' a1
       simp only [Function.updateITE]
-      split_ifs
-      case _ c1 =>
-        subst c1
+      split
+      case isTrue c1 =>
+        rewrite [← c1] at ih
         contradiction
-      case _ c1 =>
-        rfl
+      case isFalse c1 =>
+        apply Eq.refl
 
     simp only [s1]
     exact a2
@@ -906,7 +908,8 @@ theorem soundness
     simp only [holds]
     intro d
     apply ih_2
-    simp
+    intro H' a1
+    simp only [List.not_mem_nil] at a1
   case eq_1_ v =>
     intro D I V E _
     simp only [holds]
@@ -914,11 +917,10 @@ theorem soundness
     intro D I V E _
     simp only [holds]
     intro a2
-
-    cases a2
-    case _ a2_left a2_right =>
-      simp only [a2_left]
-      simp only [a2_right]
+    obtain ⟨a2_left, a2_right⟩ := a2
+    rewrite [a2_left]
+    rewrite [a2_right]
+    apply Iff.refl
   case eq_2_pred_var_ X xs ys ih_1 =>
     intro D I V E _
 
@@ -927,27 +929,32 @@ theorem soundness
     congr! 1
 
     induction xs generalizing ys
-    case _ =>
-      cases ys
-      case _ =>
-        simp only [holds]
-      case cons ys_hd ys_tl =>
-        simp at ih_1
-    case _ xs_hd xs_tl xs_ih =>
+    case nil =>
       cases ys
       case nil =>
-        simp at ih_1
+        apply Eq.refl
       case cons ys_hd ys_tl =>
-        simp at ih_1
+        simp only [List.length_nil, List.length_cons] at ih_1
+        simp only [Nat.right_eq_add, Nat.add_eq_zero_iff, List.length_eq_zero_iff, one_ne_zero] at ih_1
+        obtain ⟨ih_1_left, ih_1_right⟩ := ih_1
+        contradiction
+    case cons xs_hd xs_tl xs_ih =>
+      cases ys
+      case nil =>
+        simp only [List.length_cons, List.length_nil] at ih_1
+        simp only [Nat.add_eq_zero_iff, List.length_eq_zero_iff, one_ne_zero, and_false] at ih_1
+      case cons ys_hd ys_tl =>
+        simp only [List.length_cons] at ih_1
+        simp only [Nat.add_right_cancel_iff] at ih_1
 
-        simp at a1
+        simp only [List.zipWith_cons_cons, List.foldr_cons] at a1
         simp only [holds] at a1
-        cases a1
-        case _ a1_left a1_right =>
-          simp
-          constructor
-          · exact a1_left
-          · apply xs_ih ys_tl ih_1 a1_right
+        obtain ⟨a1_left, a1_right⟩ := a1
+        simp only [List.map_cons]
+        congr 1
+        apply xs_ih
+        · exact ih_1
+        · exact a1_right
   case def_false_ =>
     intro D I V E _
     simp only [holds]
@@ -967,17 +974,20 @@ theorem soundness
   case def_exists_ v phi =>
     intro D I V E _
     simp only [holds]
-    simp
+    simp only [not_forall, not_not]
   case sub_ Δ' phi τ _ ih_2 =>
     intro D I V E a1
-    simp at a1
+    simp only [List.mem_map, forall_exists_index] at a1
 
     obtain s1 := Sub.Pred.All.Rec.Option.Fresh.substitution_theorem_sub_pred_all_rec_opt D I V E freshChar τ
-    simp only [← s1] at a1
     simp only [← s1]
-
     apply ih_2
-    exact a1
+    simp only [s1]
+    intro H' a2
+    apply a1 (Sub.Pred.All.Rec.Option.Fresh.sub_pred_all_rec_opt freshChar τ H') H'
+    constructor
+    · exact a2
+    · apply Eq.refl
 
 
 lemma not_IsDeduct_false :
@@ -985,36 +995,30 @@ lemma not_IsDeduct_false :
   by
   intro contra
   obtain s1 := soundness [] false_ contra Unit default default default
-  simp at s1
   simp only [holds] at s1
+  apply s1
+  intro H a1
+  simp only [List.not_mem_nil] at a1
 
 
 example :
   ∀ (P : Proof) (b : CheckedProof), P.assertion.hypotheses = [] ∧ P.assertion.conclusion = false_ → checkProof {} P = .ok b -> False :=
   by
   intro P b a1 a2
+  obtain ⟨a1_left, a1_right⟩ := a1
   simp only [checkProof] at a2
   simp only [bind] at a2
   simp only [Except.bind_eq_ok] at a2
-  apply Exists.elim a2
-  intro xs a3
-  clear a2
-  cases a3
-  case _ a3_left a3_right =>
-    apply Exists.elim a3_right
-    intro last a4
-    clear a3_right
-    cases a4
-    case _ a4_left a4_right =>
-      split_ifs at a4_right
-      case _ c1 =>
-        obtain s1 := last.assertion.prop
-        simp only [c1] at s1
-        cases a1
-        case _ a1_left a1_right =>
-          simp only [a1_left] at s1
-          simp only [a1_right] at s1
-          simp only [not_IsDeduct_false] at s1
+  obtain ⟨xs, ⟨a2_left, ⟨last, ⟨a2_right_right_left, a2_right_right_right⟩⟩⟩⟩ := a2
+  split at a2_right_right_right
+  case isTrue c1 =>
+    obtain s1 := last.assertion.prop
+    rewrite [c1] at s1
+    rewrite [a1_left] at s1
+    rewrite [a1_right] at s1
+    simp only [not_IsDeduct_false] at s1
+  case isFalse c1 =>
+    contradiction
 
 
 example
