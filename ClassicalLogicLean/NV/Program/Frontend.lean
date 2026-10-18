@@ -12,13 +12,13 @@ namespace FOL.NV.Program.Frontend
 open Formula_
 
 
-abbrev GlobalContext : Type := Batteries.HashMap String Backend.Proof
+abbrev GlobalContext : Type := Std.HashMap String Backend.Proof
 
 def GlobalContext.find
   (context : GlobalContext)
   (label : String) :
   Except String Backend.Proof :=
-  let opt : Option Backend.Proof := context.find? label
+  let opt : Option Backend.Proof := context.get? label
   opt.toExcept s! "{label} not found in global context."
 
 
@@ -28,7 +28,7 @@ def LocalContext.get
   (context : LocalContext)
   (index : ℕ) :
   Except String Backend.Step :=
-  let opt : Option Backend.Step := context.get? index
+  let opt : Option Backend.Step := context[index]?
   opt.toExcept s! "{index} not found in local context."
 
 
