@@ -145,11 +145,11 @@ theorem substitution_theorem_is_sub_var_all_ind_aux
   induction h1 generalizing V V'
   case pred_const_ σ' binders' X' xs' ih_1 | pred_var_ σ' binders' X' xs' ih_1 =>
     simp only [holds]
-    simp
+    simp only [List.map_map]
     congr! 1
     simp only [List.map_eq_map_iff]
     intro x a1
-    simp
+    simp only [Function.comp_apply]
     by_cases c1 : x ∈ binders'
     · exact h2 x c1
     · apply h3
@@ -161,13 +161,15 @@ theorem substitution_theorem_is_sub_var_all_ind_aux
       · exact h2 x c1
       · apply h3
         apply ih_1
-        · simp
+        · left
+          apply Eq.refl
         · exact c1
     · by_cases c1 : y ∈ binders'
       · exact h2 y c1
       · apply h3
         apply ih_1
-        · simp
+        · right
+          apply Eq.refl
         · exact c1
   case true_ | false_ =>
     simp only [holds]
@@ -185,7 +187,7 @@ theorem substitution_theorem_is_sub_var_all_ind_aux
     · exact phi_ih_2 V V' h2 h3 h4
     · exact psi_ih_2 V V' h2 h3 h4
   case forall_ σ' binders' x phi phi' _ ih_2 | exists_ σ' binders' x phi phi' _ ih_2 =>
-    simp at ih_2
+    simp only [Finset.union_singleton, Finset.mem_insert] at ih_2
 
     have s1 : ∀ (v : VarName_), ¬ v = x → v ∈ binders' → ¬ σ' v = x :=
     by
@@ -200,81 +202,110 @@ theorem substitution_theorem_is_sub_var_all_ind_aux
 
     apply ih_2
     · intro v a1
-      by_cases c1 : v = x
-      · simp only [Function.updateITE]
-        simp only [if_pos c1]
-        simp
-      · simp only [Function.updateITE]
-        simp only [if_neg c1]
-        cases a1
-        case _ c2 =>
-          simp only [s1 v c1 c2]
-          simp
-          exact h2 v c2
-        case _ c2 =>
+      simp only [Function.updateITE]
+      split
+      case isTrue c1 =>
+        split
+        case isTrue c2 =>
+          apply Eq.refl
+        case isFalse c2 =>
           contradiction
+      case isFalse c2 =>
+        cases a1
+        case inl a1 =>
+          contradiction
+        case inr a1 =>
+          split
+          case isTrue c3 =>
+            exfalso
+            exact s1 v c2 a1 c3
+          case isFalse c3 =>
+            exact h2 v a1
     · intro v a1
-      by_cases c1 : v = x
-      · simp only [Function.updateITE]
-        simp only [if_pos c1]
-        simp
-      · simp only [Function.updateITE] at a1
-        simp only [if_neg c1] at a1
-        simp only [Function.updateITE]
-        simp only [if_neg c1]
-        intro a2
-        simp only [if_neg a2]
-        apply h3 v a1
+      simp only [Function.updateITE] at a1
+      rewrite [not_or] at a1
+      obtain ⟨a1_left, a1_right⟩ := a1
+
+      simp only [Function.updateITE]
+      split
+      case isTrue c1 =>
+        split
+        case isTrue c2 =>
+          apply Eq.refl
+        case isFalse c2 =>
+          contradiction
+      case isFalse c1 =>
+        split
+        case isTrue c2 =>
+          exfalso
+          apply a1_left
+          split
+          case isTrue c3 =>
+            contradiction
+          case isFalse c3 =>
+            exact c2
+        case isFalse c2 =>
+          split at a1_right
+          case isTrue c3 =>
+            contradiction
+          case isFalse c3 =>
+            apply h3
+            exact a1_right
     · intro v a1
       simp only [Function.updateITE]
-      split_ifs
-      case _ c1 =>
+      split
+      case isTrue c1 =>
         exact c1
-      case _ c1 =>
+      case isFalse c1 =>
         cases a1
-        case _ c2 =>
-          exact h4 v c2
-        case _ c2 =>
+        case inl a1 =>
           contradiction
+        case inr a1 =>
+          apply h4
+          exact a1
   case def_ σ' binders' X' xs' ih_1 =>
     induction E
     case nil =>
       simp only [holds]
     case cons hd tl ih =>
       simp only [holds]
-      split_ifs
-      case _ c1 c2 =>
-        simp
-        apply holds_coincide_var
-        intro v a1
+      split
+      case isTrue c1 =>
+        split
+        case isTrue c2 =>
+          simp only [List.map_map]
+          apply holds_coincide_var
+          intro v a1
 
-        have s1 : List.map V xs' = List.map (V' ∘ σ') xs' :=
-        by
-          simp only [List.map_eq_map_iff]
-          intro x a2
-          by_cases c3 : x ∈ binders'
-          · exact h2 x c3
-          · apply h3
-            exact ih_1 x a2 c3
+          have s1 : List.map V xs' = List.map (V' ∘ σ') xs' :=
+          by
+            simp only [List.map_eq_map_iff]
+            intro x a2
+            by_cases c3 : x ∈ binders'
+            · exact h2 x c3
+            · apply h3
+              exact ih_1 x a2 c3
 
-        simp only [s1]
-        apply Function.updateFromPairOfListsITE_mem_eq_len
-        simp only [var_is_free_in_iff_mem_free_var_set] at a1
-        obtain s2 := hd.h1 a1
-        simp at s2
-        exact s2
+          simp only [s1]
+          apply Function.updateFromPairOfListsITE_mem_eq_len
+          simp only [var_is_free_in_iff_mem_free_var_set] at a1
+          obtain s2 := hd.h1 a1
+          simp only [List.mem_toFinset] at s2
+          exact s2
 
-        simp at c2
-        simp
-        tauto
-      case _ c1 c2 =>
-        simp only [List.length_map] at c2
-        contradiction
-      case _ c1 c2 =>
-        simp at c2
-        contradiction
-      case _ c1 c2 =>
-        exact ih
+          simp only [List.length_map] at c2
+          simp only [List.length_map]
+          tauto
+        case isFalse c2 =>
+          simp only [List.length_map] at c2
+          contradiction
+      case isFalse c1 =>
+        split
+        case isTrue c2 =>
+          simp only [List.length_map] at c2
+          contradiction
+        case isFalse c2 =>
+          exact ih
 
 
 theorem substitution_theorem_is_sub_var_all_ind
