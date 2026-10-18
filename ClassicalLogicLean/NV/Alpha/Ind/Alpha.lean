@@ -433,10 +433,10 @@ example
   case refl_ phi =>
     apply Eq.refl
   case symm_ phi phi' ih_1 ih_2 =>
-    symm
+    apply Eq.symm
     exact ih_2
   case trans_ phi phi' phi'' ih_1 ih_2 ih_3 ih_4 =>
-    trans phi'.free_var_set
+    apply Eq.trans
     · exact ih_3
     · exact ih_4
 
@@ -679,12 +679,12 @@ theorem holds_iff_are_alpha_equiv_ind_v2_holds
     intro d
     apply h1_ih
   case refl_ h1 =>
-    rfl
+    apply Iff.refl
   case symm_ h1_phi h1_phi' _ h1_ih =>
-    symm
+    apply Iff.symm
     apply h1_ih
   case trans_ h1_phi h1_phi' h1_phi'' _ _ h1_ih_1 h1_ih_2 =>
-    trans holds D I V E h1_phi'
+    apply Iff.trans
     · apply h1_ih_1
     · apply h1_ih_2
 
@@ -793,10 +793,14 @@ inductive are_alpha_equiv_ind_aux_v3 :
 /--
   `are_alpha_equiv_ind_v3 F F'` := True if and only if `F` and `F'` are alpha equivalent.
 -/
+@[nolint defsWithUnderscore]
 def are_alpha_equiv_ind_v3
   (F F' : Formula_) :
   Prop :=
   are_alpha_equiv_ind_aux_v3 [] F F'
+
+
+end FOL.NV
 
 
 #lint
