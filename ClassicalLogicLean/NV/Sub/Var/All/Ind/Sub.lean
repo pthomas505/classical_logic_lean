@@ -125,6 +125,7 @@ inductive is_sub_var_all_ind_aux :
 /--
   `is_sub_var_all_ind σ F F'` := True if and only if `F'` is the result of the simultaneous replacement of each free occurrence of any variable `v` in the formula `F` by a free occurrence of `σ v`.
 -/
+@[nolint defsWithUnderscore]
 def is_sub_var_all_ind (σ : VarName_ → VarName_) (F F' : Formula_) : Prop := is_sub_var_all_ind_aux σ ∅ F F'
 
 
@@ -339,6 +340,9 @@ theorem substitution_is_valid_is_sub_var_all_ind
   intro D I V E
   simp only [← substitution_theorem_is_sub_var_all_ind D I V E σ F F' h1]
   apply h2
+
+
+end FOL.NV.Sub.Var.All.Ind
 
 
 #lint
