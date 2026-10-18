@@ -1031,18 +1031,14 @@ example
   simp only [checkProof] at h1
   simp only [bind] at h1
   simp only [Except.bind_eq_ok] at h1
-  apply Exists.elim h1
-  intro xs a2
-  clear h1
-  cases a2
-  case _ a2_left a2_right =>
-    apply Exists.elim a2_right
-    intro last a3
-    clear a2_right
-    cases a3
-    case _ a3_left a3_right =>
-      split_ifs at a3_right
-      case _ c1 =>
-        obtain s1 := last.assertion.prop
-        simp only [c1] at s1
-        exact s1
+  obtain ⟨xs, ⟨h1_left, ⟨last, ⟨h1_right_right_left, h1_right_right_right⟩⟩⟩⟩ := h1
+  split at h1_right_right_right
+  case isTrue c1 =>
+    obtain s1 := last.assertion.prop
+    rewrite [c1] at s1
+    exact s1
+  case isFalse c1 =>
+    contradiction
+
+
+end FOL.NV.Program.Backend
