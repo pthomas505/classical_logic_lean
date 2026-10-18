@@ -264,14 +264,14 @@ theorem holds_coincide_pred_var
       exact h2
 
   case cons.def_ hd tl ih X xs =>
-    split_ifs
-    case pos c1 =>
+    split
+    case isTrue c1 =>
       apply ih
       intro P ds a1
       rewrite [pred_var_occurs_in_iff_mem_pred_var_set] at a1
       rewrite [hd.h2] at a1
       simp only [Finset.notMem_empty] at a1
-    case neg c1 =>
+    case isFalse c1 =>
       apply ih
       intro P ds a1
       simp only [pred_var_occurs_in] at a1
