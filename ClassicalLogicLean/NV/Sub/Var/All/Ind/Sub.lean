@@ -318,9 +318,12 @@ theorem substitution_theorem_is_sub_var_all_ind
   holds D I (V ∘ σ) E F ↔ holds D I V E F' :=
   by
   apply substitution_theorem_is_sub_var_all_ind_aux D I (V ∘ σ) V E σ ∅ F F' h1
-  · simp
-  · simp
-  · simp
+  · intro v a1
+    simp only [Finset.notMem_empty] at a1
+  · intro v a1
+    simp only [Function.comp_apply]
+  · intro v a1
+    simp only [Finset.notMem_empty] at a1
 
 
 theorem substitution_is_valid_is_sub_var_all_ind
